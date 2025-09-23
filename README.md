@@ -10,7 +10,7 @@ Esse repositório contém código da API para a aplicação Tasker, sistema de a
 #### Estrutura do ENV
 ```bash
 # Database Configuration
-DB_URL = "url_do_banco_de_dados"
+DB_URL = "postgresql://USUARIO:SENHA@HOST:PORTA/NOME_DO_BANCO?schema=public"
 #API Keys
 API_PORT = {porta}
 SECRET = "sua_key"
