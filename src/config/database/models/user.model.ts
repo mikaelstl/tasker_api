@@ -3,6 +3,7 @@ import { Invite } from "./invite.model";
 import { Project } from "./project.model";
 import { Relation } from "./relation.model";
 import { ProjectMember } from "./project_member.model";
+import { Comment } from "./comment.model";
 
 @Table
 export class User extends Model {
@@ -59,4 +60,7 @@ export class User extends Model {
 
   @HasMany(() => ProjectMember, 'user')
   member: ProjectMember[];
+
+  @HasMany(() => Comment, 'owner')
+  comments: Comment[]
 }

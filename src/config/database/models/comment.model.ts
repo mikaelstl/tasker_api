@@ -1,14 +1,16 @@
-import { Column, DataType, Model, Table } from "sequelize-typescript";
+import { Column, DataType, ForeignKey, Model, Table } from "sequelize-typescript";
+import { User } from "./user.model";
 import { Project } from "./project.model";
 
 @Table
-export class Checkpoint extends Model {
+export class Comment extends Model {
+
   @Column({
     type: DataType.UUID,
     defaultValue: DataType.UUIDV4,
     allowNull: false,
     unique: true,
-    // primaryKey: true
+    primaryKey: true
   })
   id: string;
 
@@ -16,29 +18,28 @@ export class Checkpoint extends Model {
     type: DataType.STRING,
     allowNull: false
   })
-  title: string;
+  content: string;
 
+  @ForeignKey(() => User)
   @Column({
     type: DataType.STRING,
     allowNull: false,
-    unique: true,
-    primaryKey: true
+    references: {
+      model: User,
+      key: 'username'
+    }
   })
-  tag: string;
+  owner: User;
 
+  @ForeignKey(() => Project)
   @Column({
-    type: DataType.UUID,
+    type: DataType.STRING,
     allowNull: false,
     references: {
       model: Project,
       key: 'id'
     }
   })
-  project: string;
+  project: User;
 
-  @Column({
-    type: DataType.DATE,
-    allowNull: false
-  })
-  date: Date;
 }
