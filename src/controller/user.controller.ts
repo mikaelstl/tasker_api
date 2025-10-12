@@ -8,6 +8,7 @@ import { AuthService } from "src/services/auth.service";
 import { JwtAuthGuard } from "src/services/auth/auth.guard";
 
 @Controller('users')
+@UseGuards(JwtAuthGuard)
 export class UserController {
   constructor(
     private readonly userRepository: UserRepository,

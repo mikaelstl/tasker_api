@@ -1,4 +1,4 @@
-import { Result } from "@interfaces/Response";
+import { ApiResponse } from "@interfaces/response";
 import { Checkpoint } from "@models/checkpoint.model";
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/sequelize";
@@ -19,7 +19,7 @@ export class CheckpointsRepository {
         data: checkpoint,
         error: false,
         message: `NEW CHECKPOINT DEFINED`
-      } as Result;
+      } as ApiResponse;
     } catch (err) {
       throw new BadRequestException(err);
     }
@@ -71,7 +71,7 @@ export class CheckpointsRepository {
         data: response,
         error: false,
         message: "CHANGED"
-      } as Result;
+      } as ApiResponse;
     } catch (err) {
       throw new BadRequestException(err);
     }
@@ -93,7 +93,7 @@ export class CheckpointsRepository {
         data: result,
         error: false,
         message: 'REMOVED'
-      } as Result;
+      } as ApiResponse;
     } catch (err) {
       throw new BadRequestException(err);
     }

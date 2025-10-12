@@ -1,21 +1,28 @@
+import { ApiError } from '@interfaces/error';
 import { ExceptionFilter, Catch, ArgumentsHost, BadRequestException, HttpException } from '@nestjs/common';
 import { Request, Response } from 'express';
 
 @Catch(BadRequestException)
 export class ValidationExceptionFilter implements ExceptionFilter {
-  catch(exception: BadRequestException, host: ArgumentsHost) {
+  catch(ex: BadRequestException, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
-    const exceptionResponse: any = exception.getResponse();
+    const exceptionResponse: any = ex.getResponse();
 
-    const errors = exceptionResponse.message || exceptionResponse;
+    const errors: string[] = exceptionResponse.message;
 
-    response.status(400).json({
-      statusCode: 400,
-      errors,
+    const resp: ApiError = {
+      status: 400,
+      errors: errors.map(
+        err => {
+          return { level: 'warning', message: err}
+        }
+      ),
       path: request.url,
-      timestamp: new Date().toISOString(),
-    });
+      timestamp: new Date().toISOString()
+    };
+
+    response.status(400).json(resp);
   }
 }

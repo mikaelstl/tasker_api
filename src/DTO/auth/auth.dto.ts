@@ -1,5 +1,5 @@
-export type AuthDTO = {
-  user: string;
-  username: string;
-  access_token: string;
+export interface AuthDTO {
+  readonly user: string;
+  readonly username: string;
+  readonly access_token: string;
 }

@@ -3,7 +3,6 @@ import { UserDTO } from "src/DTO/user/user.dto";
 import { AlreadyExistsException } from "@exceptions/user_exists.error";
 import { UserNotExistsException } from "@exceptions/user_not_exists.exception";
 import { User } from "@models/user.model";
-import { Result } from "@interfaces/Response";
 import { InjectModel } from "@nestjs/sequelize";
 import { Invite } from "@models/invite.model";
 import { Project } from "@models/project.model";
@@ -26,10 +25,10 @@ export class UserRepository {
     }
   }
 
-  async create(data: CreateUserDTO) {
+  async create(data: CreateUserDTO): Promise<UserDTO> {
     await this.userExists(data.username);
     try {
-      const response = await this.Users.create(
+      const result = await this.Users.create(
         {
           name: data.name,
           username: data.username,
@@ -38,11 +37,7 @@ export class UserRepository {
         }
       )
   
-      return {
-        data: response,
-        error: false,
-        message: 'CREATED WITH SUCCESS'
-      } as Result;
+      return result;
     } catch (err) {
       throw new BadRequestException(err);
     }
@@ -99,7 +94,7 @@ export class UserRepository {
 
   async edit(username: string, update: any): Promise<any> {
     try {
-      const response = await this.Users.update(
+      const result = await this.Users.update(
         update,
         {
           where: {
@@ -109,11 +104,7 @@ export class UserRepository {
         },
       );
       
-      return {
-        data: response,
-        error: false,
-        message: "CHANGED"
-      } as Result;
+      return result;
     } catch (err) {
       throw new BadRequestException(err);
     }

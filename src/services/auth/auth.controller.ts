@@ -1,7 +1,10 @@
-import { Body, Controller, Get, HttpStatus, Post, Res, UseInterceptors } from "@nestjs/common";
+import { ApiResponse } from "@interfaces/response";
+import { Body, Controller, Get, HttpCode, HttpStatus, Post, Res } from "@nestjs/common";
 import { AuthService } from "@services/auth.service";
+import { AuthDTO } from "src/DTO/auth/auth.dto";
 import { LoginDTO } from "src/DTO/auth/login.dto";
 import { CreateUserDTO } from "src/DTO/user/create.dto";
+import { UserDTO } from "src/DTO/user/user.dto";
 
 @Controller('auth')
 export class AuthController {
@@ -16,17 +19,41 @@ export class AuthController {
     return response.status(HttpStatus.OK).json('AUTH ONLINE');
   }
 
-  @Post('/login')
+  @Post('login')
   async login(
     @Body() data: LoginDTO,
+    @Res() resp
   ) {
-    return await this.service.login(data);
+    const result: AuthDTO = await this.service.login(data);
+
+    const response: ApiResponse = {
+      status: HttpStatus.OK,
+      data: result,
+      message: 'Logged',
+      error: false,
+      timestamp: new Date().toISOString(),
+      path: '/auth/login'
+    };
+
+    return resp.status(response.status).json(response);
   }
 
   @Post('register')
   async register(
     @Body() data: CreateUserDTO,
+    @Res() resp
   ) {
-    return await this.service.register(data)
+    const result: UserDTO = await this.service.register(data);
+
+    const response: ApiResponse = {
+      status: HttpStatus.CREATED,
+      data: result,
+      message: 'Registered with success',
+      error: false,
+      timestamp: new Date().toISOString(),
+      path: '/auth/register'
+    };
+
+    return resp.status(response.status).json(response);
   }
 }

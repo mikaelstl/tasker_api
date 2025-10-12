@@ -1,4 +1,4 @@
-import { Result } from "@interfaces/Response";
+import { ApiResponse } from "@interfaces/response";
 import { MemberRole, ProjectMember } from "@models/project_member.model";
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/sequelize";
@@ -45,7 +45,7 @@ export class ProjectMemberRepository {
         data: result,
         error: false,
         message: 'REMOVED WITH SUCCESS'
-      } as Result;
+      } as ApiResponse;
     } catch (err) {
       throw new BadRequestException(err);
     }

@@ -1,4 +1,4 @@
-import { Result } from "@interfaces/Response";
+import { ApiResponse } from "@interfaces/response";
 import { Task } from "@models/task.model";
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/sequelize";
@@ -29,7 +29,7 @@ export class TasksRepository {
         data: task,
         error: false,
         message: `NEW TASK CREATED TO PROJECT`
-      } as Result;
+      } as ApiResponse;
     } catch (err) {
       throw new BadRequestException(err);
     }
@@ -81,7 +81,7 @@ export class TasksRepository {
         data: response,
         error: false,
         message: "CHANGED"
-      } as Result;
+      } as ApiResponse;
     } catch (err) {
       throw new BadRequestException(err);
     }
@@ -103,7 +103,7 @@ export class TasksRepository {
         data: result,
         error: false,
         message: 'REMOVED'
-      } as Result;
+      } as ApiResponse;
     } catch (err) {
       throw new BadRequestException(err);
     }

@@ -1,5 +1,5 @@
 import { ProjectNotExistsException } from "@exceptions/project_not_exists.exception";
-import { Result } from "@interfaces/Response";
+import { ApiResponse } from "@interfaces/response";
 import { Checkpoint } from "@models/checkpoint.model";
 import { Project } from "@models/project.model";
 import { ProjectMember } from "@models/project_member.model";
@@ -29,7 +29,7 @@ export class ProjectRepository {
         data: result,
         error: false,
         message: 'CREATED WITH SUCCESS'
-      } as Result;
+      } as ApiResponse;
     } catch (err) {
       throw new BadRequestException(err);
     }
@@ -92,7 +92,7 @@ export class ProjectRepository {
         data: response,
         error: false,
         message: 'REMOVED'
-      } as Result;
+      } as ApiResponse;
     } catch (err) {
       throw new BadRequestException(err);
     }

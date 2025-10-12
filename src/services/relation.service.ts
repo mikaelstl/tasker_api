@@ -1,4 +1,4 @@
-import { Result } from "@interfaces/Response";
+import { ApiResponse } from "@interfaces/response";
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { InvitesRepository, SendInvitesDTO } from "@repositories/invites.repository";
 import { RelationRepository } from "@repositories/relation.repository";
@@ -44,7 +44,7 @@ export class RelationService {
         data: relation,
         error: false,
         message: `RELATION BETWEEN ${relation.user} AND ${relation.related} MADE`
-      } as Result;
+      } as ApiResponse;
     }
   }
 

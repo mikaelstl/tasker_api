@@ -1,7 +1,7 @@
 import { AlreadyExistsException } from "@exceptions/user_exists.error";
 import { Invite } from "@models/invite.model";
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
-import { Result } from "@interfaces/Response";
+import { ApiResponse } from "@interfaces/response";
 import { InjectModel } from "@nestjs/sequelize";
 import { Op } from "sequelize";
 import { Repository } from "@interfaces/Repository";
@@ -96,7 +96,7 @@ export class InvitesRepository {
         data: response,
         error: false,
         message: "CHANGED"
-      } as Result;
+      } as ApiResponse;
     } catch (err) {
       throw new BadRequestException(err);
     }
@@ -118,7 +118,7 @@ export class InvitesRepository {
         data: response,
         error: false,
         message: 'REMOVED'
-      } as Result;
+      } as ApiResponse;
     } catch (err) {
       throw new BadRequestException(err);
     }
