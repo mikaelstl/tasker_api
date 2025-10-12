@@ -19,6 +19,7 @@ import { RelationModule } from "./relation.module";
     AuthService,
     JwtService,
     JwtAuthGuard
-  ]
+  ],
+  exports: [ UserRepository ]
 })
 export class UserModule {}

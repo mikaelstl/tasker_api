@@ -72,6 +72,6 @@ export class Project extends Model {
   @HasMany(() => Checkpoint, 'project')
   checkpoints: Checkpoint[];
 
-  @HasMany(() => Comment, 'comments')
+  @HasMany(() => Comment, 'project')
   comments: Comment[];
 }

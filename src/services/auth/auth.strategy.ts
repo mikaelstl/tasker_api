@@ -8,7 +8,7 @@ import { SECRET } from "src/config/env.config";
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(private readonly auth: AuthService){
     super({
-      jwtFromResquest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
       secretOrKey: SECRET
     })

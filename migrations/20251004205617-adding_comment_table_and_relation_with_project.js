@@ -28,7 +28,7 @@ module.exports = {
         onDelete: 'CASCADE'
       },
       project: {
-        type: DataType.STRING,
+        type: DataType.UUID,
         allowNull: false,
         references: {
           model: 'Projects',
@@ -48,15 +48,10 @@ module.exports = {
         defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
       },
     });
-
-    await queryInterface.addColumn(
-      'Projetcs',
-      'comments',
-    )
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.removeColumn('Projects', 'priority');
+    // await queryInterface.removeColumn('Projects', 'priority');
     await queryInterface.dropTable('Comments')
   }
 };

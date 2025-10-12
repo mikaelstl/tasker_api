@@ -20,7 +20,6 @@ export class Comment extends Model {
   })
   content: string;
 
-  @ForeignKey(() => User)
   @Column({
     type: DataType.STRING,
     allowNull: false,
@@ -31,15 +30,14 @@ export class Comment extends Model {
   })
   owner: User;
 
-  @ForeignKey(() => Project)
   @Column({
-    type: DataType.STRING,
+    type: DataType.UUID,
     allowNull: false,
     references: {
       model: Project,
       key: 'id'
     }
   })
-  project: User;
+  project: Project;
 
 }

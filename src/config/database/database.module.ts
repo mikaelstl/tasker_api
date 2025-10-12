@@ -1,5 +1,6 @@
 import { DB_URL } from "@config/env.config";
 import { Checkpoint } from "@models/checkpoint.model";
+import { Comment } from "@models/comment.model";
 import { Invite } from "@models/invite.model";
 import { Project } from "@models/project.model";
 import { ProjectInvite } from "@models/project_invite.model";
@@ -23,7 +24,8 @@ import { SequelizeModule } from "@nestjs/sequelize";
         ProjectInvite,
         Relation,
         Task,
-        Checkpoint
+        Checkpoint,
+        Comment
       ],
       autoLoadModels: true,
     })

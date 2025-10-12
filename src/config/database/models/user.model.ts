@@ -49,8 +49,8 @@ export class User extends Model {
   })
   enterprise: boolean;
 
-  @HasMany(() => Invite, 'sender' && 'receiver')
-  invites: Invite[];
+  // @HasMany(() => Invite, 'sender' && 'receiver')
+  // invites: Invite[];
 
   @BelongsToMany(() => User, () => Relation, 'user', 'related')
   relations: User[];
