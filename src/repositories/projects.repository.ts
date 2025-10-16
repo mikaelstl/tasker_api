@@ -4,6 +4,7 @@ import { Checkpoint } from "@models/checkpoint.model";
 import { Project } from "@models/project.model";
 import { ProjectMember } from "@models/project_member.model";
 import { Task } from "@models/task.model";
+import { User } from "@models/user.model";
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/sequelize";
 import { CreateProjectDTO } from "src/DTO/project.create.dto";
@@ -20,24 +21,24 @@ export class ProjectRepository {
         {
           title: data.title,
           description: data.description,
-          owner: data.owner,
+          ownerkey: data.ownerkey,
           due_date: data.due_date
-        }
+        },
       );
 
-      return {
-        data: result,
-        error: false,
-        message: 'CREATED WITH SUCCESS'
-      } as ApiResponse;
+      return result;
     } catch (err) {
       throw new BadRequestException(err);
     }
   };
 
-  async list() {  
+  async list(user: string) {  
     try {
-      const projects = await this.Projects.findAll();
+      const projects = await this.Projects.findAll({
+        where: {
+          ownerkey: user
+        }
+      });
       return projects;
     } catch (err) {
       throw new BadRequestException(err);
@@ -50,7 +51,7 @@ export class ProjectRepository {
         where: {
           id: key
         },
-        include: [
+        /* include: [
           {
             model: Task,
             as: 'tasks'
@@ -61,7 +62,7 @@ export class ProjectRepository {
             model: Checkpoint,
             as: 'checkpoints'
           },
-        ]
+        ] */
       })
 
       if (!projects) {
@@ -88,11 +89,7 @@ export class ProjectRepository {
         throw new NotFoundException();
       }
 
-      return {
-        data: response,
-        error: false,
-        message: 'REMOVED'
-      } as ApiResponse;
+      return response;
     } catch (err) {
       throw new BadRequestException(err);
     }

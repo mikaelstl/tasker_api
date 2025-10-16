@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { SECRET } from 'src/config/env.config';
 import { AuthDTO } from 'src/DTO/auth/auth.dto';
@@ -8,6 +8,7 @@ import { WrongPasswordException } from 'src/utils/errors/wrong_password.exceptio
 import { compare, compareSync, hash } from 'bcrypt'
 import { CreateUserDTO } from 'src/DTO/user/create.dto';
 import { LoginDTO } from 'src/DTO/auth/login.dto';
+import { JwtPayload } from 'jsonwebtoken';
 
 @Injectable()
 export class AuthService {
@@ -15,6 +16,24 @@ export class AuthService {
     private readonly userRepository: UserRepository,
     private readonly jwt:            JwtService,
   ){}
+
+  async validate(token: string): Promise<boolean | null> {
+    try {
+      const decoded = this.jwt.verify<JwtPayload>(token, {
+        secret: SECRET,
+      });
+
+      const exists = await this.userRepository.find(decoded.username);
+
+      if (!exists) {
+        throw new UnauthorizedException("You don't have authorization to perform this action. Please log-in or create a account");
+      }
+
+      return true;
+    } catch (err) {
+      throw new UnauthorizedException("You don't have authorization to perform this action. Please log-in or create a account");
+    }
+  }
 
   async login(data: LoginDTO): Promise<AuthDTO> {
     const user = await this.userRepository.find(data.username);
@@ -33,7 +52,7 @@ export class AuthService {
       user: user.id,
       username: user.username,
       access_token: token
-    } as AuthDTO
+    } as AuthDTO;
   }
 
   async register(data: CreateUserDTO) {

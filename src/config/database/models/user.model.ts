@@ -55,7 +55,7 @@ export class User extends Model {
   @BelongsToMany(() => User, () => Relation, 'user', 'related')
   relations: User[];
 
-  @HasMany(() => Project, 'owner')
+  @HasMany(() => Project, 'ownerkey')
   projects: Project[];
 
   @HasMany(() => ProjectMember, 'user')

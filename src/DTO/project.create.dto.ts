@@ -1,6 +1,6 @@
 export type CreateProjectDTO = {
   title: string;
   description: string;
-  owner: string;
+  ownerkey: string;
   due_date: string;
 }

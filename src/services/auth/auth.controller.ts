@@ -1,5 +1,5 @@
 import { ApiResponse } from "@interfaces/response";
-import { Body, Controller, Get, HttpCode, HttpStatus, Post, Res } from "@nestjs/common";
+import { Body, Controller, Get, Headers, HttpCode, HttpStatus, Post, Res } from "@nestjs/common";
 import { AuthService } from "@services/auth.service";
 import { AuthDTO } from "src/DTO/auth/auth.dto";
 import { LoginDTO } from "src/DTO/auth/login.dto";
@@ -52,6 +52,27 @@ export class AuthController {
       error: false,
       timestamp: new Date().toISOString(),
       path: '/auth/register'
+    };
+
+    return resp.status(response.status).json(response);
+  }
+
+  @Get('validate')
+  async validate(
+    @Res() resp,
+    @Headers('Authorization') auth: string
+  ) {
+    const token = auth.split(' ')[1];
+
+    const result: boolean = await this.service.validate(token);
+
+    const response: ApiResponse = {
+      status: HttpStatus.OK,
+      data: result,
+      message: 'Valid token',
+      error: false,
+      timestamp: new Date().toISOString(),
+      path: '/auth/validate'
     };
 
     return resp.status(response.status).json(response);

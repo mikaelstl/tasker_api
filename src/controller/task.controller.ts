@@ -1,9 +1,12 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Query } from "@nestjs/common";
+import { ApiResponse } from "@interfaces/response";
+import { Body, Controller, Delete, Get, HttpStatus, Param, Post, Put, Query, Res, UseGuards } from "@nestjs/common";
 import { TasksRepository } from "@repositories/tasks.repository";
+import { JwtAuthGuard } from "@services/auth/auth.guard";
 import { TaskCreateDTO } from "src/DTO/task.create.dto";
 import { TaskListDTO } from "src/DTO/task.dto";
 
 @Controller('tasks')
+@UseGuards(JwtAuthGuard)
 export class TasksController {
   constructor (
     private readonly repository: TasksRepository
@@ -18,11 +21,22 @@ export class TasksController {
 
   @Get()
   async list(
-    @Query() queries: TaskListDTO
+    @Query() queries: TaskListDTO,
+    @Res() response
   ) {
     console.log(queries);
+    const result = await this.repository.list(queries);
+
+    const resp: ApiResponse = {
+      status: HttpStatus.OK,
+      data: result,
+      message: '',
+      error: false,
+      timestamp: new Date().toISOString(),
+      path: '/tasks'
+    };
     
-    return await this.repository.list(queries);
+    return response.status(resp.status).json(resp);
   }
 
   @Get('/:code')

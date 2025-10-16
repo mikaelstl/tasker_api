@@ -4,7 +4,7 @@ import { ProjectInvite } from "./project_invite.model";
 import { ProjectMember } from "./project_member.model";
 import { Task } from "./task.model";
 import { User } from "./user.model";
-import { Model, Column, DataType, ForeignKey, Table, HasMany } from "sequelize-typescript";
+import { Model, Column, DataType, ForeignKey, Table, HasMany, BelongsTo } from "sequelize-typescript";
 
 export enum ProjectProgress {
   PENDING = 'PENDING',
@@ -45,8 +45,11 @@ export class Project extends Model {
       key: 'username'
     }
   })
-  owner: User;
+  ownerkey: string;
 
+  @BelongsTo(() => User, 'ownerkey')
+  owner: User;
+  
   @Column({
     type: DataType.ENUM(...Object.values(ProjectProgress)),
     defaultValue: ProjectProgress.PENDING,

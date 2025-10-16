@@ -4,7 +4,9 @@ export type TaskListDTO = {
   code?: string;
   name?: string;
   project?: string;
-  owner?: string;
+  owner?: {
+    user: string
+  };
   stage?: TaskStage;
   priority?: TaskPriority;
   due_date?: Date;

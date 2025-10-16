@@ -5,6 +5,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { HttpExceptionFilter } from './utils/filters/exception.filter';
 import { ResponseInterceptor } from './utils/filters/response.filter';
 import { ValidationExceptionFilter } from '@filters/validation.filter';
+import { UniqueConstraintViolationFilter } from '@filters/uniqueViolation.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -20,7 +21,11 @@ async function bootstrap() {
     transform: true
   }));
   
-  app.useGlobalFilters(new HttpExceptionFilter(),new ValidationExceptionFilter());
+  app.useGlobalFilters(
+    new HttpExceptionFilter(),
+    new ValidationExceptionFilter(),
+    new UniqueConstraintViolationFilter(),
+  );
   
   // app.useGlobalInterceptors(new ResponseFilter());
   
