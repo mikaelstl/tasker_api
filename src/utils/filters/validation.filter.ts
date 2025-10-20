@@ -5,14 +5,14 @@ import { Request, Response } from 'express';
 @Catch(BadRequestException)
 export class ValidationExceptionFilter implements ExceptionFilter {
   catch(ex: BadRequestException, host: ArgumentsHost) {
-    new Logger('ValidationExceptionFilter').warn(ex)
-
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
     const exceptionResponse: any = ex.getResponse();
 
-    const errors: string[] = exceptionResponse.message;
+    new Logger('ValidationExceptionFilter').warn(exceptionResponse.message)
+
+    const errors: string[] = [exceptionResponse.message];
 
     const resp: ApiError = {
       status: 400,

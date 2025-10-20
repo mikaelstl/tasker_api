@@ -2,7 +2,7 @@ import { ApiResponse } from "@interfaces/response";
 import { Body, Controller, Delete, Get, Headers, HttpStatus, Param, Post, Query, Res, UseGuards } from "@nestjs/common";
 import { JwtAuthGuard } from "@services/auth/auth.guard";
 import { ProjectService } from "@services/project.service";
-import { CreateProjectDTO } from "src/DTO/project.create.dto";
+import { CreateProjectDTO } from "src/DTO/project/project.create.dto";
 import { ProjectRepository } from "src/repositories/projects.repository";
 
 @Controller('project')
@@ -52,12 +52,12 @@ export class ProjectController {
     return response.status(resp.status).json(resp);
   }
 
-  @Get()
+  @Get('/:id')
   async find(
-    @Query() query: any,
+    @Param('id') id: string,
     @Res() response,
   ) {
-    const result = await this.repository.find(query.id);
+    const result = await this.repository.find(id);
     
     const resp: ApiResponse = {
       status: HttpStatus.OK,
@@ -85,6 +85,25 @@ export class ProjectController {
       error: false,
       timestamp: new Date().toISOString(),
       path: '/project/del'
+    };
+
+    return response.status(resp.status).json(resp);
+  }
+
+  @Get('/:id/members')
+  async getMembers(
+    @Param('id') id: string,
+    @Res() response,
+  ) {
+    const result = await this.repository.find(id);
+    
+    const resp: ApiResponse = {
+      status: HttpStatus.OK,
+      data: result.members,
+      message: '',
+      error: false,
+      timestamp: new Date().toISOString(),
+      path: '/project/members'
     };
 
     return response.status(resp.status).json(resp);

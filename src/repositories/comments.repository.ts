@@ -1,6 +1,8 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "src/database/prisma.service";
 import { CheckpointCreateDTO } from "src/DTO/checkpoint/checkpoint.create.dto";
+import { CommentCreateDTO } from "src/DTO/comment/comment.create.dto";
+import { CommentDTO } from "src/DTO/comment/comment.dto";
 import { TaskQueryDTO } from "src/DTO/task/task.query.dto";
 
 @Injectable()
@@ -10,13 +12,14 @@ export class CheckpointsRepository {
     private readonly prisma: PrismaService
   ) {}
 
-  async create(data: CheckpointCreateDTO) {
+  async create(data: CommentCreateDTO): Promise<CommentDTO> {
     try {
-      const checkpoint = await this.prisma.checkpoint.create({
+      const checkpoint = await this.prisma.comment.create({
         data: {
-          title: data.title,
+          content: data.content,
           date: data.date,
-          projectkey: data.project
+          projectkey: data.projectkey,
+          ownerkey: data.ownerkey
         }
       });
 
@@ -26,16 +29,12 @@ export class CheckpointsRepository {
     }
   }
 
-  async list(queries: TaskQueryDTO) {
+  async list(projectkey: string): Promise<CommentDTO[]> {
     try {
-      const { ownerkey, ...filters } = queries;
-      const checkpoints = await this.prisma.checkpoint.findMany({
-        where: filters,
-        /* include: [
-          {
-            model: 
-          }
-        ] */
+      const checkpoints = await this.prisma.comment.findMany({
+        where: {
+          projectkey: projectkey
+        },
       });
 
       return checkpoints;
@@ -46,7 +45,7 @@ export class CheckpointsRepository {
 
   async find(id: string) {
     try {
-      const checkpoint = await this.prisma.checkpoint.findUnique({
+      const checkpoint = await this.prisma.comment.findUnique({
         where: {
           id: id
         }
@@ -62,9 +61,9 @@ export class CheckpointsRepository {
     }
   }
 
-  async edit(id: string, update: any): Promise<any> {
+  async edit(id: string, update: any): Promise<CommentDTO> {
     try {
-      const response = await this.prisma.checkpoint.update({
+      const response = await this.prisma.comment.update({
         data: update,
         where: {
           id: id
@@ -77,9 +76,9 @@ export class CheckpointsRepository {
     }
   }
 
-  async delete(key: string): Promise<any> {
+  async delete(key: string): Promise<CommentDTO> {
     try {
-      const result = await this.prisma.checkpoint.delete({
+      const result = await this.prisma.comment.delete({
         where: {
           id: key
         }

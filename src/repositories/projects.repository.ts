@@ -1,30 +1,26 @@
 import { ProjectNotExistsException } from "@exceptions/project_not_exists.exception";
-import { ApiResponse } from "@interfaces/response";
-import { Checkpoint } from "@models/checkpoint.model";
-import { Project } from "@models/project.model";
-import { ProjectMember } from "@models/project_member.model";
-import { Task } from "@models/task.model";
-import { User } from "@models/user.model";
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
-import { InjectModel } from "@nestjs/sequelize";
-import { CreateProjectDTO } from "src/DTO/project.create.dto";
+import { PrismaService } from "src/database/prisma.service";
+import { CreateProjectDTO } from "src/DTO/project/project.create.dto";
+import { ProjectDTO } from "src/DTO/project/project.dto";
 
 @Injectable()
 export class ProjectRepository {
   constructor (
-    @InjectModel(Project) private readonly Projects: typeof Project
+    // @InjectModel(Project) private readonly Projects: typeof Project
+    private readonly prisma: PrismaService
   ) {}
   
-  async create(data: CreateProjectDTO) {
+  async create(data: CreateProjectDTO): Promise<ProjectDTO> {
     try {
-      const result = await this.Projects.create(
-        {
+      const result = await this.prisma.project.create({
+        data: {
           title: data.title,
           description: data.description,
           ownerkey: data.ownerkey,
           due_date: data.due_date
         },
-      );
+      });
 
       return result;
     } catch (err) {
@@ -34,7 +30,7 @@ export class ProjectRepository {
 
   async list(user: string) {  
     try {
-      const projects = await this.Projects.findAll({
+      const projects = await this.prisma.project.findMany({
         where: {
           ownerkey: user
         }
@@ -47,22 +43,13 @@ export class ProjectRepository {
   
   async find(key: string) {
     try {
-      const projects = await this.Projects.findOne({
+      const projects = await this.prisma.project.findUnique({
         where: {
           id: key
         },
-        /* include: [
-          {
-            model: Task,
-            as: 'tasks'
-          },{
-            model: ProjectMember,
-            as: 'members'
-          },{
-            model: Checkpoint,
-            as: 'checkpoints'
-          },
-        ] */
+        include: {
+          members: true
+        }
       })
 
       if (!projects) {
@@ -79,7 +66,7 @@ export class ProjectRepository {
   
   async delete(id: string) {
     try {
-      const response = await this.Projects.destroy({
+      const response = await this.prisma.project.delete({
         where: {
           id: id
         }

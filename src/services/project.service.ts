@@ -2,7 +2,7 @@ import { MemberRole } from "@models/project_member.model";
 import { Injectable, Logger } from "@nestjs/common";
 import { ProjectMemberRepository } from "@repositories/project_member.repository";
 import { ProjectRepository } from "@repositories/projects.repository";
-import { CreateProjectDTO } from "src/DTO/project.create.dto";
+import { CreateProjectDTO } from "src/DTO/project/project.create.dto";
 
 @Injectable()
 export class ProjectService {
@@ -14,12 +14,10 @@ export class ProjectService {
   ) {}
 
   async create(data: CreateProjectDTO) {
-    this.projectRepository.create(data).then(
+    return this.projectRepository.create(data).then(
       async (result) => {
         const { id, ownerkey } = result;
-        
-        this.logger.log('OWNER is:', result.ownerkey);
-
+      
         const member = await this.projectMemberRepository.create({
           user: ownerkey,
           project: id,

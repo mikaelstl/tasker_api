@@ -1,9 +1,9 @@
 import { Body, Controller, Delete, Get, Param, Post, Put, Query } from "@nestjs/common";
 import { CheckpointsRepository } from "@repositories/checkpoints.repository";
 import { TasksRepository } from "@repositories/tasks.repository";
-import { CheckpointCreateDTO } from "src/DTO/checkpoint.create.dto";
-import { TaskCreateDTO } from "src/DTO/task.create.dto";
-import { TaskListDTO } from "src/DTO/task.dto";
+import { CheckpointCreateDTO } from "src/DTO/checkpoint/checkpoint.create.dto";
+import { TaskCreateDTO } from "src/DTO/task/task.create.dto";
+import { TaskQueryDTO } from "src/DTO/task/task.query.dto";
 
 @Controller('checkpoints')
 export class CheckpointsController {
@@ -20,7 +20,7 @@ export class CheckpointsController {
 
   @Get()
   async list(
-    @Query() queries: TaskListDTO
+    @Query() queries: TaskQueryDTO
   ) {
     console.log(queries);
     

@@ -6,10 +6,12 @@ import { DatabaseModule } from '@config/database/database.module';
 import { RelationModule } from './relation.module';
 import { ProjectsModule } from './projects.module';
 import { AuthModule } from '@services/auth/auth.module';
+import { PrismaModule } from 'src/database/prisma.module';
 
 @Module({
   imports: [
-    DatabaseModule,
+    // DatabaseModule,
+    PrismaModule,
     AuthModule,
     UserModule,
     RelationModule,

@@ -2,54 +2,51 @@ import { BadRequestException, Injectable, Logger } from "@nestjs/common";
 import { UserDTO } from "src/DTO/user/user.dto";
 import { AlreadyExistsException } from "@exceptions/user_exists.error";
 import { UserNotExistsException } from "@exceptions/user_not_exists.exception";
-import { User } from "@models/user.model";
-import { InjectModel } from "@nestjs/sequelize";
-import { Invite } from "@models/invite.model";
-import { Project } from "@models/project.model";
-import { Task } from "@models/task.model";
 import { CreateUserDTO } from "src/DTO/user/create.dto";
-import { DatabaseError, UniqueConstraintError } from "sequelize";
+import { PrismaService } from "src/database/prisma.service";
 
 @Injectable()
 export class UserRepository {
   private logger: Logger = new Logger('UserRepository');
 
   constructor(
-    @InjectModel(User) private readonly Users: typeof User
+    // @InjectModel(User) private readonly Users: typeof User
+    private readonly prisma: PrismaService
   ) {}
 
   async userExists(username: string) {
-    const exists = await this.Users.findByPk(username);
+    const exists = await this.prisma.user.findUnique({
+      where: {
+        username: username
+      }
+    });
 
     if (exists) {
-      throw new AlreadyExistsException('USER WITH THIS USERNAME ALREADY EXISTS')
+      throw new AlreadyExistsException('User with this username already exists.')
     }
   }
 
   async create(data: CreateUserDTO): Promise<UserDTO> {
     await this.userExists(data.username);
     try {
-      const result = await this.Users.create(
-        {
+      const result = await this.prisma.user.create({
+        data: {
           name: data.name,
           username: data.username,
           password: data.password,
           email: data.email
         }
-      )
+      });
   
       return result;
     } catch (err) {
-      if (err as UniqueConstraintError) {
-        throw err;
-      }
       throw new BadRequestException(err);
     }
   }
 
-  async list() {
+  async list(): Promise<UserDTO[]> {
     try {
-      const response = await this.Users.findAll();
+      const response = await this.prisma.user.findMany();
 
       return response;
     } catch (err) {
@@ -58,7 +55,7 @@ export class UserRepository {
   }
 
   async find(key: string): Promise<UserDTO> {
-    const user = await this.Users.findOne({
+    const user = await this.prisma.user.findUnique({
       where: {
         username: key
       },
@@ -92,17 +89,14 @@ export class UserRepository {
     return user;
   }
 
-  async edit(username: string, update: any): Promise<any> {
+  async edit(username: string, update: any): Promise<UserDTO> {
     try {
-      const result = await this.Users.update(
-        update,
-        {
-          where: {
-            username: username
-          },
-          returning: true
-        },
-      );
+      const result = await this.prisma.user.update({
+        data: update,
+        where: {
+          username: username
+        }
+      });
       
       return result;
     } catch (err) {
@@ -110,7 +104,17 @@ export class UserRepository {
     }
   }
 
-  async delete(key: string): Promise<any> {
-    return 'to-do';
+  async delete(key: string): Promise<UserDTO> {
+    try {
+      const result = await this.prisma.user.delete({
+        where: {
+          username: key
+        }
+      });
+      
+      return result;
+    } catch (err) {
+      throw new BadRequestException(err);
+    }
   }
 }

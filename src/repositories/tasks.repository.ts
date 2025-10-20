@@ -1,44 +1,57 @@
-import { ApiResponse } from "@interfaces/response";
-import { Task } from "@models/task.model";
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
-import { InjectModel } from "@nestjs/sequelize";
-import { TaskCreateDTO } from "src/DTO/task.create.dto";
-import { TaskListDTO } from "src/DTO/task.dto";
+import { customAlphabet } from "nanoid";
+import { PrismaService } from "src/database/prisma.service";
+import { TaskCreateDTO } from "src/DTO/task/task.create.dto";
+import { TaskDTO } from "src/DTO/task/task.dto";
+import { TaskQueryDTO } from "src/DTO/task/task.query.dto";
 
 @Injectable()
 export class TasksRepository {
+  private nanoid = customAlphabet(
+    'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', 6
+  );
+
   constructor (
-    @InjectModel(Task) private readonly Tasks: typeof Task
+    // @InjectModel(Task) private readonly Tasks: typeof Task
+    private readonly prisma: PrismaService
   ) {}
 
-  async create(data: TaskCreateDTO) {
+  private generateCode(): string {
+    const prefix =  'TSK-';
+    const code = this.nanoid();
+
+    return prefix.concat(code);
+  }
+
+  async create(data: TaskCreateDTO): Promise<TaskDTO> {
     try {
-      const task = await this.Tasks.create(
-        {
-          code: data.code,
+      const task = await this.prisma.task.create({
+        data: {
+          code: this.generateCode(),
           name: data.name,
           description: data.description,
-          project: data.project,
-          owner: data.owner,
+          projectkey: data.project,
+          ownerkey: data.owner,
           priority: data.priority,
           due_date: data.due_date
         }
-      );
+      });
 
-      return {
-        data: task,
-        error: false,
-        message: `NEW TASK CREATED TO PROJECT`
-      } as ApiResponse;
+      return task;
     } catch (err) {
       throw new BadRequestException(err);
     }
   }
 
-  async list(queries: TaskListDTO) {
+  async list(queries: TaskQueryDTO): Promise<TaskDTO[]> {
+    const { ownerkey, ...filters } = queries;
+
     try {
-      const tasks = await this.Tasks.findAll({
-        where: queries
+      const tasks = await this.prisma.task.findMany({
+        where: filters,
+        include: {
+          owner: true
+        }
       });
 
       return tasks;
@@ -47,11 +60,14 @@ export class TasksRepository {
     }
   }
 
-  async find(code: string) {
+  async find(code: string): Promise<TaskDTO> {
     try {
-      const task = await this.Tasks.findOne({
+      const task = await this.prisma.task.findUnique({
         where: {
           code: code
+        },
+        include: {
+          owner: true
         }
       });
 
@@ -65,31 +81,24 @@ export class TasksRepository {
     }
   }
 
-  async edit(code: string, update: any): Promise<any> {
+  async edit(code: string, update: any): Promise<TaskDTO> {
     try {
-      const response = await this.Tasks.update(
-        update,
-        {
-          where: {
-            code: code
-          },
-          returning: true
+      const response = await this.prisma.task.update({
+        data: update,
+        where: {
+          code: code
         },
-      );
+      });
       
-      return {
-        data: response,
-        error: false,
-        message: "CHANGED"
-      } as ApiResponse;
+      return response;
     } catch (err) {
       throw new BadRequestException(err);
     }
   }
 
-  async delete(key: string): Promise<any> {
+  async delete(key: string): Promise<TaskDTO> {
     try {
-      const result = await this.Tasks.destroy({
+      const result = await this.prisma.task.delete({
         where: {
           id: key
         }
@@ -99,11 +108,7 @@ export class TasksRepository {
         throw new NotFoundException();
       }
 
-      return {
-        data: result,
-        error: false,
-        message: 'REMOVED'
-      } as ApiResponse;
+      return result;
     } catch (err) {
       throw new BadRequestException(err);
     }

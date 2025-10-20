@@ -2,8 +2,8 @@ import { ApiResponse } from "@interfaces/response";
 import { Body, Controller, Delete, Get, HttpStatus, Param, Post, Put, Query, Res, UseGuards } from "@nestjs/common";
 import { TasksRepository } from "@repositories/tasks.repository";
 import { JwtAuthGuard } from "@services/auth/auth.guard";
-import { TaskCreateDTO } from "src/DTO/task.create.dto";
-import { TaskListDTO } from "src/DTO/task.dto";
+import { TaskCreateDTO } from "src/DTO/task/task.create.dto";
+import { TaskQueryDTO } from "src/DTO/task/task.query.dto";
 
 @Controller('tasks')
 @UseGuards(JwtAuthGuard)
@@ -14,14 +14,26 @@ export class TasksController {
 
   @Post()
   async create(
-    @Body()  data: TaskCreateDTO
+    @Body()  data: TaskCreateDTO,
+    @Res() response
   ) {
-    return await this.repository.create(data);
+    const result = await this.repository.create(data); 
+    
+    const resp: ApiResponse = {
+      status: HttpStatus.CREATED,
+      data: result,
+      message: 'New task added to project',
+      error: false,
+      timestamp: new Date().toISOString(),
+      path: '/tasks'
+    };
+
+    return response.status(resp.status).json(resp);
   }
 
   @Get()
   async list(
-    @Query() queries: TaskListDTO,
+    @Query() queries: TaskQueryDTO,
     @Res() response
   ) {
     console.log(queries);

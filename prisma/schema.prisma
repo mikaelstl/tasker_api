@@ -1,0 +1,140 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DB_URL")
+}
+
+model User {
+  id         String  @default(uuid())
+  username   String  @id @unique
+  name       String
+  password   String
+  email      String  @unique
+  enterprise Boolean @default(false)
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  projects   Project[]
+  member_in  ProjectMember[]
+  comments   Comment[]
+
+  @@map("Users")
+}
+
+model Project {
+  id          String          @id @default(uuid())
+  title       String
+  description String
+  due_date    DateTime
+
+  progress    ProjectProgress @default(STARTED)
+
+  ownerkey    String
+  owner       User            @relation(fields: [ownerkey], references: [username])
+
+  members     ProjectMember[]
+  comments    Comment[]
+  tasks       Task[]
+  events      Checkpoint[]
+
+  @@map("Projects")
+}
+
+model ProjectMember {
+  id String @id @default(uuid())
+
+  role MemberRole @default(MEMBER)
+
+  projectkey String
+  project Project @relation(fields: [projectkey], references: [id])
+
+  userkey String
+  user User @relation(fields: [userkey], references: [username])
+
+  tasks   Task[]
+
+  @@map("ProjectMembers")
+}
+
+model Task {
+  id          String        @unique @default(uuid())
+  code        String        @id @unique
+  name        String
+  description String
+  due_date    DateTime
+
+  stage       TaskStage     @default(PENDING)
+  priority    TaskPriority
+  
+  projectkey  String
+  project     Project       @relation(fields: [projectkey], references: [id])
+
+  ownerkey    String
+  owner       ProjectMember @relation(fields: [ownerkey], references: [id])
+
+  @@map("Tasks")
+}
+
+model Comment {
+  id          String    @id @default(uuid())
+  content     String
+  date     DateTime  @default(now())
+
+  ownerkey    String
+  owner       User      @relation(fields: [ownerkey], references: [username])
+
+  projectkey  String
+  project     Project   @relation(fields: [projectkey], references: [id])
+ 
+  @@map("Comments")
+}
+
+model Checkpoint {
+  id          String        @unique @default(uuid())
+  title       String
+  date        DateTime
+
+  projectkey  String
+  project     Project       @relation(fields: [projectkey], references: [id])
+
+  @@map("Checkpoints")
+}
+
+enum ProjectProgress {
+  STARTED
+  PENDING
+  IN_PROGRESS
+  PAUSED
+  COMPLETED
+}
+
+enum MemberRole {
+  OWNER
+  MEMBER
+}
+
+enum TaskStage {
+  STARTED
+  PENDING
+  IN_PROGRESS
+  REVIEW
+  DONE
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  EXTREME
+}
