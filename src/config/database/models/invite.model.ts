@@ -1,4 +1,4 @@
-import { Model, Column, DataType, ForeignKey, Table } from "sequelize-typescript";
+/* import { Model, Column, DataType, ForeignKey, Table } from "sequelize-typescript";
 import { User } from "./user.model";
 
 @Table
@@ -42,4 +42,4 @@ export class Invite extends Model {
     unique: true
   })
   receiver: User;
-}
+} */

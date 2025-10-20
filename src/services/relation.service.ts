@@ -1,26 +1,20 @@
 import { ApiResponse } from "@interfaces/response";
 import { Injectable, NotFoundException } from "@nestjs/common";
-import { InvitesRepository, SendInvitesDTO } from "@repositories/invites.repository";
-import { RelationRepository } from "@repositories/relation.repository";
+import { ProjectInvitesRepository, SendInvitesDTO } from "@repositories/project_invites.repository";
+import { ProjectRepository } from "@repositories/projects.repository";
+import { ProjectService } from "./project.service";
 
 @Injectable()
-export class RelationService {
+export class ProjectInvitesService {
   constructor(
-    private readonly relationRepository: RelationRepository,
-    private readonly inviteRepository: InvitesRepository,
+    private readonly inviteRepository: ProjectInvitesRepository,
+    private readonly projectService: ProjectService
   ){}
 
   async send(data: SendInvitesDTO) {
-    const request = await this.inviteRepository.create({
-      receiver: data.receiver,
-      sender: data.sender
-    });
+    const request = await this.inviteRepository.create(data);
 
-    return {
-      obj: request,
-      error: false,
-      message: `SEND BY ${data.sender} TO ${data.receiver}`
-    }
+    return request;
   }
 
   async list(username: string) {
@@ -30,22 +24,20 @@ export class RelationService {
   }
 
   async accept(id: string) {
-    const result = (await this.inviteRepository.edit(id, { pending: false }));
+    const result = await this.inviteRepository.edit(id, { pending: false });
 
-    if (result.data[0] === 0) {
-      throw new NotFoundException("INVITE NOT FOUND");
-    } else {
-      const invite = result.data[1][0];
-      const relation = await this.relationRepository.create({
-        user: invite.sender,
-        related: invite.receiver
-      });
-      return {
-        data: relation,
-        error: false,
-        message: `RELATION BETWEEN ${relation.user} AND ${relation.related} MADE`
-      } as ApiResponse;
+    if (!result) {
+      throw new NotFoundException("Invite not found");
     }
+
+    const { receiverkey, projectkey } = result;
+
+    this.projectService.addMember({
+      project: projectkey,
+      user: receiverkey
+    });
+
+    return 'Success adding member to project.';
   }
 
   async del(id: string) {

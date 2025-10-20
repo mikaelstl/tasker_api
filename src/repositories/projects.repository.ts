@@ -33,6 +33,9 @@ export class ProjectRepository {
       const projects = await this.prisma.project.findMany({
         where: {
           ownerkey: user
+        },
+        include: {
+          members: true
         }
       });
       return projects;

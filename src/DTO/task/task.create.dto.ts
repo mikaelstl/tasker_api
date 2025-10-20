@@ -1,10 +1,10 @@
-import { TaskPriority, TaskStage } from "@models/task.model";
+import { $Enums } from "generated/prisma";
 
 export interface TaskCreateDTO {
   readonly name: string;
   readonly description: string;
   readonly project: string;
   readonly owner: string;
-  readonly priority: TaskPriority;
+  readonly priority: $Enums.TaskPriority;
   readonly due_date: string;
 }

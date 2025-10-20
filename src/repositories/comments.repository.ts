@@ -1,9 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "src/database/prisma.service";
-import { CheckpointCreateDTO } from "src/DTO/checkpoint/checkpoint.create.dto";
 import { CommentCreateDTO } from "src/DTO/comment/comment.create.dto";
 import { CommentDTO } from "src/DTO/comment/comment.dto";
-import { TaskQueryDTO } from "src/DTO/task/task.query.dto";
 
 @Injectable()
 export class CheckpointsRepository {

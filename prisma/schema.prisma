@@ -15,19 +15,21 @@ datasource db {
 }
 
 model User {
-  id         String  @default(uuid())
-  username   String  @id @unique
-  name       String
-  password   String
-  email      String  @unique
-  enterprise Boolean @default(false)
+  id                 String           @default(uuid())
+  username           String           @id @unique
+  name               String         
+  password           String         
+  email              String           @unique
+  enterprise         Boolean          @default(false)
+      
+  projects           Project[]
+  member_in          ProjectMember[]
+  comments           Comment[]
+  sent_invites       ProjectInvite[]  @relation("sent_invites")
+  received_invites   ProjectInvite[]  @relation("received_invites")
 
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
-
-  projects   Project[]
-  member_in  ProjectMember[]
-  comments   Comment[]
+  created_at         DateTime         @default(now())
+  updated_at         DateTime         @updatedAt
 
   @@map("Users")
 }
@@ -47,6 +49,10 @@ model Project {
   comments    Comment[]
   tasks       Task[]
   events      Checkpoint[]
+  invites     ProjectInvite[]
+
+  created_at         DateTime         @default(now())
+  updated_at         DateTime         @updatedAt
 
   @@map("Projects")
 }
@@ -63,6 +69,9 @@ model ProjectMember {
   user User @relation(fields: [userkey], references: [username])
 
   tasks   Task[]
+
+  created_at         DateTime         @default(now())
+  updated_at         DateTime         @updatedAt
 
   @@map("ProjectMembers")
 }
@@ -83,6 +92,9 @@ model Task {
   ownerkey    String
   owner       ProjectMember @relation(fields: [ownerkey], references: [id])
 
+  created_at         DateTime         @default(now())
+  updated_at         DateTime         @updatedAt
+
   @@map("Tasks")
 }
 
@@ -96,6 +108,9 @@ model Comment {
 
   projectkey  String
   project     Project   @relation(fields: [projectkey], references: [id])
+
+  created_at         DateTime         @default(now())
+  updated_at         DateTime         @updatedAt
  
   @@map("Comments")
 }
@@ -108,7 +123,29 @@ model Checkpoint {
   projectkey  String
   project     Project       @relation(fields: [projectkey], references: [id])
 
+  created_at         DateTime         @default(now())
+  updated_at         DateTime         @updatedAt
+
   @@map("Checkpoints")
+}
+
+model ProjectInvite {
+  id          String      @id @default(uuid())
+  pending     Boolean     @default(true)
+  
+  projectkey  String
+  project     Project     @relation(fields: [projectkey], references: [id])
+  
+  senderkey   String
+  sender      User        @relation("sent_invites",fields: [senderkey], references: [username])
+  
+  receiverkey String
+  receiver    User        @relation("received_invites", fields: [receiverkey], references: [username])
+
+  created_at         DateTime         @default(now())
+  updated_at         DateTime         @updatedAt
+
+  @@map("ProjectInvites")
 }
 
 enum ProjectProgress {

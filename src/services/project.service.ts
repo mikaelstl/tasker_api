@@ -1,7 +1,8 @@
-import { MemberRole } from "@models/project_member.model";
 import { Injectable, Logger } from "@nestjs/common";
 import { ProjectMemberRepository } from "@repositories/project_member.repository";
 import { ProjectRepository } from "@repositories/projects.repository";
+import { $Enums } from "generated/prisma";
+import { DefineProjectMember } from "src/DTO/member/member.create.dto";
 import { CreateProjectDTO } from "src/DTO/project/project.create.dto";
 
 @Injectable()
@@ -21,11 +22,17 @@ export class ProjectService {
         const member = await this.projectMemberRepository.create({
           user: ownerkey,
           project: id,
-          role: MemberRole.OWNER
+          role: $Enums.MemberRole.OWNER
         });
 
         return member;
       }
     );
+  }
+
+  async addMember(data: DefineProjectMember) {
+    const member = await this.projectMemberRepository.create(data);
+
+    return member;
   }
 }

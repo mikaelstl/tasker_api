@@ -1,26 +1,24 @@
 import { ApiResponse } from "@interfaces/response";
-import { MemberRole, ProjectMember } from "@models/project_member.model";
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
-import { InjectModel } from "@nestjs/sequelize";
-
-export type DefineProjectMember = {
-  user: string,
-  project: string,
-  role?: MemberRole
-}
+import { $Enums } from "generated/prisma";
+import { PrismaService } from "src/database/prisma.service";
+import { DefineProjectMember } from "src/DTO/member/member.create.dto";
 
 @Injectable()
 export class ProjectMemberRepository {
   constructor(
-    @InjectModel(ProjectMember) private readonly ProjectMembers: typeof ProjectMember
-  ) {}
+    // @InjectModel(ProjectMember) private readonly ProjectMembers: typeof ProjectMember
+    private readonly prisma: PrismaService
+  ) { }
 
   async create(data: DefineProjectMember) {
     try {
-      const result = await this.ProjectMembers.create({
-        user: data.user,
-        project: data.project,
-        role: data.role
+      const result = await this.prisma.projectMember.create({
+        data: {
+          userkey: data.user,
+          projectkey: data.project,
+          role: data.role
+        }
       });
 
       return result;
@@ -31,7 +29,7 @@ export class ProjectMemberRepository {
 
   async delete(id: string) {
     try {
-      const result = await this.ProjectMembers.destroy({
+      const result = await this.prisma.projectMember.delete({
         where: {
           id: id
         }
@@ -41,11 +39,7 @@ export class ProjectMemberRepository {
         throw new NotFoundException();
       }
 
-      return {
-        data: result,
-        error: false,
-        message: 'REMOVED WITH SUCCESS'
-      } as ApiResponse;
+      return result;
     } catch (err) {
       throw new BadRequestException(err);
     }

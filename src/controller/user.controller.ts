@@ -1,6 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, UseGuards, UseInterceptors } from "@nestjs/common";
 import { AuthGuard } from "@nestjs/passport";
-import { RelationService } from "@services/relation.service";
 import { CreateUserDTO } from "src/DTO/user/create.dto";
 import { UserDTO } from "src/DTO/user/user.dto";
 import { UserRepository } from "src/repositories/user.repository";
@@ -12,11 +11,9 @@ import { JwtAuthGuard } from "src/services/auth/auth.guard";
 export class UserController {
   constructor(
     private readonly userRepository: UserRepository,
-    private readonly relationService: RelationService,
   ) {}
 
   @Get()
-  // @UseGuards(JwtAuthGuard)
   async list() {
     return await this.userRepository.list();
   }
