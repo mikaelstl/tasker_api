@@ -5,10 +5,12 @@ import { UserModule } from './user.module';
 import { ProjectsModule } from './projects.module';
 import { AuthModule } from '@services/auth/auth.module';
 import { PrismaModule } from 'src/database/prisma.module';
+import { UploadModule } from './upload.module';
 
 @Module({
   imports: [
     PrismaModule,
+    UploadModule,
     AuthModule,
     UserModule,
     ProjectsModule,

@@ -20,6 +20,7 @@ model User {
   name               String         
   password           String         
   email              String           @unique
+  photo              String?
   enterprise         Boolean          @default(false)
       
   projects           Project[]
