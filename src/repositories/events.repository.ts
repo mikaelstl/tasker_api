@@ -1,18 +1,20 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "src/database/prisma.service";
-import { CheckpointCreateDTO } from "src/DTO/checkpoint/checkpoint.create.dto";
+import { EventCreateDTO } from "src/DTO/events/event.create.dto";
+import { EventDTO } from "src/DTO/events/event.dto";
+import { EventQueryDTO } from "src/DTO/events/event.query.dto";
 import { TaskQueryDTO } from "src/DTO/task/task.query.dto";
 
 @Injectable()
-export class CheckpointsRepository {
+export class EventsRepository {
   constructor (
     // @InjectModel(Checkpoint) private readonly Checkpoints: typeof Checkpoint
     private readonly prisma: PrismaService
   ) {}
 
-  async create(data: CheckpointCreateDTO) {
+  async create(data: EventCreateDTO): Promise<EventDTO> {
     try {
-      const checkpoint = await this.prisma.checkpoint.create({
+      const event = await this.prisma.event.create({
         data: {
           title: data.title,
           date: data.date,
@@ -20,17 +22,16 @@ export class CheckpointsRepository {
         }
       });
 
-      return checkpoint;
+      return event;
     } catch (err) {
       throw new BadRequestException(err);
     }
   }
 
-  async list(queries: TaskQueryDTO) {
+  async list(queries: EventQueryDTO): Promise<EventDTO[]> {
     try {
-      const { ownerkey, ...filters } = queries;
-      const checkpoints = await this.prisma.checkpoint.findMany({
-        where: filters,
+      const events = await this.prisma.event.findMany({
+        where: queries,
         /* include: [
           {
             model: 
@@ -38,7 +39,7 @@ export class CheckpointsRepository {
         ] */
       });
 
-      return checkpoints;
+      return events;
     } catch (err) {
       throw new BadRequestException(err);
     }
@@ -46,17 +47,17 @@ export class CheckpointsRepository {
 
   async find(id: string) {
     try {
-      const checkpoint = await this.prisma.checkpoint.findUnique({
+      const event = await this.prisma.event.findUnique({
         where: {
           id: id
         }
       });
 
-      if (!checkpoint) {
+      if (!event) {
         throw new NotFoundException();
       }
 
-      return checkpoint;
+      return event;
     } catch (err) {
       throw new BadRequestException(err);
     }
@@ -64,7 +65,7 @@ export class CheckpointsRepository {
 
   async edit(id: string, update: any): Promise<any> {
     try {
-      const response = await this.prisma.checkpoint.update({
+      const response = await this.prisma.event.update({
         data: update,
         where: {
           id: id
@@ -79,7 +80,7 @@ export class CheckpointsRepository {
 
   async delete(key: string): Promise<any> {
     try {
-      const result = await this.prisma.checkpoint.delete({
+      const result = await this.prisma.event.delete({
         where: {
           id: key
         }

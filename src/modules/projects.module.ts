@@ -1,9 +1,9 @@
 import { Module } from "@nestjs/common";
-import { CheckpointsRepository } from "@repositories/checkpoints.repository";
+import { EventsRepository } from "@repositories/events.repository";
 import { ProjectMemberRepository } from "@repositories/project_member.repository";
 import { TasksRepository } from "@repositories/tasks.repository";
 import { ProjectService } from "@services/project.service";
-import { CheckpointsController } from "src/controller/checkpoint.controller";
+import { EventsController } from "src/controller/events.controller";
 import { ProjectController } from "src/controller/project.controller";
 import { TasksController } from "src/controller/task.controller";
 import { ProjectRepository } from "src/repositories/projects.repository";
@@ -12,12 +12,12 @@ import { ProjectRepository } from "src/repositories/projects.repository";
   controllers: [
     ProjectController,
     TasksController,
-    CheckpointsController
+    EventsController
   ],
   providers: [
     ProjectRepository,
     TasksRepository,
-    CheckpointsRepository,
+    EventsRepository,
     ProjectMemberRepository,
     ProjectService
   ]

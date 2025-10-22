@@ -4,6 +4,7 @@ export interface TaskDTO {
   readonly id: string;
   readonly code: string;
   readonly name: string;
+  readonly description: string;
   readonly projectkey: string;
   readonly ownerkey: string;
   readonly stage: $Enums.TaskStage;

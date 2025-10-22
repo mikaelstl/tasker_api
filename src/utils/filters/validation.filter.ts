@@ -12,6 +12,9 @@ export class ValidationExceptionFilter implements ExceptionFilter {
 
     new Logger('ValidationExceptionFilter').warn(exceptionResponse.message)
 
+    console.log(exceptionResponse);
+    
+
     const errors: string[] = [exceptionResponse.message];
 
     const resp: ApiError = {

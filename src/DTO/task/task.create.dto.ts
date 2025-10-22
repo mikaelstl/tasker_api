@@ -6,5 +6,5 @@ export interface TaskCreateDTO {
   readonly project: string;
   readonly owner: string;
   readonly priority: $Enums.TaskPriority;
-  readonly due_date: string;
+  readonly due_date: Date;
 }

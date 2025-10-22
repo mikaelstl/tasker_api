@@ -49,7 +49,7 @@ model Project {
   members     ProjectMember[]
   comments    Comment[]
   tasks       Task[]
-  events      Checkpoint[]
+  events      Event[]
   invites     ProjectInvite[]
 
   created_at         DateTime         @default(now())
@@ -116,7 +116,7 @@ model Comment {
   @@map("Comments")
 }
 
-model Checkpoint {
+model Event {
   id          String        @unique @default(uuid())
   title       String
   date        DateTime
@@ -127,7 +127,7 @@ model Checkpoint {
   created_at         DateTime         @default(now())
   updated_at         DateTime         @updatedAt
 
-  @@map("Checkpoints")
+  @@map("Events")
 }
 
 model ProjectInvite {

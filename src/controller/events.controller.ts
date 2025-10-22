@@ -1,20 +1,20 @@
 import { ApiResponse } from "@interfaces/response";
 import { Body, Controller, Delete, Get, HttpStatus, Param, Post, Put, Query, Res, UseGuards } from "@nestjs/common";
-import { TasksRepository } from "@repositories/tasks.repository";
+import { EventsRepository } from "@repositories/events.repository";
 import { JwtAuthGuard } from "@services/auth/auth.guard";
-import { TaskCreateDTO } from "src/DTO/task/task.create.dto";
-import { TaskQueryDTO } from "src/DTO/task/task.query.dto";
+import { EventCreateDTO } from "src/DTO/events/event.create.dto";
+import { EventQueryDTO } from "src/DTO/events/event.query.dto";
 
-@Controller('tasks')
+@Controller('events')
 @UseGuards(JwtAuthGuard)
-export class TasksController {
+export class EventsController {
   constructor (
-    private readonly repository: TasksRepository
+    private readonly repository: EventsRepository
   ) {}
 
   @Post()
   async create(
-    @Body()  data: TaskCreateDTO,
+    @Body()  data: EventCreateDTO,
     @Res() response
   ) {
     const result = await this.repository.create(data); 
@@ -25,7 +25,7 @@ export class TasksController {
       message: 'New task added to project',
       error: false,
       timestamp: new Date().toISOString(),
-      path: '/tasks'
+      path: '/events'
     };
 
     return response.status(resp.status).json(resp);
@@ -33,7 +33,7 @@ export class TasksController {
 
   @Get()
   async list(
-    @Query() queries: TaskQueryDTO,
+    @Query() queries: EventQueryDTO,
     @Res() response
   ) {
     const result = await this.repository.list(queries);
@@ -44,7 +44,7 @@ export class TasksController {
       message: '',
       error: false,
       timestamp: new Date().toISOString(),
-      path: '/tasks'
+      path: '/events'
     };
     
     return response.status(resp.status).json(resp);
