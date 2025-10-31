@@ -20,11 +20,11 @@ model User {
   name               String         
   password           String         
   email              String           @unique
-  photo              String?
   enterprise         Boolean          @default(false)
       
+  photo              Image?
   projects           Project[]
-  member_in          ProjectMember[]
+  member_in          Member[]
   comments           Comment[]
   sent_invites       ProjectInvite[]  @relation("sent_invites")
   received_invites   ProjectInvite[]  @relation("received_invites")
@@ -33,6 +33,20 @@ model User {
   updated_at         DateTime         @updatedAt
 
   @@map("Users")
+}
+
+model Image {
+  id             String      @id @default(uuid())
+  filename       String
+  url            String
+    
+  userkey        String      @unique
+  user           User        @relation(fields: [userkey], references: [username])
+
+  created_at     DateTime    @default(now())
+  updated_at     DateTime    @updatedAt
+
+  @@map("Images")
 }
 
 model Project {
@@ -46,7 +60,7 @@ model Project {
   ownerkey    String
   owner       User            @relation(fields: [ownerkey], references: [username])
 
-  members     ProjectMember[]
+  members     Member[]
   comments    Comment[]
   tasks       Task[]
   events      Event[]
@@ -58,7 +72,7 @@ model Project {
   @@map("Projects")
 }
 
-model ProjectMember {
+model Member {
   id String @id @default(uuid())
 
   role MemberRole @default(MEMBER)
@@ -74,7 +88,7 @@ model ProjectMember {
   created_at         DateTime         @default(now())
   updated_at         DateTime         @updatedAt
 
-  @@map("ProjectMembers")
+  @@map("Members")
 }
 
 model Task {
@@ -91,7 +105,7 @@ model Task {
   project     Project       @relation(fields: [projectkey], references: [id])
 
   ownerkey    String
-  owner       ProjectMember @relation(fields: [ownerkey], references: [id])
+  owner       Member @relation(fields: [ownerkey], references: [id])
 
   created_at         DateTime         @default(now())
   updated_at         DateTime         @updatedAt
@@ -133,6 +147,7 @@ model Event {
 model ProjectInvite {
   id          String      @id @default(uuid())
   pending     Boolean     @default(true)
+  accept      Boolean     @default(true)
   
   projectkey  String
   project     Project     @relation(fields: [projectkey], references: [id])

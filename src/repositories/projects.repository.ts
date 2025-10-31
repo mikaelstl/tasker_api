@@ -1,8 +1,9 @@
 import { ProjectNotExistsException } from "@exceptions/project_not_exists.exception";
-import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, HttpException, HttpStatus, Injectable, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "src/database/prisma.service";
 import { CreateProjectDTO } from "src/DTO/project/project.create.dto";
 import { ProjectDTO } from "src/DTO/project/project.dto";
+import { ProjectQueryDTO } from "src/DTO/project/project.query.dto";
 
 @Injectable()
 export class ProjectRepository {
@@ -23,24 +24,19 @@ export class ProjectRepository {
       });
 
       return result;
-    } catch (err) {
-      throw new BadRequestException(err);
+    } catch (err: any) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   };
 
-  async list(user: string) {  
+  async list(queries: ProjectQueryDTO) {  
     try {
       const projects = await this.prisma.project.findMany({
-        where: {
-          ownerkey: user
-        },
-        include: {
-          members: true
-        }
+        where: queries,
       });
       return projects;
-    } catch (err) {
-      throw new BadRequestException(err);
+    } catch (err: any) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   };
   
@@ -60,8 +56,8 @@ export class ProjectRepository {
       }
 
       return projects;
-    } catch (err) {
-      throw new BadRequestException(err);
+    } catch (err: any) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   };
 
@@ -80,8 +76,8 @@ export class ProjectRepository {
       }
 
       return response;
-    } catch (err) {
-      throw new BadRequestException(err);
+    } catch (err: any) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   };
 }

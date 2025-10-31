@@ -1,5 +1,5 @@
 import { AlreadyExistsException } from "@exceptions/user_exists.error";
-import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, HttpException, HttpStatus, Injectable, NotFoundException } from "@nestjs/common";
 import { ApiResponse } from "@interfaces/response";
 import { PrismaService } from "src/database/prisma.service";
 
@@ -29,8 +29,8 @@ export class ProjectInvitesRepository {
       if (exists) {
         throw new AlreadyExistsException('Invite already exists');
       }
-    } catch (err) {
-      throw new BadRequestException(err);
+    } catch (err: any) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -46,8 +46,8 @@ export class ProjectInvitesRepository {
       });
 
       return result;
-    } catch (err) {
-      throw new BadRequestException(err);
+    } catch (err: any) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -72,8 +72,8 @@ export class ProjectInvitesRepository {
       }
 
       return response;
-    } catch (err) {
-      throw new BadRequestException(err);
+    } catch (err: any) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -87,8 +87,8 @@ export class ProjectInvitesRepository {
       });
 
       return response;
-    } catch (err) {
-      throw new BadRequestException(err);
+    } catch (err: any) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -105,8 +105,8 @@ export class ProjectInvitesRepository {
       }
 
       return response;
-    } catch (err) {
-      throw new BadRequestException(err);
+    } catch (err: any) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 }

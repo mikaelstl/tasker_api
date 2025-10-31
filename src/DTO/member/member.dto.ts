@@ -3,7 +3,7 @@ import type { TaskDTO } from "../task/task.dto";
 import type { UserDTO } from "../user/user.dto";
 import type { MemberRole } from "./role.dto";
 
-export interface ProjectMemberDTO {
+export interface MemberDTO {
   readonly id: string;
   readonly projectkey: string;
   readonly userkey: string;

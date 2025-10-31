@@ -1,8 +1,8 @@
 import { Injectable, Logger } from "@nestjs/common";
-import { ProjectMemberRepository } from "@repositories/project_member.repository";
+import { ProjectMemberRepository } from "@repositories/member.repository";
 import { ProjectRepository } from "@repositories/projects.repository";
 import { $Enums } from "generated/prisma";
-import { DefineProjectMember } from "src/DTO/member/member.create.dto";
+import { DefineMemberDTO } from "src/DTO/member/member.create.dto";
 import { CreateProjectDTO } from "src/DTO/project/project.create.dto";
 
 @Injectable()
@@ -30,7 +30,7 @@ export class ProjectService {
     );
   }
 
-  async addMember(data: DefineProjectMember) {
+  async addMember(data: DefineMemberDTO) {
     const member = await this.projectMemberRepository.create(data);
 
     return member;

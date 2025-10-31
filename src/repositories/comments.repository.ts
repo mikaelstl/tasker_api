@@ -1,18 +1,18 @@
-import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
+import { HttpException, HttpStatus, Injectable, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "src/database/prisma.service";
-import { CommentCreateDTO } from "src/DTO/comment/comment.create.dto";
+import { CreateCommentDTO } from "src/DTO/comment/comment.create.dto";
 import { CommentDTO } from "src/DTO/comment/comment.dto";
+import { CommentQueryDTO } from "src/DTO/comment/comment.query.dto";
 
 @Injectable()
-export class CheckpointsRepository {
+export class CommentsRepository {
   constructor (
-    // @InjectModel(Checkpoint) private readonly Checkpoints: typeof Checkpoint
     private readonly prisma: PrismaService
   ) {}
 
-  async create(data: CommentCreateDTO): Promise<CommentDTO> {
+  async create(data: CreateCommentDTO): Promise<CommentDTO> {
     try {
-      const checkpoint = await this.prisma.comment.create({
+      const comment = await this.prisma.comment.create({
         data: {
           content: data.content,
           date: data.date,
@@ -21,41 +21,39 @@ export class CheckpointsRepository {
         }
       });
 
-      return checkpoint;
-    } catch (err) {
-      throw new BadRequestException(err);
+      return comment;
+    } catch (err: any) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
-  async list(projectkey: string): Promise<CommentDTO[]> {
+  async list(queries: CommentQueryDTO): Promise<CommentDTO[]> {
     try {
-      const checkpoints = await this.prisma.comment.findMany({
-        where: {
-          projectkey: projectkey
-        },
+      const comments = await this.prisma.comment.findMany({
+        where: queries,
       });
 
-      return checkpoints;
-    } catch (err) {
-      throw new BadRequestException(err);
+      return comments;
+    } catch (err: any) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
   async find(id: string) {
     try {
-      const checkpoint = await this.prisma.comment.findUnique({
+      const comment = await this.prisma.comment.findUnique({
         where: {
           id: id
         }
       });
 
-      if (!checkpoint) {
+      if (!comment) {
         throw new NotFoundException();
       }
 
-      return checkpoint;
-    } catch (err) {
-      throw new BadRequestException(err);
+      return comment;
+    } catch (err: any) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -69,8 +67,8 @@ export class CheckpointsRepository {
       });
       
       return response;
-    } catch (err) {
-      throw new BadRequestException(err);
+    } catch (err: any) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -87,8 +85,8 @@ export class CheckpointsRepository {
       }
 
       return result;
-    } catch (err) {
-      throw new BadRequestException(err);
+    } catch (err: any) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 }

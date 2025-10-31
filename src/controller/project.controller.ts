@@ -1,8 +1,10 @@
 import { ApiResponse } from "@interfaces/response";
 import { Body, Controller, Delete, Get, Headers, HttpStatus, Param, Post, Query, Res, UseGuards } from "@nestjs/common";
+import { ProjectMemberRepository } from "@repositories/member.repository";
 import { JwtAuthGuard } from "@services/auth/auth.guard";
 import { ProjectService } from "@services/project.service";
 import { CreateProjectDTO } from "src/DTO/project/project.create.dto";
+import { ProjectQueryDTO } from "src/DTO/project/project.query.dto";
 import { ProjectRepository } from "src/repositories/projects.repository";
 
 @Controller('project')
@@ -10,7 +12,8 @@ import { ProjectRepository } from "src/repositories/projects.repository";
 export class ProjectController {
   constructor(
     private readonly repository: ProjectRepository,
-    private readonly service: ProjectService
+    private readonly projectMemberRepository: ProjectMemberRepository,
+    private readonly service: ProjectService,
   ) {}
 
   @Post()
@@ -35,10 +38,10 @@ export class ProjectController {
 
   @Get('/list')
   async list(
-    @Res() response,
-    @Headers('user') user: string
+    @Query()  queries: ProjectQueryDTO,
+    @Res()    response,
   ) {
-    const result = await this.repository.list(user);
+    const result = await this.repository.list(queries);
     
     const resp: ApiResponse = {
       status: HttpStatus.OK,
@@ -95,11 +98,11 @@ export class ProjectController {
     @Param('id') id: string,
     @Res() response,
   ) {
-    const result = await this.repository.find(id);
+    const result = await this.projectMemberRepository.list(id);
     
     const resp: ApiResponse = {
       status: HttpStatus.OK,
-      data: result.members,
+      data: result,
       message: '',
       error: false,
       timestamp: new Date().toISOString(),

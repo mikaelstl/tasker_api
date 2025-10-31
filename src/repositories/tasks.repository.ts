@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, HttpException, HttpStatus, Injectable, NotFoundException } from "@nestjs/common";
 import { customAlphabet } from "nanoid";
 import { PrismaService } from "src/database/prisma.service";
 import { TaskCreateDTO } from "src/DTO/task/task.create.dto";
@@ -38,8 +38,8 @@ export class TasksRepository {
       });
 
       return task;
-    } catch (err) {
-      throw new BadRequestException(err);
+    } catch (err: any) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -55,8 +55,8 @@ export class TasksRepository {
       });
 
       return tasks;
-    } catch (err) {
-      throw new BadRequestException(err);
+    } catch (err: any) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -76,8 +76,8 @@ export class TasksRepository {
       }
 
       return task;
-    } catch (err) {
-      throw new BadRequestException(err);
+    } catch (err: any) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -91,8 +91,8 @@ export class TasksRepository {
       });
       
       return response;
-    } catch (err) {
-      throw new BadRequestException(err);
+    } catch (err: any) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -109,8 +109,8 @@ export class TasksRepository {
       }
 
       return result;
-    } catch (err) {
-      throw new BadRequestException(err);
+    } catch (err: any) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 }

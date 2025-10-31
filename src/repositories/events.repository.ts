@@ -1,9 +1,8 @@
-import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
+import { HttpException, HttpStatus, Injectable, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "src/database/prisma.service";
 import { EventCreateDTO } from "src/DTO/events/event.create.dto";
 import { EventDTO } from "src/DTO/events/event.dto";
 import { EventQueryDTO } from "src/DTO/events/event.query.dto";
-import { TaskQueryDTO } from "src/DTO/task/task.query.dto";
 
 @Injectable()
 export class EventsRepository {
@@ -23,8 +22,8 @@ export class EventsRepository {
       });
 
       return event;
-    } catch (err) {
-      throw new BadRequestException(err);
+    } catch (err: any) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -40,8 +39,8 @@ export class EventsRepository {
       });
 
       return events;
-    } catch (err) {
-      throw new BadRequestException(err);
+    } catch (err: any) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -58,8 +57,8 @@ export class EventsRepository {
       }
 
       return event;
-    } catch (err) {
-      throw new BadRequestException(err);
+    } catch (err: any) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -73,8 +72,8 @@ export class EventsRepository {
       });
       
       return response;
-    } catch (err) {
-      throw new BadRequestException(err);
+    } catch (err: any) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -91,8 +90,8 @@ export class EventsRepository {
       }
 
       return result;
-    } catch (err) {
-      throw new BadRequestException(err);
+    } catch (err: any) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 }

@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, Logger } from "@nestjs/common";
+import { BadRequestException, HttpException, HttpStatus, Injectable, Logger } from "@nestjs/common";
 import { UserDTO } from "src/DTO/user/user.dto";
 import { AlreadyExistsException } from "@exceptions/user_exists.error";
 import { UserNotExistsException } from "@exceptions/user_not_exists.exception";
@@ -39,8 +39,8 @@ export class UserRepository {
       });
   
       return result;
-    } catch (err) {
-      throw new BadRequestException(err);
+    } catch (err: any) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -49,8 +49,8 @@ export class UserRepository {
       const response = await this.prisma.user.findMany();
 
       return response;
-    } catch (err) {
-      throw new BadRequestException(err);
+    } catch (err: any) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -99,8 +99,8 @@ export class UserRepository {
       });
       
       return result;
-    } catch (err) {
-      throw new BadRequestException(err);
+    } catch (err: any) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -113,8 +113,8 @@ export class UserRepository {
       });
       
       return result;
-    } catch (err) {
-      throw new BadRequestException(err);
+    } catch (err: any) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 }

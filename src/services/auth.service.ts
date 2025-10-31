@@ -30,7 +30,7 @@ export class AuthService {
       }
 
       return true;
-    } catch (err) {
+    } catch (err: any) {
       throw new UnauthorizedException("You don't have authorization to perform this action. Please log-in or create a account");
     }
   }
