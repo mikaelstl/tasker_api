@@ -170,6 +170,7 @@ enum ProjectProgress {
   IN_PROGRESS
   PAUSED
   COMPLETED
+  DELAYED
 }
 
 enum MemberRole {
@@ -183,6 +184,7 @@ enum TaskStage {
   IN_PROGRESS
   REVIEW
   DONE
+  DELAYED
 }
 
 enum TaskPriority {
