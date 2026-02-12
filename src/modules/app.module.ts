@@ -10,7 +10,7 @@ import { UploadModule } from './upload.module';
 @Module({
   imports: [
     PrismaModule,
-    UploadModule,
+    // UploadModule,
     AuthModule,
     UserModule,
     ProjectsModule,
