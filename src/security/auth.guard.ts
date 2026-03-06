@@ -25,7 +25,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     const token = this.extractTokenFromHeader(request);
 
     if (!token) {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException("You don't have authorization to perform this action. Please log-in or create a account");
     }
 
     try {
@@ -36,7 +36,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
 
       request['user'] = payload;
     } catch (error) {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException("You don't have authorization to perform this action. Please log-in or create a account");
     }
 
     return true;
@@ -50,7 +50,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
 
   handleRequest<TUser = any>(err: any, user: any, info: any, context: ExecutionContext, status?: any): TUser {
     if (err || !user) {
-      throw err || new UnauthorizedException();
+      throw err || new UnauthorizedException("You don't have authorization to perform this action. Please log-in or create a account");
     }
 
     return user;

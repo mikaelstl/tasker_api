@@ -1,6 +1,6 @@
 import { ApiResponse } from "@interfaces/response";
 import { Body, Controller, Delete, Get, HttpStatus, Param, Post, Put, Query, Res, UseGuards } from "@nestjs/common";
-import { TasksRepository } from "@repositories/tasks.repository";
+import { TasksRepository } from "@modules/tasks/tasks.repository";
 import { JwtAuthGuard } from "@services/auth/auth.guard";
 import { TaskCreateDTO } from "src/DTO/task/task.create.dto";
 import { TaskQueryDTO } from "src/DTO/task/task.query.dto";

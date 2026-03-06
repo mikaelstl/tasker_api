@@ -3,7 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { SECRET } from 'src/config/env.config';
 import { AuthDTO } from 'src/DTO/auth/auth.dto';
 import { UserDTO } from 'src/DTO/user/user.dto';
-import { UserRepository } from 'src/repositories/user.repository';
+import { UserRepository } from '@modules/users/user.repository';
 import { WrongPasswordException } from 'src/utils/errors/wrong_password.exception';
 import { compare, compareSync, hash } from 'bcrypt'
 import { CreateUserDTO } from 'src/DTO/user/create.dto';

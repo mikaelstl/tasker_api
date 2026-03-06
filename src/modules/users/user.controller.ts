@@ -2,8 +2,8 @@ import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, UseGuard
 import { AuthGuard } from "@nestjs/passport";
 import { CreateUserDTO } from "src/DTO/user/create.dto";
 import { UserDTO } from "src/DTO/user/user.dto";
-import { UserRepository } from "src/repositories/user.repository";
-import { AuthService } from "src/services/auth.service";
+import { UserRepository } from "@modules/users/user.repository";
+import { AuthService } from "src/security/auth.service";
 import { JwtAuthGuard } from "src/services/auth/auth.guard";
 
 @Controller('users')

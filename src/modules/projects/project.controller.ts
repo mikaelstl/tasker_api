@@ -2,10 +2,10 @@ import { ApiResponse } from "@interfaces/response";
 import { Body, Controller, Delete, Get, Headers, HttpStatus, Param, Post, Query, Res, UseGuards } from "@nestjs/common";
 import { ProjectMemberRepository } from "@repositories/member.repository";
 import { JwtAuthGuard } from "@services/auth/auth.guard";
-import { ProjectService } from "@services/project.service";
+import { ProjectService } from "@modules/projects/project.service";
 import { CreateProjectDTO } from "src/DTO/project/project.create.dto";
 import { ProjectQueryDTO } from "src/DTO/project/project.query.dto";
-import { ProjectRepository } from "src/repositories/projects.repository";
+import { ProjectRepository } from "@modules/projects/projects.repository";
 
 @Controller('project')
 @UseGuards(JwtAuthGuard)

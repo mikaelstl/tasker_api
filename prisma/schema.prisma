@@ -14,25 +14,62 @@ datasource db {
   url      = env("DB_URL")
 }
 
+model Account {
+  id                 String           @default(uuid())
+  password           String         
+  email              String           @unique
+
+  role               AccountRole      @default(COMMON)
+
+  userkey            String           @unique
+  user               User?            @relation(fields: [userkey], references: [username])
+
+  created_at         DateTime         @default(now())
+  updated_at         DateTime         @updatedAt
+
+  @@map("Accounts")
+}
+
 model User {
   id                 String           @default(uuid())
   username           String           @id @unique
   name               String         
-  password           String         
-  email              String           @unique
-  enterprise         Boolean          @default(false)
       
   photo              Image?
-  projects           Project[]
+
+  account            Account?
+
   member_in          Member[]
   comments           Comment[]
-  sent_invites       ProjectInvite[]  @relation("sent_invites")
-  received_invites   ProjectInvite[]  @relation("received_invites")
+  notifications      Notification[]
+
+  organization       Organization?    @relation("OrgOwner")
+
+  orgkey             String
+  in_org             Organization     @relation("OrgMember", fields: [orgkey], references: [id])
 
   created_at         DateTime         @default(now())
   updated_at         DateTime         @updatedAt
 
   @@map("Users")
+}
+
+model Organization {
+  id                 String           @default(uuid())  @unique
+  
+  name               String
+  enterprise         Boolean          @default(false)
+
+  ownerkey           String           @unique
+  owner              User             @relation("OrgOwner", fields: [ownerkey], references: [username])
+
+  projects           Project[]
+  members            User[]           @relation("OrgMember")
+
+  created_at         DateTime         @default(now())
+  updated_at         DateTime         @updatedAt
+
+  @@map("Organizations")
 }
 
 model Image {
@@ -50,24 +87,23 @@ model Image {
 }
 
 model Project {
-  id          String          @id @default(uuid())
-  title       String
-  description String
-  due_date    DateTime
+  id                 String                  @id @default(uuid())
+  title              String
+  description        String
+  due_date           DateTime
 
-  progress    ProjectProgress @default(STARTED)
+  progress           ProjectProgress         @default(STARTED)
 
-  ownerkey    String
-  owner       User            @relation(fields: [ownerkey], references: [username])
+  ownerkey           String
+  owner              Organization            @relation(fields: [ownerkey], references: [id])
 
-  members     Member[]
-  comments    Comment[]
-  tasks       Task[]
-  events      Event[]
-  invites     ProjectInvite[]
+  members            Member[]
+  comments           Comment[]
+  tasks              Task[]
+  events             Event[]
 
-  created_at         DateTime         @default(now())
-  updated_at         DateTime         @updatedAt
+  created_at         DateTime            @default(now())
+  updated_at         DateTime            @updatedAt
 
   @@map("Projects")
 }
@@ -88,7 +124,7 @@ model Member {
   created_at         DateTime         @default(now())
   updated_at         DateTime         @updatedAt
 
-  @@map("Members")
+  @@map("Member")
 }
 
 model Task {
@@ -144,24 +180,18 @@ model Event {
   @@map("Events")
 }
 
-model ProjectInvite {
-  id          String      @id @default(uuid())
-  pending     Boolean     @default(true)
-  accept      Boolean     @default(true)
-  
-  projectkey  String
-  project     Project     @relation(fields: [projectkey], references: [id])
-  
-  senderkey   String
-  sender      User        @relation("sent_invites",fields: [senderkey], references: [username])
-  
-  receiverkey String
-  receiver    User        @relation("received_invites", fields: [receiverkey], references: [username])
+model Notification {
+  id        String      @id @default(uuid())
+
+  action    String
+
+  actorkey  String
+  actor     User      @relation(fields: [actorkey], references: [username])
 
   created_at         DateTime         @default(now())
   updated_at         DateTime         @updatedAt
 
-  @@map("ProjectInvites")
+  @@map("Notifications")
 }
 
 enum ProjectProgress {
@@ -171,6 +201,12 @@ enum ProjectProgress {
   PAUSED
   COMPLETED
   DELAYED
+}
+
+enum AccountRole {
+  ORGANIZER
+  MANAGER
+  COMMON
 }
 
 enum MemberRole {

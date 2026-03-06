@@ -2,7 +2,7 @@ import { ApiResponse } from "@interfaces/response";
 import { Body, Controller, Delete, Get, Headers, HttpException, HttpStatus, Param, Post, Put, Query, Res, UploadedFile, UseGuards, UseInterceptors } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { JwtAuthGuard } from "@services/auth/auth.guard";
-import { UploadService } from "@services/upload.service";
+import { UploadService } from "@modules/upload/upload.service";
 import { CreateCommentDTO } from "src/DTO/comment/comment.create.dto";
 import { CommentQueryDTO } from "src/DTO/comment/comment.query.dto";
 

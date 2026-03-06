@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, UseInterceptors } from "@nestjs/common";
-import { UserRepository } from "@repositories/user.repository";
+import { UserRepository } from "@modules/users/user.repository";
 import { UserNotExistsException } from "src/utils/errors/user_not_exists.exception";
 
 @Injectable()

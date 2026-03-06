@@ -1,6 +1,6 @@
 import { SUPABASE_BUCKET, SUPABASE_KEY, SUPABASE_URL } from "@config/env.config";
 import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
-import { UploadRepository } from "@repositories/upload.repository";
+import { UploadRepository } from "@modules/upload/upload.repository";
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
 import { randomUUID } from "crypto";
 
