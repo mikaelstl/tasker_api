@@ -10,7 +10,6 @@ export class UserRepository {
   private logger: Logger = new Logger('UserRepository');
 
   constructor(
-    // @InjectModel(User) private readonly Users: typeof User
     private readonly prisma: PrismaService
   ) {}
 
@@ -33,8 +32,7 @@ export class UserRepository {
         data: {
           name: data.name,
           username: data.username,
-          password: data.password,
-          email: data.email
+          accountkey: data.accountkey
         }
       });
   
@@ -59,27 +57,6 @@ export class UserRepository {
       where: {
         username: key
       },
-      /* include: [
-        {
-          model: Invite,
-          as: 'invites'
-        },
-        {
-          model: Project,
-          as: 'projects'
-        },
-        {
-          model: Task,
-          as: 'tasks'
-        },
-        {
-          model: User,
-          as: 'relations',
-          through: {
-            attributes: []
-          }
-        }
-      ] */
     });
     
     if (!user) {

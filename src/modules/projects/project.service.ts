@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common";
-import { ProjectMemberRepository } from "@repositories/member.repository";
+import { ProjectMemberRepository } from "../members/member.repository";
 import { ProjectRepository } from "@modules/projects/projects.repository";
 import { $Enums } from "generated/prisma";
 import { DefineMemberDTO } from "src/DTO/member/member.create.dto";

@@ -6,11 +6,13 @@ import { ProjectsModule } from '../modules/projects/projects.module';
 import { AuthModule } from '../security/auth.module';
 import { PrismaModule } from 'src/database/prisma.module';
 import { UploadModule } from '../modules/upload/upload.module';
+import { AccountModule } from '@modules/accounts/account.module';
 
 @Module({
   imports: [
     PrismaModule,
     // UploadModule,
+    AccountModule,
     AuthModule,
     UserModule,
     ProjectsModule,

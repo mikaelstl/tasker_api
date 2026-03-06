@@ -4,7 +4,7 @@ import { AuthService } from "src/security/auth.service";
 import { AuthDTO } from "src/DTO/auth/auth.dto";
 import { LoginDTO } from "src/DTO/auth/login.dto";
 import { CreateUserDTO } from "src/DTO/user/create.dto";
-import { UserDTO } from "src/DTO/user/user.dto";
+import { AccountDTO } from "src/DTO/account/account.dto";
 
 @Controller('auth')
 export class AuthController {
@@ -38,24 +38,24 @@ export class AuthController {
     return resp.status(response.status).json(response);
   }
 
-  @Post('register')
-  async register(
-    @Body() data: CreateUserDTO,
-    @Res() resp
-  ) {
-    const result: UserDTO = await this.service.register(data);
+  // @Post('register')
+  // async register(
+  //   @Body() data: CreateUserDTO,
+  //   @Res() resp
+  // ) {
+  //   const result: AccountDTO = await this.service.register(data);
 
-    const response: ApiResponse = {
-      status: HttpStatus.CREATED,
-      data: result,
-      message: 'Registered with success',
-      error: false,
-      timestamp: new Date().toISOString(),
-      path: '/auth/register'
-    };
+  //   const response: ApiResponse = {
+  //     status: HttpStatus.CREATED,
+  //     data: result,
+  //     message: 'Registered with success',
+  //     error: false,
+  //     timestamp: new Date().toISOString(),
+  //     path: '/auth/register'
+  //   };
 
-    return resp.status(response.status).json(response);
-  }
+  //   return resp.status(response.status).json(response);
+  // }
 
   @Get('validate')
   async validate(

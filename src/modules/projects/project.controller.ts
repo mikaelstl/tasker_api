@@ -1,7 +1,7 @@
 import { ApiResponse } from "@interfaces/response";
 import { Body, Controller, Delete, Get, Headers, HttpStatus, Param, Post, Query, Res, UseGuards } from "@nestjs/common";
-import { ProjectMemberRepository } from "@repositories/member.repository";
-import { JwtAuthGuard } from "@services/auth/auth.guard";
+import { ProjectMemberRepository } from "../members/member.repository";
+import { JwtAuthGuard } from "../../security/auth.guard";
 import { ProjectService } from "@modules/projects/project.service";
 import { CreateProjectDTO } from "src/DTO/project/project.create.dto";
 import { ProjectQueryDTO } from "src/DTO/project/project.query.dto";

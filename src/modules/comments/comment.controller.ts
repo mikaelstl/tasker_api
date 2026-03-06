@@ -1,7 +1,7 @@
 import { ApiResponse } from "@interfaces/response";
 import { Body, Controller, Delete, Get, HttpStatus, Param, Post, Put, Query, Res, UseGuards } from "@nestjs/common";
-import { CommentsRepository } from "@repositories/comments.repository";
-import { JwtAuthGuard } from "@services/auth/auth.guard";
+import { CommentsRepository } from "./comments.repository";
+import { JwtAuthGuard } from "../../security/auth.guard";
 import { CreateCommentDTO } from "src/DTO/comment/comment.create.dto";
 import { CommentQueryDTO } from "src/DTO/comment/comment.query.dto";
 

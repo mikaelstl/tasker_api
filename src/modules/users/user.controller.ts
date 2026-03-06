@@ -4,7 +4,7 @@ import { CreateUserDTO } from "src/DTO/user/create.dto";
 import { UserDTO } from "src/DTO/user/user.dto";
 import { UserRepository } from "@modules/users/user.repository";
 import { AuthService } from "src/security/auth.service";
-import { JwtAuthGuard } from "src/services/auth/auth.guard";
+import { JwtAuthGuard } from "src/security/auth.guard";
 
 @Controller('users')
 @UseGuards(JwtAuthGuard)

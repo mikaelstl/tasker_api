@@ -15,14 +15,13 @@ datasource db {
 }
 
 model Account {
-  id                 String           @default(uuid())
+  id                 String           @id @default(uuid())
   password           String         
   email              String           @unique
 
   role               AccountRole      @default(COMMON)
 
-  userkey            String           @unique
-  user               User?            @relation(fields: [userkey], references: [username])
+  user               User?
 
   created_at         DateTime         @default(now())
   updated_at         DateTime         @updatedAt
@@ -37,7 +36,8 @@ model User {
       
   photo              Image?
 
-  account            Account?
+  accountkey         String           @unique
+  account            Account          @relation(fields: [accountkey], references: [id])
 
   member_in          Member[]
   comments           Comment[]
@@ -45,8 +45,8 @@ model User {
 
   organization       Organization?    @relation("OrgOwner")
 
-  orgkey             String
-  in_org             Organization     @relation("OrgMember", fields: [orgkey], references: [id])
+  orgkey             String?
+  in_org             Organization?     @relation("OrgMember", fields: [orgkey], references: [id])
 
   created_at         DateTime         @default(now())
   updated_at         DateTime         @updatedAt
@@ -55,7 +55,7 @@ model User {
 }
 
 model Organization {
-  id                 String           @default(uuid())  @unique
+  id                 String           @id @default(uuid())
   
   name               String
   enterprise         Boolean          @default(false)
@@ -167,7 +167,7 @@ model Comment {
 }
 
 model Event {
-  id          String        @unique @default(uuid())
+  id          String        @id @unique @default(uuid())
   title       String
   date        DateTime
 

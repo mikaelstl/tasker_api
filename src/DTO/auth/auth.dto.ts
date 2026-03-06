@@ -1,5 +1,5 @@
 export interface AuthDTO {
-  readonly user: string;
-  readonly username: string;
+  readonly account: string;
+  readonly email: string;
   readonly access_token: string;
 }

@@ -2,7 +2,7 @@ import { Module } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { UserController } from "@modules/users/user.controller";
 import { UserRepository } from "@modules/users/user.repository";
-import { AuthService } from "src/security/auth.service";
+import { AuthService } from "../../security/auth.service";
 import { JwtAuthGuard } from "../../security/auth.guard";
 
 @Module({
@@ -10,9 +10,6 @@ import { JwtAuthGuard } from "../../security/auth.guard";
   controllers: [ UserController ],
   providers: [
     UserRepository,
-    AuthService,
-    JwtService,
-    JwtAuthGuard
   ],
   exports: [ UserRepository ]
 })

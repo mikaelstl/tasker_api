@@ -1,7 +1,7 @@
 import { ApiResponse } from "@interfaces/response";
 import { Body, Controller, Delete, Get, HttpStatus, Param, Post, Put, Query, Res, UseGuards } from "@nestjs/common";
-import { EventsRepository } from "@repositories/events.repository";
-import { JwtAuthGuard } from "@services/auth/auth.guard";
+import { EventsRepository } from "./events.repository";
+import { JwtAuthGuard } from "../../security/auth.guard";
 import { EventCreateDTO } from "src/DTO/events/event.create.dto";
 import { EventQueryDTO } from "src/DTO/events/event.query.dto";
 

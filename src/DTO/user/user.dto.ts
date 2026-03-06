@@ -2,6 +2,6 @@ export interface UserDTO {
   readonly id?: string;
   readonly name: string;
   readonly username: string;
-  readonly password: string;
-  readonly email: string;
+  readonly orgkey: string;
+  readonly accountkey: string;
 }
