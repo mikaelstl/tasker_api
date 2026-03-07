@@ -7,8 +7,7 @@ export class CreateUserDTO {
   @IsNotEmpty({ message: 'ENTER YOUR USERNAME' })
   public username: string;
 
-  @IsNotEmpty()
-  public orgkey: string;
+  public orgkey?: string;
 
   @IsNotEmpty()
   readonly accountkey: string;
