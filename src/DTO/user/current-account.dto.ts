@@ -1,5 +1,5 @@
-type CurrentAccountDTO = {
+export type CurrentAccountDTO = {
   id: string,
-  email: string,
+  username: string,
   role: string,
 }

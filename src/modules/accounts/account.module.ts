@@ -13,9 +13,6 @@ import { AuthService } from 'src/security/auth.service';
   providers: [
     AccountRepository,
     AccountService,
-    AuthService,
-    JwtService,
-    JwtAuthGuard
   ],
   exports: [
     AccountRepository

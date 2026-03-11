@@ -32,6 +32,7 @@ export class UserRepository {
         data: {
           name: data.name,
           username: data.username,
+          orgkey: null,
           accountkey: data.accountkey
         }
       });
@@ -52,11 +53,11 @@ export class UserRepository {
     }
   }
 
-  async find(key: string): Promise<UserDTO> {
+  async find(querie: any): Promise<UserDTO> {
+    console.log(querie);
+    
     const user = await this.prisma.user.findUnique({
-      where: {
-        username: key
-      },
+      where: querie,
     });
     
     if (!user) {

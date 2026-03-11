@@ -14,6 +14,13 @@ export class UserController {
     private readonly repository: UserRepository,
   ) {}
 
+
+  /* 
+    This method must recive a id of one organization,
+    the method to create users and automaticaly add
+    to a organizations is via link:
+    /users/add?orgkey={id} generated in front;
+  */
   @Post()
   async create(
     @Body() data: CreateUserDTO,

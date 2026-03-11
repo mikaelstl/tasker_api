@@ -6,10 +6,12 @@ import { SECRET } from 'src/config/env.config';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './auth.strategy';
 import { AccountModule } from '@modules/accounts/account.module';
+import { UserModule } from '@modules/users/user.module';
 
 @Module({
   imports: [
     AccountModule,
+    UserModule,
     JwtModule.register({
       global: true,
       secret: SECRET,

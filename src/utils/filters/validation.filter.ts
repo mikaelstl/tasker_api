@@ -10,7 +10,10 @@ export class ValidationExceptionFilter implements ExceptionFilter {
     const request = ctx.getRequest<Request>();
     const exceptionResponse: any = ex.getResponse();
 
-    new Logger('ValidationExceptionFilter').warn(exceptionResponse.message)
+    const logger = new Logger('ValidationExceptionFilter');
+    logger.warn(exceptionResponse.message);
+
+    logger.log(exceptionResponse)
 
     const errors: string[] = exceptionResponse.message;
 

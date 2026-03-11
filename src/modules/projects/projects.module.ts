@@ -24,6 +24,9 @@ import { ProjectRepository } from "@modules/projects/projects.repository";
     ProjectMemberRepository,
     CommentsRepository,
     ProjectService,
+  ],
+  exports: [
+    ProjectRepository
   ]
 })
 export class ProjectsModule {}

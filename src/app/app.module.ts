@@ -7,6 +7,7 @@ import { AuthModule } from '../security/auth.module';
 import { PrismaModule } from 'src/database/prisma.module';
 import { UploadModule } from '../modules/upload/upload.module';
 import { AccountModule } from '@modules/accounts/account.module';
+import { OrganizationModule } from '@modules/organization/organization.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { AccountModule } from '@modules/accounts/account.module';
     AccountModule,
     AuthModule,
     UserModule,
+    OrganizationModule,
     ProjectsModule,
   ],
   controllers: [AppController],
