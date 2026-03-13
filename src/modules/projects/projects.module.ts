@@ -1,7 +1,7 @@
 import { Module } from "@nestjs/common";
 import { CommentsRepository } from "../comments/comments.repository";
 import { EventsRepository } from "../events/events.repository";
-import { ProjectMemberRepository } from "../members/member.repository";
+import { MembersRepository } from "../members/member.repository";
 import { TasksRepository } from "@modules/tasks/tasks.repository";
 import { ProjectService } from "@modules/projects/project.service";
 import { CommentsController } from "@modules/comments/comment.controller";
@@ -21,7 +21,7 @@ import { ProjectRepository } from "@modules/projects/projects.repository";
     ProjectRepository,
     TasksRepository,
     EventsRepository,
-    ProjectMemberRepository,
+    MembersRepository,
     CommentsRepository,
     ProjectService,
   ],

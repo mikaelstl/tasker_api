@@ -37,7 +37,7 @@ model User {
   photo              Image?
 
   accountkey         String           @unique
-  account            Account          @relation(fields: [accountkey], references: [id])
+  account            Account          @relation(fields: [accountkey], references: [id], onDelete: Cascade)
 
   member_in          Member[]
   comments           Comment[]
@@ -113,10 +113,10 @@ model Member {
   role               MemberRole       @default(MEMBER)
   
   projectkey         String
-  project            Project          @relation(fields: [projectkey], references: [id])
+  project            Project          @relation(fields: [projectkey], references: [id], onDelete: Cascade)
   
   userkey            String
-  user               User             @relation(fields: [userkey], references: [username])
+  user               User             @relation(fields: [userkey], references: [username], onDelete: Cascade)
   
   tasks              Task[]
   
@@ -137,7 +137,7 @@ model Task {
   priority    TaskPriority
   
   projectkey  String
-  project     Project       @relation(fields: [projectkey], references: [id])
+  project     Project       @relation(fields: [projectkey], references: [id], onDelete: Cascade)
 
   ownerkey    String
   owner       Member @relation(fields: [ownerkey], references: [id])

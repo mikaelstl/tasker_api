@@ -4,7 +4,7 @@ import { PrismaService } from "src/database/prisma.service";
 import { DefineMemberDTO } from "src/DTO/member/member.create.dto";
 
 @Injectable()
-export class ProjectMemberRepository {
+export class MembersRepository {
   constructor(
     private readonly prisma: PrismaService
   ) { }

@@ -13,7 +13,7 @@ export class AccountService {
   private logger: Logger = new Logger('AcountService');
 
   constructor(
-    private readonly accountsRepository: AccountRepository
+    private readonly repository: AccountRepository
   ) { }
 
   async dataWithEncryptedPass(data: RegisterAccount): Promise<RegisterAccount> {
@@ -37,7 +37,7 @@ export class AccountService {
       role: AccountRole.ORGANIZER
     }
 
-    return this.accountsRepository.create(account);
+    return this.repository.create(account);
   }
 
   async createCommonAccount(data: RegisterAccount): Promise<AccountDTO> {
@@ -48,7 +48,7 @@ export class AccountService {
       role: AccountRole.COMMON
     }
 
-    return this.accountsRepository.create(account);
+    return this.repository.create(account);
   }
 
   async promoteAccountToManager() {

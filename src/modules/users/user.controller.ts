@@ -14,7 +14,6 @@ export class UserController {
     private readonly repository: UserRepository,
   ) {}
 
-
   /* 
     This method must recive a id of one organization,
     the method to create users and automaticaly add
@@ -41,16 +40,58 @@ export class UserController {
   }
 
   @Get()
-  async list() {
-    return await this.repository.list();
+  async list(
+    @Res() resp
+  ) {
+    const result: UserDTO[] = await this.repository.list();
+
+    const response: ApiResponse = {
+      status: HttpStatus.CREATED,
+      data: result,
+      message: 'Registered with success',
+      error: false,
+      timestamp: new Date().toISOString(),
+      path: '/users'
+    };
+
+    return resp.status(response.status).json(response);
   }
 
   @Get(':username')
   async find(
-    @Param('username') username: string
+    @Param('username') username: string,
+    @Res() resp
   ) {
-    console.log(username);
+    const result: UserDTO = await this.repository.find(username);
     
-    return await this.repository.find(username);
+    const response: ApiResponse = {
+      status: HttpStatus.CREATED,
+      data: result,
+      message: 'Registered with success',
+      error: false,
+      timestamp: new Date().toISOString(),
+      path: '/users'
+    };
+
+    return resp.status(response.status).json(response);
+  }
+
+  @Delete(':username')
+  async delete(
+    @Param('username') username: string,
+    @Res() resp
+  ) {
+    const result: UserDTO = await this.repository.delete(username);
+    
+    const response: ApiResponse = {
+      status: HttpStatus.CREATED,
+      data: result,
+      message: 'Registered with success',
+      error: false,
+      timestamp: new Date().toISOString(),
+      path: '/users/del'
+    };
+
+    return resp.status(response.status).json(response);
   }
 }

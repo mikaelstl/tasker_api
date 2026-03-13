@@ -1,6 +1,6 @@
 import { ApiResponse } from "@interfaces/response";
 import { Body, Controller, Delete, Get, Headers, HttpStatus, Param, Post, Put, Query, Res, UseGuards } from "@nestjs/common";
-import { ProjectMemberRepository } from "../members/member.repository";
+import { MembersRepository } from "../members/member.repository";
 import { JwtAuthGuard } from "../../security/auth.guard";
 import { ProjectService } from "@modules/projects/project.service";
 import { CreateProjectDTO } from "src/DTO/project/project.create.dto";
@@ -18,7 +18,7 @@ import { EditProjectDTO } from "src/DTO/project/edit.dto";
 export class ProjectController {
   constructor(
     private readonly repository: ProjectRepository,
-    private readonly projectMemberRepository: ProjectMemberRepository,
+    private readonly memberRepository: MembersRepository,
     private readonly service: ProjectService,
   ) {}
 
@@ -136,7 +136,7 @@ export class ProjectController {
     @Param('id') id: string,
     @Res() response,
   ) {
-    const result = await this.projectMemberRepository.list(id);
+    const result = await this.memberRepository.list(id);
     
     const resp: ApiResponse = {
       status: HttpStatus.OK,
