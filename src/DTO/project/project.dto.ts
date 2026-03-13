@@ -10,8 +10,8 @@ export enum ProjectProgress {
 export interface ProjectDTO {
   readonly id: string;
   readonly title: string;
-  readonly description: string;
-  readonly ownerkey: string;
-  readonly due_date: Date;
-  readonly progress: $Enums.ProjectProgress;
+  readonly description?: string;
+  readonly ownerkey?: string;
+  readonly due_date?: Date;
+  readonly progress?: $Enums.ProjectProgress;
 }

@@ -1,11 +1,17 @@
 import { ApiResponse } from "@interfaces/response";
-import { Body, Controller, Delete, Get, Headers, HttpStatus, Param, Post, Query, Res, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Headers, HttpStatus, Param, Post, Put, Query, Res, UseGuards } from "@nestjs/common";
 import { ProjectMemberRepository } from "../members/member.repository";
 import { JwtAuthGuard } from "../../security/auth.guard";
 import { ProjectService } from "@modules/projects/project.service";
 import { CreateProjectDTO } from "src/DTO/project/project.create.dto";
 import { ProjectQueryDTO } from "src/DTO/project/project.query.dto";
 import { ProjectRepository } from "@modules/projects/projects.repository";
+import { RolesGuard } from "src/guards/roles.guard";
+import { Roles } from "src/decorators/Roles";
+import { AccountRole } from "generated/prisma";
+import { CurrentAccount } from "src/decorators/CurrentAccount.decorator";
+import { CurrentAccountDTO } from "src/DTO/user/current-account.dto";
+import { EditProjectDTO } from "src/DTO/project/edit.dto";
 
 @Controller('project')
 @UseGuards(JwtAuthGuard)
@@ -17,10 +23,12 @@ export class ProjectController {
   ) {}
 
   @Post()
+  @UseGuards(RolesGuard)
+  @Roles(AccountRole.ORGANIZER)
   async create(
-    @Body()   data: CreateProjectDTO,
+    @CurrentAccount() account: CurrentAccountDTO,
+    @Body() data: CreateProjectDTO,
     @Res() response
-    // @Headers('user') user: string
   ) {
     const result = await this.service.create(data); 
     
@@ -40,8 +48,9 @@ export class ProjectController {
   async list(
     @Query()  queries: ProjectQueryDTO,
     @Res()    response,
+    @CurrentAccount() account: CurrentAccountDTO,
   ) {
-    const result = await this.repository.list(queries);
+    const result = await this.service.list(account);
     
     const resp: ApiResponse = {
       status: HttpStatus.OK,
@@ -56,9 +65,12 @@ export class ProjectController {
   }
 
   @Get('/:id')
+  @UseGuards(RolesGuard)
+  @Roles(AccountRole.ORGANIZER)
   async find(
     @Param('id') id: string,
     @Res() response,
+    @CurrentAccount() account: CurrentAccountDTO,
   ) {
     const result = await this.repository.find(id);
     
@@ -74,10 +86,36 @@ export class ProjectController {
     return response.status(resp.status).json(resp);
   }
 
+  @Put('/:id')
+  @UseGuards(RolesGuard)
+  @Roles(AccountRole.ORGANIZER)
+  async edit(
+    @Param('id') id: string,
+    @Body() data: EditProjectDTO,
+    @Res() response,
+    @CurrentAccount() account: CurrentAccountDTO,
+  ) {
+    const result = await this.repository.edit(id, data);
+    
+    const resp: ApiResponse = {
+      status: HttpStatus.OK,
+      data: result,
+      message: 'Updated with success',
+      error: false,
+      timestamp: new Date().toISOString(),
+      path: '/project'
+    };
+
+    return response.status(resp.status).json(resp);
+  }
+
   @Delete('/del/:id')
+  @UseGuards(RolesGuard)
+  @Roles(AccountRole.ORGANIZER)
   async delete(
     @Param('id') id: string,
     @Res() response,
+    @CurrentAccount() account: CurrentAccountDTO,
   ){
     const result = await this.repository.delete(id);
     
@@ -110,10 +148,5 @@ export class ProjectController {
     };
 
     return response.status(resp.status).json(resp);
-  }
-
-  @Get('/status')
-  async status() {
-    return { status: 'OK' }
   }
 }

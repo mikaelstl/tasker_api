@@ -109,18 +109,17 @@ model Project {
 }
 
 model Member {
-  id String @id @default(uuid())
-
-  role MemberRole @default(MEMBER)
-
-  projectkey String
-  project Project @relation(fields: [projectkey], references: [id])
-
-  userkey String
-  user User @relation(fields: [userkey], references: [username])
-
-  tasks   Task[]
-
+  id                 String           @id @default(uuid())
+  role               MemberRole       @default(MEMBER)
+  
+  projectkey         String
+  project            Project          @relation(fields: [projectkey], references: [id])
+  
+  userkey            String
+  user               User             @relation(fields: [userkey], references: [username])
+  
+  tasks              Task[]
+  
   created_at         DateTime         @default(now())
   updated_at         DateTime         @updatedAt
 

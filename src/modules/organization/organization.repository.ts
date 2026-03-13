@@ -5,6 +5,11 @@ import { PrismaService } from "src/database/prisma.service";
 import { OrganizationCreateDTO } from "src/DTO/organization/create.dto";
 import { OrganizationDTO } from "src/DTO/organization/organization.dto";
 
+type OrgFindQuerie = {
+  id?: string,
+  name?: string
+}
+
 @Injectable()
 export class OrganizationRepository {
   private logger: Logger = new Logger('OrganizationRepository');
@@ -23,6 +28,18 @@ export class OrganizationRepository {
           name: data.name,
           ownerkey: data.ownerkey,
         }
+      });
+
+      return result;
+    } catch (err: any) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async find(querie: OrgFindQuerie): Promise<OrganizationDTO> {
+    try {
+      const result = await this.prisma.organization.findFirst({
+        where: querie
       });
 
       return result;
