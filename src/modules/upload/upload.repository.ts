@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
 import { PrismaService } from "src/database/prisma.service";
-import { CreateImageDTO } from "src/DTO/image/image.create.dto";
+import { CreateImageDTO } from "@modules/upload/dto/image.create.dto";
 
 @Injectable()
 export class UploadRepository {

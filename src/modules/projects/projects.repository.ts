@@ -2,10 +2,10 @@ import { ProjectNotExistsException } from "@exceptions/project_not_exists.except
 import { HttpException, HttpStatus, Injectable, NotFoundException } from "@nestjs/common";
 import { $Enums } from "generated/prisma";
 import { PrismaService } from "src/database/prisma.service";
-import { EditProjectDTO } from "src/DTO/project/edit.dto";
-import { CreateProjectDTO } from "src/DTO/project/project.create.dto";
-import { ProjectDTO } from "src/DTO/project/project.dto";
-import { ProjectQueryDTO } from "src/DTO/project/project.query.dto";
+import { EditProjectDTO } from "@modules/projects/dto/edit.dto";
+import { CreateProjectDTO } from "@modules/projects/dto/project.create.dto";
+import { ProjectDTO } from "@modules/projects/dto/project.dto";
+import { ProjectQueryDTO } from "@modules/projects/dto/project.query.dto";
 
 @Injectable()
 export class ProjectRepository {

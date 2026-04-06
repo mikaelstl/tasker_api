@@ -9,7 +9,7 @@ import { OrganizationDTO } from "src/DTO/organization/organization.dto";
 import { OrganizationCreateDTO } from "../../DTO/organization/create.dto";
 import { AuthService } from "src/security/auth.service";
 import { CurrentAccount } from "src/decorators/CurrentAccount.decorator";
-import { CurrentAccountDTO } from "src/DTO/user/current-account.dto";
+import { CurrentAccountDTO } from "@modules/users/dto/current-account.dto";
 import { JwtAuthGuard } from "src/security/auth.guard";
 
 @Controller('org')

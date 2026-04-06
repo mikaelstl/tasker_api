@@ -6,7 +6,7 @@ import { RolesGuard } from "src/guards/roles.guard";
 import { Roles } from "src/decorators/Roles";
 import { AccountRole } from "generated/prisma";
 import { CurrentAccount } from "src/decorators/CurrentAccount.decorator";
-import { CurrentAccountDTO } from "src/DTO/user/current-account.dto";
+import { CurrentAccountDTO } from "@modules/users/dto/current-account.dto";
 import { DefineMemberDTO } from "src/DTO/member/member.create.dto";
 
 @Controller('members')

@@ -2,8 +2,8 @@ import { ApiResponse } from "@interfaces/response";
 import { Body, Controller, Delete, Get, HttpStatus, Param, Post, Put, Query, Res, UseGuards } from "@nestjs/common";
 import { CommentsRepository } from "./comments.repository";
 import { JwtAuthGuard } from "../../security/auth.guard";
-import { CreateCommentDTO } from "src/DTO/comment/comment.create.dto";
-import { CommentQueryDTO } from "src/DTO/comment/comment.query.dto";
+import { CreateCommentDTO } from "@modules/comments/dto/comment.create.dto";
+import { CommentQueryDTO } from "@modules/comments/dto/comment.query.dto";
 
 @Controller('comments')
 @UseGuards(JwtAuthGuard)

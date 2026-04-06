@@ -1,5 +1,4 @@
 import { IsEmail, IsNotEmpty, Matches, MaxLength, MinLength } from "class-validator";
-import { AccountRole } from "generated/prisma";
 
 export class CreateAccountDTO {
   @IsNotEmpty({ message: 'EMAIL MUST BE HAVE A VALUE' })
@@ -16,7 +15,4 @@ export class CreateAccountDTO {
     message: 'INVALID PASSWORD: MUST CONTAIN AT LEAST ONE SPECIAL CHARACTER (@, $, #)',
   })
   public password: string;
-  
-  @IsNotEmpty()
-  public role: AccountRole
 }

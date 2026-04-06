@@ -1,7 +1,6 @@
 import { Body, Controller, HttpStatus, Param, Post, Res, } from "@nestjs/common";
-import { CreateUserDTO } from "src/DTO/user/create.dto";
 import { AccountRepository } from "./account.repository";
-import { AccountDTO } from "src/DTO/account/account.dto";
+import { AccountDTO } from "@modules/accounts/dto/account.dto";
 import { ApiResponse } from "@interfaces/response";
 import { AccountService } from "./account.service";
 import { RegisterAccount } from "./register-account";
@@ -13,31 +12,12 @@ export class AccountController {
     private readonly service: AccountService,
   ) { }
 
-  @Post('register/org')
-  async org(
-    @Body() data: RegisterAccount,
-    @Res() resp
-  ) {
-    const result: AccountDTO = await this.service.createOrgAccount(data);
-
-    const response: ApiResponse = {
-      status: HttpStatus.CREATED,
-      data: result,
-      message: 'Registered with success',
-      error: false,
-      timestamp: new Date().toISOString(),
-      path: '/accounts/register/org'
-    };
-
-    return resp.status(response.status).json(response);
-  }
-
-  @Post('register/common')
+  @Post('register/')
   async common(
     @Body() data: RegisterAccount,
     @Res() resp
   ) {
-    const result: AccountDTO = await this.service.createCommonAccount(data);
+    const result: AccountDTO = await this.service.createAccount(data);
 
     const response: ApiResponse = {
       status: HttpStatus.CREATED,
@@ -45,7 +25,7 @@ export class AccountController {
       message: 'Registered with success',
       error: false,
       timestamp: new Date().toISOString(),
-      path: '/accounts/register/common'
+      path: '/accounts/register/'
     };
 
     return resp.status(response.status).json(response);
@@ -64,7 +44,7 @@ export class AccountController {
       message: 'Registered with success',
       error: false,
       timestamp: new Date().toISOString(),
-      path: '/accounts/register/common'
+      path: '/accounts/del'
     };
 
     return resp.status(response.status).json(response);

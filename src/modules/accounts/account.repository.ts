@@ -2,8 +2,8 @@ import { AlreadyExistsException } from "@exceptions/user_exists.error";
 import { UserNotExistsException } from "@exceptions/user_not_exists.exception";
 import { HttpException, HttpStatus, Injectable, Logger } from "@nestjs/common";
 import { PrismaService } from "src/database/prisma.service";
-import { AccountDTO } from "src/DTO/account/account.dto";
-import { CreateAccountDTO } from "src/DTO/account/create.dto";
+import { AccountDTO } from "@modules/accounts/dto/account.dto";
+import { CreateAccountDTO } from "@modules/accounts/dto/create.dto";
 
 @Injectable()
 export class AccountRepository {
@@ -32,7 +32,6 @@ export class AccountRepository {
         data: {
           password: data.password,
           email: data.email,
-          role: data.role
         }
       });
 

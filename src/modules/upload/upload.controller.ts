@@ -3,8 +3,8 @@ import { Body, Controller, Delete, Get, Headers, HttpException, HttpStatus, Para
 import { FileInterceptor } from "@nestjs/platform-express";
 import { JwtAuthGuard } from "../../security/auth.guard";
 import { UploadService } from "@modules/upload/upload.service";
-import { CreateCommentDTO } from "src/DTO/comment/comment.create.dto";
-import { CommentQueryDTO } from "src/DTO/comment/comment.query.dto";
+import { CreateCommentDTO } from "@modules/comments/dto/comment.create.dto";
+import { CommentQueryDTO } from "@modules/comments/dto/comment.query.dto";
 
 @Controller('upload')
 @UseGuards(JwtAuthGuard)

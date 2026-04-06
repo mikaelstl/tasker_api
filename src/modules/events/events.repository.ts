@@ -1,8 +1,8 @@
 import { HttpException, HttpStatus, Injectable, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "src/database/prisma.service";
-import { EventCreateDTO } from "src/DTO/events/event.create.dto";
-import { EventDTO } from "src/DTO/events/event.dto";
-import { EventQueryDTO } from "src/DTO/events/event.query.dto";
+import { EventCreateDTO } from "@modules/events/dto/event.create.dto";
+import { EventDTO } from "@modules/events/dto/event.dto";
+import { EventQueryDTO } from "@modules/events/dto/event.query.dto";
 
 @Injectable()
 export class EventsRepository {

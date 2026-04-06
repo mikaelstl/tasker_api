@@ -1,10 +1,10 @@
 import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { SECRET } from 'src/config/env.config';
-import { AuthDTO } from 'src/DTO/auth/auth.dto';
+import { AuthDTO } from 'src/security/dto/auth.dto';
 import { WrongPasswordException } from 'src/utils/errors/wrong_password.exception';
 import { compare, compareSync, hash } from 'bcrypt'
-import { LoginDTO } from 'src/DTO/auth/login.dto';
+import { LoginDTO } from 'src/security/dto/login.dto';
 import { JwtPayload } from 'jsonwebtoken';
 import { AccountRepository } from '@modules/accounts/account.repository';
 import { AccountRole } from 'generated/prisma';

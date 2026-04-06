@@ -1,8 +1,8 @@
 import { HttpException, HttpStatus, Injectable, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "src/database/prisma.service";
-import { CreateCommentDTO } from "src/DTO/comment/comment.create.dto";
-import { CommentDTO } from "src/DTO/comment/comment.dto";
-import { CommentQueryDTO } from "src/DTO/comment/comment.query.dto";
+import { CreateCommentDTO } from "@modules/comments/dto/comment.create.dto";
+import { CommentDTO } from "@modules/comments/dto/comment.dto";
+import { CommentQueryDTO } from "@modules/comments/dto/comment.query.dto";
 
 @Injectable()
 export class CommentsRepository {

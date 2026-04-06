@@ -3,9 +3,9 @@ import { ProjectMemberRepository } from "../members/member.repository";
 import { ProjectRepository } from "@modules/projects/projects.repository";
 import { $Enums, AccountRole } from "generated/prisma";
 import { DefineMemberDTO } from "src/DTO/member/member.create.dto";
-import { CreateProjectDTO } from "src/DTO/project/project.create.dto";
-import { CurrentAccountDTO } from "src/DTO/user/current-account.dto";
-import { ProjectDTO } from "src/DTO/project/project.dto";
+import { CreateProjectDTO } from "@modules/projects/dto/project.create.dto";
+import { CurrentAccountDTO } from "@modules/users/dto/current-account.dto";
+import { ProjectDTO } from "@modules/projects/dto/project.dto";
 
 type ListMethodCommand = {
   [key: string]: (key: string) => Promise<ProjectDTO[]>

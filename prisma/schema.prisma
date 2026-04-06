@@ -19,8 +19,6 @@ model Account {
   password           String         
   email              String           @unique
 
-  role               AccountRole      @default(COMMON)
-
   user               User?
 
   created_at         DateTime         @default(now())
@@ -42,11 +40,9 @@ model User {
   member_in          Member[]
   comments           Comment[]
   notifications      Notification[]
+  participates_in    Affiliation[]
 
   organization       Organization?    @relation("OrgOwner")
-
-  orgkey             String?
-  in_org             Organization?     @relation("OrgMember", fields: [orgkey], references: [id])
 
   created_at         DateTime         @default(now())
   updated_at         DateTime         @updatedAt
@@ -64,12 +60,31 @@ model Organization {
   owner              User             @relation("OrgOwner", fields: [ownerkey], references: [username])
 
   projects           Project[]
-  members            User[]           @relation("OrgMember")
+  members            Affiliation[]
 
   created_at         DateTime         @default(now())
   updated_at         DateTime         @updatedAt
 
   @@map("Organizations")
+}
+
+model Affiliation {
+  id                 String           @id @default(uuid())
+
+  orgkey             String
+  in_org             Organization     @relation(fields: [orgkey], references: [id])
+
+  userkey            String
+  user               User             @relation(fields: [userkey], references: [username])
+ 
+  role               OrgRole          @default(MEMBER)
+
+  created_at         DateTime         @default(now())
+  updated_at         DateTime         @updatedAt
+
+  @@unique([userkey, orgkey])
+
+  @@map("Affiliations")
 }
 
 model Image {
@@ -110,7 +125,6 @@ model Project {
 
 model Member {
   id                 String           @id @default(uuid())
-  role               MemberRole       @default(MEMBER)
   
   projectkey         String
   project            Project          @relation(fields: [projectkey], references: [id], onDelete: Cascade)
@@ -166,12 +180,14 @@ model Comment {
 }
 
 model Event {
-  id          String        @id @unique @default(uuid())
-  title       String
-  date        DateTime
+  id                 String           @id @unique @default(uuid())
+  title              String
+  date               DateTime
 
-  projectkey  String
-  project     Project       @relation(fields: [projectkey], references: [id])
+  projectkey         String
+  project            Project          @relation(fields: [projectkey], references: [id])
+
+  category           EventCategory
 
   created_at         DateTime         @default(now())
   updated_at         DateTime         @updatedAt
@@ -202,14 +218,18 @@ enum ProjectProgress {
   DELAYED
 }
 
-enum AccountRole {
-  ORGANIZER
-  MANAGER
-  COMMON
+enum EventCategory {
+  RELEASE
+  MEETING
+  REVIEW
+  PLANNING
+  TESTS
+  LAUNCH
 }
 
-enum MemberRole {
-  OWNER
+enum OrgRole {
+  ORGANIZER
+  MANAGER
   MEMBER
 }
 

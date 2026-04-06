@@ -3,15 +3,15 @@ import { Body, Controller, Delete, Get, Headers, HttpStatus, Param, Post, Put, Q
 import { MembersRepository } from "../members/member.repository";
 import { JwtAuthGuard } from "../../security/auth.guard";
 import { ProjectService } from "@modules/projects/project.service";
-import { CreateProjectDTO } from "src/DTO/project/project.create.dto";
-import { ProjectQueryDTO } from "src/DTO/project/project.query.dto";
+import { CreateProjectDTO } from "@modules/projects/dto/project.create.dto";
+import { ProjectQueryDTO } from "@modules/projects/dto/project.query.dto";
 import { ProjectRepository } from "@modules/projects/projects.repository";
 import { RolesGuard } from "src/guards/roles.guard";
 import { Roles } from "src/decorators/Roles";
 import { AccountRole } from "generated/prisma";
 import { CurrentAccount } from "src/decorators/CurrentAccount.decorator";
-import { CurrentAccountDTO } from "src/DTO/user/current-account.dto";
-import { EditProjectDTO } from "src/DTO/project/edit.dto";
+import { CurrentAccountDTO } from "@modules/users/dto/current-account.dto";
+import { EditProjectDTO } from "@modules/projects/dto/edit.dto";
 
 @Controller('project')
 @UseGuards(JwtAuthGuard)

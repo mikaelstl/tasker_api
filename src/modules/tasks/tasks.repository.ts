@@ -1,9 +1,9 @@
 import { BadRequestException, HttpException, HttpStatus, Injectable, NotFoundException } from "@nestjs/common";
 import { customAlphabet } from "nanoid";
 import { PrismaService } from "src/database/prisma.service";
-import { TaskCreateDTO } from "src/DTO/task/task.create.dto";
-import { TaskDTO } from "src/DTO/task/task.dto";
-import { TaskQueryDTO } from "src/DTO/task/task.query.dto";
+import { TaskCreateDTO } from "@modules/tasks/dto/task.create.dto";
+import { TaskDTO } from "@modules/tasks/dto/task.dto";
+import { TaskQueryDTO } from "@modules/tasks/dto/task.query.dto";
 
 @Injectable()
 export class TasksRepository {

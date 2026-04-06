@@ -1,10 +1,10 @@
 import { ApiResponse } from "@interfaces/response";
 import { Body, Controller, Get, Headers, HttpCode, HttpStatus, Post, Res } from "@nestjs/common";
 import { AuthService } from "src/security/auth.service";
-import { AuthDTO } from "src/DTO/auth/auth.dto";
-import { LoginDTO } from "src/DTO/auth/login.dto";
-import { CreateUserDTO } from "src/DTO/user/create.dto";
-import { AccountDTO } from "src/DTO/account/account.dto";
+import { AuthDTO } from "src/security/dto/auth.dto";
+import { LoginDTO } from "src/security/dto/login.dto";
+import { CreateUserDTO } from "@modules/users/dto/create.dto";
+import { AccountDTO } from "@modules/accounts/dto/account.dto";
 
 @Controller('auth')
 export class AuthController {

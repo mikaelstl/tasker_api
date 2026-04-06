@@ -2,10 +2,9 @@ import { BadRequestException, HttpException, HttpStatus, Injectable, Logger, Use
 import { UserRepository } from "@modules/users/user.repository";
 import { UserNotExistsException } from "src/utils/errors/user_not_exists.exception";
 import { AccountRepository } from "./account.repository";
-import { CreateAccountDTO } from "src/DTO/account/create.dto";
+import { CreateAccountDTO } from "@modules/accounts/dto/create.dto";
 import { RegisterAccount } from "./register-account";
-import { AccountDTO } from "src/DTO/account/account.dto";
-import { AccountRole } from "generated/prisma";
+import { AccountDTO } from "@modules/accounts/dto/account.dto";
 import { compare, compareSync, hash } from 'bcrypt'
 
 @Injectable()
@@ -29,26 +28,10 @@ export class AccountService {
     }
   }
 
-  async createOrgAccount(data: RegisterAccount): Promise<AccountDTO> {
+  async createAccount(data: RegisterAccount): Promise<AccountDTO> {
     const encryptedPass = await this.dataWithEncryptedPass(data);
 
-    const account: AccountDTO = {
-      ...encryptedPass,
-      role: AccountRole.ORGANIZER
-    }
-
-    return this.repository.create(account);
-  }
-
-  async createCommonAccount(data: RegisterAccount): Promise<AccountDTO> {
-    const encryptedPass = await this.dataWithEncryptedPass(data);
-
-    const account: AccountDTO = {
-      ...encryptedPass,
-      role: AccountRole.COMMON
-    }
-
-    return this.repository.create(account);
+    return this.repository.create(encryptedPass);
   }
 
   async promoteAccountToManager() {
