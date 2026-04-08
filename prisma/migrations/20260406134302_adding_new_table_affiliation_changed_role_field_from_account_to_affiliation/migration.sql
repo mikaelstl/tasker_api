@@ -29,9 +29,6 @@ ALTER TABLE "public"."Users" DROP CONSTRAINT "Users_accountkey_fkey";
 ALTER TABLE "public"."Users" DROP CONSTRAINT "Users_orgkey_fkey";
 
 -- AlterTable
-ALTER TABLE "Accounts" DROP COLUMN "role";
-
--- AlterTable
 ALTER TABLE "Events" ADD COLUMN     "category" "EventCategory" NOT NULL;
 
 -- AlterTable
@@ -39,9 +36,6 @@ ALTER TABLE "Member" DROP COLUMN "role";
 
 -- AlterTable
 ALTER TABLE "Users" DROP COLUMN "orgkey";
-
--- DropEnum
-DROP TYPE "public"."AccountRole";
 
 -- DropEnum
 DROP TYPE "public"."MemberRole";

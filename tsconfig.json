@@ -20,15 +20,14 @@
     "noFallthroughCasesInSwitch": false,
     "paths": {
       "@models/*":       [ "./src/config/database/models/*" ],
-      "@repositories/*": [ "./src/repositories/*" ],
       "@config/*":       [ "./src/config/*" ],
-      "@controllers/*":  [ "./src/controllers/*" ],
       "@modules/*":      [ "./src/modules/*" ],
-      "@services/*":     [ "./src/services/*" ],
+      "@security/*":     [ "./src/security/*" ],
+      "@guards/*":       [ "./src/guards/*" ],
       "@exceptions/*":   [ "./src/utils/errors/*" ],
       "@filters/*":      [ "./src/utils/filters/*" ],
       "@interceptors/*": [ "./src/utils/interceptors/*" ],
-      "@interfaces/*":   [ "./src/utils/interfaces/*" ]
+      "@interfaces/*":   [ "./src/utils/interfaces/*" ],
     }
   }
 }

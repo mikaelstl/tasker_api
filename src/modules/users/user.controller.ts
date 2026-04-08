@@ -8,7 +8,7 @@ import { JwtAuthGuard } from "src/security/auth.guard";
 import { ApiResponse } from "@interfaces/response";
 
 @Controller('users')
-@UseGuards(JwtAuthGuard)
+// @UseGuards(JwtAuthGuard)
 export class UserController {
   constructor(
     private readonly repository: UserRepository,

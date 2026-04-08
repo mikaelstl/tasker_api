@@ -15,9 +15,9 @@ export class RolesGuard implements CanActivate {
     }
 
     const req = ctx.switchToHttp().getRequest();
-    const account = req.user;
+    const user = req.user;
 
-    const hasPermission = roles.some(role => account.role?.includes(role));
+    const hasPermission = roles.some(role => user.role?.includes(role));
   
     if (!hasPermission) {
       throw new UnauthorizedException('Your account does not have permission to perform this action')

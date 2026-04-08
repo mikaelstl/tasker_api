@@ -8,7 +8,7 @@ import { ProjectQueryDTO } from "@modules/projects/dto/project.query.dto";
 import { ProjectRepository } from "@modules/projects/projects.repository";
 import { RolesGuard } from "src/guards/roles.guard";
 import { Roles } from "src/decorators/Roles";
-import { AccountRole } from "generated/prisma";
+import { OrgRole } from "generated/prisma";
 import { CurrentAccount } from "src/decorators/CurrentAccount.decorator";
 import { CurrentAccountDTO } from "@modules/users/dto/current-account.dto";
 import { EditProjectDTO } from "@modules/projects/dto/edit.dto";
@@ -24,7 +24,7 @@ export class ProjectController {
 
   @Post()
   @UseGuards(RolesGuard)
-  @Roles(AccountRole.ORGANIZER)
+  @Roles(OrgRole.OWNER)
   async create(
     @CurrentAccount() account: CurrentAccountDTO,
     @Body() data: CreateProjectDTO,
@@ -66,7 +66,7 @@ export class ProjectController {
 
   @Get('/:id')
   @UseGuards(RolesGuard)
-  @Roles(AccountRole.ORGANIZER)
+  @Roles(OrgRole.OWNER)
   async find(
     @Param('id') id: string,
     @Res() response,
@@ -88,7 +88,7 @@ export class ProjectController {
 
   @Put('/:id')
   @UseGuards(RolesGuard)
-  @Roles(AccountRole.ORGANIZER)
+  @Roles(OrgRole.OWNER)
   async edit(
     @Param('id') id: string,
     @Body() data: EditProjectDTO,
@@ -111,7 +111,7 @@ export class ProjectController {
 
   @Delete('/del/:id')
   @UseGuards(RolesGuard)
-  @Roles(AccountRole.ORGANIZER)
+  @Roles(OrgRole.OWNER)
   async delete(
     @Param('id') id: string,
     @Res() response,

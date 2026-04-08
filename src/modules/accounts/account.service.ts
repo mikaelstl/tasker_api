@@ -36,6 +36,6 @@ export class AccountService {
 
   async promoteAccountToManager() {
     // TO_DO
-    // Função restrita ao Organizer onde deve mudar o tipo de conta (role) para AccountRole.MANAGER
+    // Função restrita ao Organizer onde deve mudar o tipo de conta (role) para OrgRole.MANAGER
   }
 }

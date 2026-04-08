@@ -2,8 +2,8 @@ import { AlreadyExistsException } from "@exceptions/user_exists.error";
 import { UserNotExistsException } from "@exceptions/user_not_exists.exception";
 import { HttpException, HttpStatus, Injectable, Logger } from "@nestjs/common";
 import { PrismaService } from "src/database/prisma.service";
-import { OrganizationCreateDTO } from "src/DTO/organization/create.dto";
-import { OrganizationDTO } from "src/DTO/organization/organization.dto";
+import { OrganizationCreateDTO } from "@modules/organization/dto/create.dto";
+import { OrganizationDTO } from "@modules/organization/dto/organization.dto";
 
 type OrgFindQuerie = {
   id?: string,
@@ -20,7 +20,6 @@ export class OrganizationRepository {
 
   async create(data: OrganizationCreateDTO): Promise<OrganizationDTO> {
     // await this.organizationExists(data.email);
-    console.log(data);
     
     try {
       const result = await this.prisma.organization.create({

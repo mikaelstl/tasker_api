@@ -1,14 +1,14 @@
-import { ProjectDTO } from "../project/project.dto";
-import { UserDTO } from "../user/user.dto";
+import { AffiliationDTO } from "@modules/affiliations/dto/affiliation.dto";
+import { ProjectDTO } from "@modules/projects/dto/project.dto";
+import { UserDTO } from "@modules/users/dto/user.dto";
 
 export class OrganizationDTO {
   id:                 string;
   name:               string;
-  enterprise:         boolean;
   ownerkey:           string;
 
   projects?:           ProjectDTO[];
-  members?:            UserDTO[];
+  members?:            AffiliationDTO[];
 
   created_at:         Date;
   updated_at:         Date;

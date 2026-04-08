@@ -32,7 +32,6 @@ export class UserRepository {
         data: {
           name: data.name,
           username: data.username,
-          orgkey: null,
           accountkey: data.accountkey
         }
       });

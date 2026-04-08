@@ -7,11 +7,13 @@ import { AuthService } from './auth.service';
 import { JwtStrategy } from './auth.strategy';
 import { AccountModule } from '@modules/accounts/account.module';
 import { UserModule } from '@modules/users/user.module';
+import { AffiliationModule } from '@modules/affiliations/affiliations.module';
 
 @Module({
   imports: [
     AccountModule,
     UserModule,
+    AffiliationModule,
     JwtModule.register({
       global: true,
       secret: SECRET,

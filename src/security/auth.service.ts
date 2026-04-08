@@ -7,14 +7,16 @@ import { compare, compareSync, hash } from 'bcrypt'
 import { LoginDTO } from 'src/security/dto/login.dto';
 import { JwtPayload } from 'jsonwebtoken';
 import { AccountRepository } from '@modules/accounts/account.repository';
-import { AccountRole } from 'generated/prisma';
+import { OrgRole } from 'generated/prisma';
 import { JWTPayload } from 'src/utils/types/JWTPayload';
 import { UserRepository } from '@modules/users/user.repository';
+import { AffiliationRepository } from '@modules/affiliations/affiliations.repository';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly accountRepository: AccountRepository,
+    private readonly accounts: AccountRepository,
+    private readonly affiliations: AffiliationRepository,
     private readonly users: UserRepository,
     private readonly jwt: JwtService,
   ) { }
@@ -25,7 +27,7 @@ export class AuthService {
         secret: SECRET,
       });
 
-      const exists = await this.accountRepository.find(decoded.email);
+      const exists = await this.accounts.find(decoded.email);
 
       if (!exists) {
         throw new UnauthorizedException("You don't have authorization to perform this action. Please log-in or create a account");
@@ -38,14 +40,14 @@ export class AuthService {
   }
 
   async login(data: LoginDTO): Promise<AuthDTO> {
-    const account = await this.accountRepository.find(data.email);
+    const account = await this.accounts.find(data.email);
     const user = await this.users.find({
       accountkey: account.id
     })
+    // const affiliation = await this.affiliations.findByUser(user.username);
 
     console.log(user);
     
-
     const match: boolean = await compare(data.password, account.password);
 
     if (!account || !user) {
@@ -56,7 +58,7 @@ export class AuthService {
       throw new WrongPasswordException();
     }
 
-    const payload: JWTPayload = { sub: account.id!, username: user.username, role: account.role };
+    const payload: JWTPayload = { sub: account.id!, username: user.username, role: null };
 
     const token = await this.jwt.signAsync(payload, { secret: SECRET })
 

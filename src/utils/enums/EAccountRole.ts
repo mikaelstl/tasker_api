@@ -1,5 +1,5 @@
-export enum EAccountRole {
-  ORGANIZER = 'ORGANIZER',
+export enum EOrgRole {
+  OWNER = 'OWNER',
   MANAGER = 'MANAGER',
   MEMBER = 'MEMBER',
 }

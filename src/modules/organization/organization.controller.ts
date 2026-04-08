@@ -4,17 +4,15 @@ import { ApiResponse } from "@interfaces/response";
 import { OrganizationService } from "./organization.service";
 import { RolesGuard } from "src/guards/roles.guard";
 import { Roles } from "src/decorators/Roles";
-import { AccountRole } from "generated/prisma";
-import { OrganizationDTO } from "src/DTO/organization/organization.dto";
-import { OrganizationCreateDTO } from "../../DTO/organization/create.dto";
-import { AuthService } from "src/security/auth.service";
+import { OrgRole } from "generated/prisma";
+import { OrganizationDTO } from "@modules/organization/dto/organization.dto";
+import { OrganizationCreateDTO } from "@modules/organization/dto/create.dto";
 import { CurrentAccount } from "src/decorators/CurrentAccount.decorator";
 import { CurrentAccountDTO } from "@modules/users/dto/current-account.dto";
-import { JwtAuthGuard } from "src/security/auth.guard";
+import { JwtAuthGuard } from "@security/auth.guard";
 
 @Controller('org')
-@UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(AccountRole.ORGANIZER)
+@UseGuards(JwtAuthGuard)
 export class OrganizationController {
   constructor(
     private readonly repository: OrganizationRepository,
@@ -29,7 +27,7 @@ export class OrganizationController {
   ) {
     console.log(account);
 
-    const result: OrganizationDTO = await this.repository.create({
+    const result: OrganizationDTO = await this.service.create({
       name: data.name,
       ownerkey: account.username
     });

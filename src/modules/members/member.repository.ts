@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Injectable, NotFoundException } from "@nestjs/common";
 import { $Enums } from "generated/prisma";
 import { PrismaService } from "src/database/prisma.service";
-import { DefineMemberDTO } from "src/DTO/member/member.create.dto";
+import { DefineMemberDTO } from "@modules/members/dto/member.create.dto";
 
 @Injectable()
 export class MembersRepository {
@@ -15,7 +15,6 @@ export class MembersRepository {
         data: {
           userkey: data.user,
           projectkey: data.project,
-          role: data.role
         }
       });
 

@@ -9,11 +9,13 @@ import { AuthService } from 'src/security/auth.service';
 import { UserSevice } from '@modules/users/user.service';
 import { UserModule } from '@modules/users/user.module';
 import { ProjectsModule } from '@modules/projects/projects.module';
+import { AffiliationModule } from '@modules/affiliations/affiliations.module';
 
 @Module({
   imports: [
     UserModule,
-    ProjectsModule
+    ProjectsModule,
+    AffiliationModule
   ],
   controllers: [OrganizationController],
   providers: [

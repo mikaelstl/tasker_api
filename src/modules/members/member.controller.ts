@@ -4,14 +4,14 @@ import { MembersRepository } from "./member.repository";
 import { JwtAuthGuard } from "../../security/auth.guard";
 import { RolesGuard } from "src/guards/roles.guard";
 import { Roles } from "src/decorators/Roles";
-import { AccountRole } from "generated/prisma";
+import { OrgRole } from "generated/prisma";
 import { CurrentAccount } from "src/decorators/CurrentAccount.decorator";
 import { CurrentAccountDTO } from "@modules/users/dto/current-account.dto";
-import { DefineMemberDTO } from "src/DTO/member/member.create.dto";
+import { DefineMemberDTO } from "@modules/members/dto/member.create.dto";
 
 @Controller('members')
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(AccountRole.ORGANIZER, AccountRole.MANAGER)
+@Roles(OrgRole.OWNER, OrgRole.MANAGER)
 export class MemberController {
   constructor(
     private readonly repository: MembersRepository,

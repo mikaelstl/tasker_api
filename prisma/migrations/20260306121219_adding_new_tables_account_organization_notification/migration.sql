@@ -9,8 +9,6 @@
   - Added the required column `orgkey` to the `Users` table without a default value. This is not possible if the table is not empty.
 
 */
--- CreateEnum
-CREATE TYPE "AccountRole" AS ENUM ('ORGANIZER', 'MANAGER', 'COMMON');
 
 -- DropForeignKey
 ALTER TABLE "public"."Members" DROP CONSTRAINT "Members_projectkey_fkey";
@@ -53,7 +51,6 @@ CREATE TABLE "Accounts" (
     "id" TEXT NOT NULL,
     "password" TEXT NOT NULL,
     "email" TEXT NOT NULL,
-    "role" "AccountRole" NOT NULL DEFAULT 'COMMON',
     "userkey" TEXT NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL

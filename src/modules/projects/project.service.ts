@@ -1,8 +1,8 @@
 import { Injectable, Logger } from "@nestjs/common";
-import { ProjectMemberRepository } from "../members/member.repository";
+import { MembersRepository } from "@modules/members/member.repository";
 import { ProjectRepository } from "@modules/projects/projects.repository";
-import { $Enums, AccountRole } from "generated/prisma";
-import { DefineMemberDTO } from "src/DTO/member/member.create.dto";
+import { $Enums, OrgRole } from "generated/prisma";
+import { DefineMemberDTO } from "@modules/members/dto/member.create.dto";
 import { CreateProjectDTO } from "@modules/projects/dto/project.create.dto";
 import { CurrentAccountDTO } from "@modules/users/dto/current-account.dto";
 import { ProjectDTO } from "@modules/projects/dto/project.dto";
@@ -17,7 +17,7 @@ export class ProjectService {
 
   constructor(
     private readonly projectRepository: ProjectRepository,
-    private readonly projectMemberRepository: ProjectMemberRepository
+    private readonly projectMemberRepository: MembersRepository
   ) { }
 
   async create(data: CreateProjectDTO) {
@@ -44,7 +44,7 @@ export class ProjectService {
 
   async list(data: CurrentAccountDTO) {
     const methods: ListMethodCommand = {
-      'ORGANIZER': this.projectRepository.listByOrganizer,
+      'OWNER': this.projectRepository.listByOrganizer,
       'MANAGER': this.projectRepository.listByManager,
       'MEMBER': this.projectRepository.listByMember,
     };

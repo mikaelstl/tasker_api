@@ -17,7 +17,8 @@ export class EventsRepository {
         data: {
           title: data.title,
           date: data.date,
-          projectkey: data.project
+          projectkey: data.project,
+          category: data.category
         }
       });
 
