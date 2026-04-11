@@ -3,7 +3,7 @@ import { OrgRole } from "generated/prisma";
 import { AffiliationRepository } from "./affiliations.repository";
 import { DefineAffiliationDTO } from "./dto/define.dto";
 import { AffiliationDTO } from "./dto/affiliation.dto";
-import { APIMessage } from "src/utils/types/APIMessage";
+import { APIMessage } from "@interfaces/ApiMessage";
 
 // type ListMethodCommand = {
 //   [key: string]: (key: string) => Promise<ProjectDTO[]>

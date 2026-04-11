@@ -1,7 +1,7 @@
 import { Body, Controller, HttpStatus, Param, Post, Res, } from "@nestjs/common";
 import { AccountRepository } from "./account.repository";
 import { AccountDTO } from "@modules/accounts/dto/account.dto";
-import { ApiResponse } from "@interfaces/response";
+import { ApiResponse } from "@interfaces/ApiResponse";
 import { AccountService } from "./account.service";
 import { RegisterAccount } from "./register-account";
 

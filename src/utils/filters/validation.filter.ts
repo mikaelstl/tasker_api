@@ -1,4 +1,4 @@
-import { ApiError } from '@interfaces/error';
+import { ApiError } from '@interfaces/Error';
 import { ExceptionFilter, Catch, ArgumentsHost, BadRequestException, HttpException, Logger } from '@nestjs/common';
 import { Request, Response } from 'express';
 

@@ -8,7 +8,7 @@ import { LoginDTO } from 'src/security/dto/login.dto';
 import { JwtPayload } from 'jsonwebtoken';
 import { AccountRepository } from '@modules/accounts/account.repository';
 import { OrgRole } from 'generated/prisma';
-import { JWTPayload } from 'src/utils/types/JWTPayload';
+import { JWTPayload } from '@interfaces/JWTPayload';
 import { UserRepository } from '@modules/users/user.repository';
 import { AffiliationRepository } from '@modules/affiliations/affiliations.repository';
 
@@ -44,7 +44,6 @@ export class AuthService {
     const user = await this.users.find({
       accountkey: account.id
     })
-    // const affiliation = await this.affiliations.findByUser(user.username);
 
     console.log(user);
     
@@ -58,7 +57,7 @@ export class AuthService {
       throw new WrongPasswordException();
     }
 
-    const payload: JWTPayload = { sub: account.id!, username: user.username, role: null };
+    const payload: JWTPayload = { sub: account.id!, username: user.username };
 
     const token = await this.jwt.signAsync(payload, { secret: SECRET })
 

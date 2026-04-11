@@ -1,7 +1,7 @@
-import { ApiResponse } from "@interfaces/response";
+import { ApiResponse } from "@interfaces/ApiResponse";
 import { Body, Controller, Delete, HttpStatus, Param, Patch, Post, Res, UseGuards } from "@nestjs/common";
 import { JwtAuthGuard } from "@security/auth.guard";
-import { RolesGuard } from "@guards/roles.guard";
+import { PermissionGuard } from "@guards/permission.guard";
 import { CurrentAccount } from "src/decorators/CurrentAccount.decorator";
 import { CurrentAccountDTO } from "@modules/users/dto/current-account.dto";
 import { DefineAffiliationDTO } from "@modules/affiliations/dto/define.dto";

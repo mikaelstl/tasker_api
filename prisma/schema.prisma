@@ -24,7 +24,7 @@ model Account {
   created_at         DateTime         @default(now())
   updated_at         DateTime         @updatedAt
 
-  @@map("Accounts")
+  @@map("accounts")
 }
 
 model User {
@@ -37,7 +37,6 @@ model User {
   accountkey         String           @unique
   account            Account          @relation(fields: [accountkey], references: [id], onDelete: Cascade)
 
-  member_in          Member[]
   comments           Comment[]
   notifications      Notification[]
   participates_in    Affiliation[]
@@ -47,7 +46,7 @@ model User {
   created_at         DateTime         @default(now())
   updated_at         DateTime         @updatedAt
 
-  @@map("Users")
+  @@map("users")
 }
 
 model Organization {
@@ -64,7 +63,7 @@ model Organization {
   created_at         DateTime         @default(now())
   updated_at         DateTime         @updatedAt
 
-  @@map("Organizations")
+  @@map("organizations")
 }
 
 model Affiliation {
@@ -73,17 +72,19 @@ model Affiliation {
   orgkey             String
   in_org             Organization     @relation(fields: [orgkey], references: [id])
 
+  role               OrgRole          @default(MEMBER)
+
   userkey            String
   user               User             @relation(fields: [userkey], references: [username])
- 
-  role               OrgRole          @default(MEMBER)
+
+  member_in          Member[]
 
   created_at         DateTime         @default(now())
   updated_at         DateTime         @updatedAt
 
   @@unique([userkey, orgkey])
 
-  @@map("Affiliations")
+  @@map("affiliations")
 }
 
 model Image {
@@ -97,7 +98,7 @@ model Image {
   created_at     DateTime    @default(now())
   updated_at     DateTime    @updatedAt
 
-  @@map("Images")
+  @@map("images")
 }
 
 model Project {
@@ -119,7 +120,7 @@ model Project {
   created_at         DateTime            @default(now())
   updated_at         DateTime            @updatedAt
 
-  @@map("Projects")
+  @@map("projects")
 }
 
 model Member {
@@ -129,14 +130,14 @@ model Member {
   project            Project          @relation(fields: [projectkey], references: [id], onDelete: Cascade)
   
   userkey            String
-  user               User             @relation(fields: [userkey], references: [username], onDelete: Cascade)
+  user               Affiliation      @relation(fields: [userkey], references: [id], onDelete: Cascade)
   
   tasks              Task[]
   
   created_at         DateTime         @default(now())
   updated_at         DateTime         @updatedAt
 
-  @@map("Member")
+  @@map("member")
 }
 
 model Task {
@@ -158,7 +159,7 @@ model Task {
   created_at         DateTime         @default(now())
   updated_at         DateTime         @updatedAt
 
-  @@map("Tasks")
+  @@map("tasks")
 }
 
 model Comment {
@@ -175,7 +176,7 @@ model Comment {
   created_at         DateTime         @default(now())
   updated_at         DateTime         @updatedAt
  
-  @@map("Comments")
+  @@map("comments")
 }
 
 model Event {
@@ -191,7 +192,7 @@ model Event {
   created_at         DateTime         @default(now())
   updated_at         DateTime         @updatedAt
 
-  @@map("Events")
+  @@map("events")
 }
 
 model Notification {
@@ -205,7 +206,7 @@ model Notification {
   created_at         DateTime         @default(now())
   updated_at         DateTime         @updatedAt
 
-  @@map("Notifications")
+  @@map("notifications")
 }
 
 enum ProjectProgress {

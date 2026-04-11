@@ -1,8 +1,8 @@
-import { ApiResponse } from "@interfaces/response";
+import { ApiResponse } from "@interfaces/ApiResponse";
 import { Body, Controller, Delete, Get, Headers, HttpStatus, Param, Post, Put, Query, Res, UseGuards } from "@nestjs/common";
 import { MembersRepository } from "./member.repository";
 import { JwtAuthGuard } from "../../security/auth.guard";
-import { RolesGuard } from "src/guards/roles.guard";
+import { PermissionGuard } from "@guards/permission.guard";
 import { Roles } from "src/decorators/Roles";
 import { OrgRole } from "generated/prisma";
 import { CurrentAccount } from "src/decorators/CurrentAccount.decorator";
@@ -10,7 +10,7 @@ import { CurrentAccountDTO } from "@modules/users/dto/current-account.dto";
 import { DefineMemberDTO } from "@modules/members/dto/member.create.dto";
 
 @Controller('members')
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, PermissionGuard)
 @Roles(OrgRole.OWNER, OrgRole.MANAGER)
 export class MemberController {
   constructor(

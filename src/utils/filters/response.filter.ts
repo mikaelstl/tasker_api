@@ -1,4 +1,4 @@
-import { ApiResponse } from "@interfaces/response";
+import { ApiResponse } from "@interfaces/ApiResponse";
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from "@nestjs/common";
 import { Response } from "express";
 import { Observable, catchError, map } from "rxjs";

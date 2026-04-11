@@ -1,8 +1,8 @@
 import { Body, Controller, Delete, HttpStatus, Param, Post, Req, Res, UseGuards, } from "@nestjs/common";
 import { OrganizationRepository } from "./organization.repository";
-import { ApiResponse } from "@interfaces/response";
+import { ApiResponse } from "@interfaces/ApiResponse";
 import { OrganizationService } from "./organization.service";
-import { RolesGuard } from "src/guards/roles.guard";
+import { PermissionGuard } from "@guards/permission.guard";
 import { Roles } from "src/decorators/Roles";
 import { OrgRole } from "generated/prisma";
 import { OrganizationDTO } from "@modules/organization/dto/organization.dto";

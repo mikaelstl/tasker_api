@@ -1,4 +1,4 @@
-import { ApiResponse } from "@interfaces/response";
+import { ApiResponse } from "@interfaces/ApiResponse";
 import { Body, Controller, Get, Headers, HttpCode, HttpStatus, Post, Res } from "@nestjs/common";
 import { AuthService } from "src/security/auth.service";
 import { AuthDTO } from "src/security/dto/auth.dto";

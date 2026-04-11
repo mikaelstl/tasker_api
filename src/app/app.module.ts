@@ -8,6 +8,7 @@ import { PrismaModule } from 'src/database/prisma.module';
 import { UploadModule } from '../modules/upload/upload.module';
 import { AccountModule } from '@modules/accounts/account.module';
 import { OrganizationModule } from '@modules/organization/organization.module';
+import { PermissionModule } from '@permissions/permission.modules';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { OrganizationModule } from '@modules/organization/organization.module';
     UserModule,
     OrganizationModule,
     ProjectsModule,
+    PermissionModule
   ],
   controllers: [AppController],
   providers: [AppService],

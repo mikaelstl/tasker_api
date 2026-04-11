@@ -1,4 +1,4 @@
-import { ApiResponse } from "@interfaces/response";
+import { ApiResponse } from "@interfaces/ApiResponse";
 import { Body, Controller, Delete, Get, Headers, HttpStatus, Param, Post, Put, Query, Res, UseGuards } from "@nestjs/common";
 import { MembersRepository } from "../members/member.repository";
 import { JwtAuthGuard } from "../../security/auth.guard";
@@ -6,7 +6,7 @@ import { ProjectService } from "@modules/projects/project.service";
 import { CreateProjectDTO } from "@modules/projects/dto/project.create.dto";
 import { ProjectQueryDTO } from "@modules/projects/dto/project.query.dto";
 import { ProjectRepository } from "@modules/projects/projects.repository";
-import { RolesGuard } from "src/guards/roles.guard";
+import { PermissionGuard } from "@guards/permission.guard";
 import { Roles } from "src/decorators/Roles";
 import { OrgRole } from "generated/prisma";
 import { CurrentAccount } from "src/decorators/CurrentAccount.decorator";
@@ -23,7 +23,7 @@ export class ProjectController {
   ) {}
 
   @Post()
-  @UseGuards(RolesGuard)
+  @UseGuards(PermissionGuard)
   @Roles(OrgRole.OWNER)
   async create(
     @CurrentAccount() account: CurrentAccountDTO,
@@ -65,7 +65,7 @@ export class ProjectController {
   }
 
   @Get('/:id')
-  @UseGuards(RolesGuard)
+  @UseGuards(PermissionGuard)
   @Roles(OrgRole.OWNER)
   async find(
     @Param('id') id: string,
@@ -87,7 +87,7 @@ export class ProjectController {
   }
 
   @Put('/:id')
-  @UseGuards(RolesGuard)
+  @UseGuards(PermissionGuard)
   @Roles(OrgRole.OWNER)
   async edit(
     @Param('id') id: string,
@@ -110,7 +110,7 @@ export class ProjectController {
   }
 
   @Delete('/del/:id')
-  @UseGuards(RolesGuard)
+  @UseGuards(PermissionGuard)
   @Roles(OrgRole.OWNER)
   async delete(
     @Param('id') id: string,

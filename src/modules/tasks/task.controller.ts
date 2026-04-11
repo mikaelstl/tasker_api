@@ -1,4 +1,4 @@
-import { ApiResponse } from "@interfaces/response";
+import { ApiResponse } from "@interfaces/ApiResponse";
 import { Body, Controller, Delete, Get, HttpStatus, Param, Post, Put, Query, Res, UseGuards } from "@nestjs/common";
 import { TasksRepository } from "@modules/tasks/tasks.repository";
 import { JwtAuthGuard } from "../../security/auth.guard";
