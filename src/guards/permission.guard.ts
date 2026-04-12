@@ -1,4 +1,5 @@
 import { Resources } from "@enums/Resources.enum";
+import { PolicyContext } from "@interfaces/ABACPayload";
 import { CanActivate, ExecutionContext, ForbiddenException, Injectable, UnauthorizedException } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 import { PermissionService } from "@permissions/permission.service";
@@ -29,9 +30,12 @@ export class PermissionGuard implements CanActivate {
 
     if (!user) throw new UnauthorizedException('Missing authenticated user. Please login or create a account.')
 
-    // PEGAR POLICY NO MAP DE POLICIES
-    
     // MONTAR CONTEXT
+    const payload = {
+      action,
+      resource,
+      role,
+    } as PolicyContext
     
     // VERIFICAR SE O USUÁRIO PODE EXECUTAR TAREFA
 
