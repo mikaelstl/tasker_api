@@ -11,7 +11,6 @@
     "sourceMap": true,
     "outDir": "./build",
     "baseUrl": "./",
-    "ignoreDeprecations": "6.0",
     "incremental": true,
     "skipLibCheck": true,
     "strictNullChecks": false,

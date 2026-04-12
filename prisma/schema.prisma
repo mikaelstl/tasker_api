@@ -132,6 +132,8 @@ model Member {
   userkey            String
   user               Affiliation      @relation(fields: [userkey], references: [id], onDelete: Cascade)
   
+  role               MemberRole       @default(MEMBER)
+  
   tasks              Task[]
   
   created_at         DateTime         @default(now())
@@ -229,6 +231,11 @@ enum EventCategory {
 
 enum OrgRole {
   OWNER
+  MANAGER
+  MEMBER
+}
+
+enum MemberRole {
   MANAGER
   MEMBER
 }

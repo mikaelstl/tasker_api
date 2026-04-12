@@ -9,4 +9,5 @@ export interface MemberDTO {
   readonly userkey: string;
   readonly user: UserDTO;
   readonly tasks: TaskDTO[];
+  readonly role: MemberRole;
 }

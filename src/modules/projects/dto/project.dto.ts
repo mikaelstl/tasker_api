@@ -1,3 +1,4 @@
+import { MemberDTO } from "@modules/members/dto/member.dto";
 import { $Enums } from "generated/prisma";
 
 export enum ProjectProgress {
@@ -14,4 +15,6 @@ export interface ProjectDTO {
   readonly ownerkey?: string;
   readonly due_date?: Date;
   readonly progress?: $Enums.ProjectProgress;
+
+  readonly members?: MemberDTO;
 }

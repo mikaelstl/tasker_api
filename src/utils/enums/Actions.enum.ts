@@ -1,23 +1,16 @@
-enum BaseActions {
-  ADD    = 'add',
-  DEL    = 'del',
-  VIEW   = 'view',
-  LIST   = 'list',
-  FIND   = 'find',
-  EDIT   = 'edit',
-  DEFINE = 'define',
-}
+// export enum Actions {
+//   CREATE = 'create',
+//   READ = 'read',
+//   UPDATE = 'update',
+//   DELETE = 'delete',
+//   MANAGE = 'manage',
+// }
 
-enum NestedActions {
-  OWNER = 'owner',
-  TO_ME = 'to_me',
-  TO_OTHER = 'to_other'
-}
-
-type ActionType = BaseActions | NestedActions;
-
-export {
-  BaseActions,
-  NestedActions,
-  ActionType
+export enum Actions {
+  ALL = '*',
+  CREATE = 'create',
+  FIND = 'find',
+  DEL = 'DEL',
+  DELETE = 'delete',
+  MANAGE = 'manage',
 }

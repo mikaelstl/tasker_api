@@ -2,9 +2,6 @@ import { Body, Controller, Delete, HttpStatus, Param, Post, Req, Res, UseGuards,
 import { OrganizationRepository } from "./organization.repository";
 import { ApiResponse } from "@interfaces/ApiResponse";
 import { OrganizationService } from "./organization.service";
-import { PermissionGuard } from "@guards/permission.guard";
-import { Roles } from "src/decorators/Roles";
-import { OrgRole } from "generated/prisma";
 import { OrganizationDTO } from "@modules/organization/dto/organization.dto";
 import { OrganizationCreateDTO } from "@modules/organization/dto/create.dto";
 import { CurrentAccount } from "src/decorators/CurrentAccount.decorator";

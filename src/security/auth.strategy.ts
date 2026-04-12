@@ -16,6 +16,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   validate(payload: JWTPayload) {
-    return { account: payload.sub, username: payload.username, role: payload.role }
+    return { account: payload.sub, username: payload.username }
   }
 }

@@ -7,7 +7,6 @@ import { CreateProjectDTO } from "@modules/projects/dto/project.create.dto";
 import { ProjectQueryDTO } from "@modules/projects/dto/project.query.dto";
 import { ProjectRepository } from "@modules/projects/projects.repository";
 import { PermissionGuard } from "@guards/permission.guard";
-import { Roles } from "src/decorators/Roles";
 import { OrgRole } from "generated/prisma";
 import { CurrentAccount } from "src/decorators/CurrentAccount.decorator";
 import { CurrentAccountDTO } from "@modules/users/dto/current-account.dto";
@@ -24,7 +23,6 @@ export class ProjectController {
 
   @Post()
   @UseGuards(PermissionGuard)
-  @Roles(OrgRole.OWNER)
   async create(
     @CurrentAccount() account: CurrentAccountDTO,
     @Body() data: CreateProjectDTO,
@@ -66,7 +64,6 @@ export class ProjectController {
 
   @Get('/:id')
   @UseGuards(PermissionGuard)
-  @Roles(OrgRole.OWNER)
   async find(
     @Param('id') id: string,
     @Res() response,
@@ -88,7 +85,6 @@ export class ProjectController {
 
   @Put('/:id')
   @UseGuards(PermissionGuard)
-  @Roles(OrgRole.OWNER)
   async edit(
     @Param('id') id: string,
     @Body() data: EditProjectDTO,
@@ -111,7 +107,6 @@ export class ProjectController {
 
   @Delete('/del/:id')
   @UseGuards(PermissionGuard)
-  @Roles(OrgRole.OWNER)
   async delete(
     @Param('id') id: string,
     @Res() response,

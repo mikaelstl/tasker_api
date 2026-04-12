@@ -1,22 +1,56 @@
-import { ABACPayload } from "@interfaces/ABACPayload";
-import { Permission } from "./type/permissions.type";
 import { ForbiddenException, Injectable } from "@nestjs/common";
-import { UserRepository } from "@modules/users/user.repository";
-import { ROLE_PERMISSIONS } from "./permissions.map";
+import { Actions } from "@enums/Actions.enum";
+import { Resources } from "@enums/Resources.enum";
+import { OrgRole } from "generated/prisma";
+import { PolicyContext } from "@interfaces/ABACPayload";
+
+// type RolesPermissions = {
+//   [ K in OrgRole | '*' ]: {
+//     [ R in Resources ]?: Actions[] | '*'
+//   }
+// }
+
+type ResourceMap = Map<Resources | '*', Set<Actions | '*'>>
+
+type RolesPermissions = Map<OrgRole, ResourceMap>
 
 @Injectable()
 export class PermissionService {
-  constructor(
-    private readonly users: UserRepository
-  ){}
+  private readonly ROLES_PERMISSIONS: RolesPermissions;
 
-  can(payload: ABACPayload) {
-    const { action, subject } = payload;
+  constructor() {
+    // GERAR PERMISSÕES DO OWNER
 
-    if (false) {
-      throw new ForbiddenException("You don't have permission to perform this action.");
-    }
-
+    // GERAR PERMISSÕES DO MANAGER
     
+    // GERAR PERMISSÕES DO MEMBER
+  }
+
+  can(
+    ctx: PolicyContext,
+    policy: () => boolean
+  ): boolean {
+    // EXTRAIR role, action, resource DE ctx
+    const { role, action, resource } = ctx;
+
+    // BUSCAR EM UM MAP PRIVADO DA CLASSE A ROLE
+    const perms = this.ROLES_PERMISSIONS.get(role);
+    if (!perms) return false;
+
+    // VERIFICA SE ELE POSSUI ACESSO AO RESOURCE
+    const hasAccess = perms.has(resource);
+    if (!hasAccess) return false;
+
+    const abilities = perms.get(resource);
+
+    // VERIFICA SE ELE POSSUI ACESSO A ACTION
+    const hasAbility = abilities.has(action)
+    if (!hasAbility) return false;
+
+    // EXECUTA A POLICY
+    const canPerform = policy();
+
+    // RETORNA SE O USUÁRIO ESTÁ AUTORIZADO OU NÃO
+    return canPerform;
   }
 }
