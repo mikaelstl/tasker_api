@@ -27,7 +27,7 @@ export class MemberController {
       status: HttpStatus.CREATED,
       data: result,
       message: 'Member added.',
-      error: false,
+      
       timestamp: new Date().toISOString(),
       path: '/members'
     };
@@ -47,7 +47,7 @@ export class MemberController {
       status: HttpStatus.OK,
       data: result,
       message: '',
-      error: false,
+      
       timestamp: new Date().toISOString(),
       path: '/members'
     };
@@ -67,7 +67,7 @@ export class MemberController {
       status: HttpStatus.OK,
       data: result,
       message: `Member removed.`,
-      error: false,
+      
       timestamp: new Date().toISOString(),
       path: '/members/del'
     };

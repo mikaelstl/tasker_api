@@ -1,21 +1,19 @@
 import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { SECRET } from 'src/config/env.config';
-import { AuthDTO } from 'src/security/dto/auth.dto';
-import { WrongPasswordException } from 'src/utils/errors/wrong_password.exception';
+import { SECRET } from '@config/env.config';
+import { AuthDTO } from '@security/dto/auth.dto';
+import { WrongPasswordException } from '@exceptions/wrong_password.exception';
 import { compare, compareSync, hash } from 'bcrypt'
-import { LoginDTO } from 'src/security/dto/login.dto';
+import { LoginDTO } from '@security/dto/login.dto';
 import { JwtPayload } from 'jsonwebtoken';
 import { AccountRepository } from '@modules/accounts/account.repository';
 import { JWTPayload } from '@interfaces/JWTPayload';
 import { UserRepository } from '@modules/users/user.repository';
-import { AffiliationRepository } from '@modules/affiliations/affiliations.repository';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly accounts: AccountRepository,
-    private readonly affiliations: AffiliationRepository,
     private readonly users: UserRepository,
     private readonly jwt: JwtService,
   ) { }

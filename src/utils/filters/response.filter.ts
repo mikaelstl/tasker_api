@@ -14,6 +14,7 @@ export class ResponseInterceptor implements NestInterceptor {
           return {
             status: response.statusCode,
             data: response.data,
+            path: response.url
           }
         }
       )

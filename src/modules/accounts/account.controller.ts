@@ -1,9 +1,10 @@
-import { Body, Controller, HttpStatus, Param, Post, Res, } from "@nestjs/common";
+import { Body, Controller, HttpStatus, Param, Post, Res, UseGuards, } from "@nestjs/common";
 import { AccountRepository } from "./account.repository";
 import { AccountDTO } from "@modules/accounts/dto/account.dto";
 import { ApiResponse } from "@interfaces/ApiResponse";
 import { AccountService } from "./account.service";
 import { RegisterAccount } from "./register-account";
+import { JwtAuthGuard } from "@security/auth.guard";
 
 @Controller('accounts')
 export class AccountController {
@@ -13,7 +14,7 @@ export class AccountController {
   ) { }
 
   @Post('register/')
-  async common(
+  async register(
     @Body() data: RegisterAccount,
     @Res() resp
   ) {
@@ -23,7 +24,6 @@ export class AccountController {
       status: HttpStatus.CREATED,
       data: result,
       message: 'Registered with success',
-      error: false,
       timestamp: new Date().toISOString(),
       path: '/accounts/register/'
     };
@@ -32,6 +32,7 @@ export class AccountController {
   }
 
   @Post('del/:id')
+  @UseGuards(JwtAuthGuard)
   async delete(
     @Param() id: string,
     @Res() resp
@@ -40,9 +41,8 @@ export class AccountController {
 
     const response: ApiResponse = {
       status: HttpStatus.CREATED,
-      data: result,
-      message: 'Registered with success',
-      error: false,
+      data: null,
+      message: 'Accoutn deleted with success',
       timestamp: new Date().toISOString(),
       path: '/accounts/del'
     };

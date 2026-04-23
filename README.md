@@ -1,6 +1,12 @@
-# Projeto Tasker API
+<div align="center">
+  <img src="https://raw.githubusercontent.com/mikaelstl/tasker_app/develop/public/app_logo.png" width="124"/>
 
-Esse repositório contém código da API para a aplicação Tasker, sistema de auxílio e organização de projetos e equipes.
+  # Tasker API
+</div>
+
+![status](https://img.shields.io/badge/status-em_desenvolvimento-blue)
+
+Tasker é uma ferramenta de gestão de projetos e equipes, voltado para ambientes organizacionais e escolares, onde análise de desempenho é um fator altamente presente. Desenvolvido com Node.JS, ReactJS e NestJS.
 
 ### Requisitos
 
@@ -9,17 +15,194 @@ Esse repositório contém código da API para a aplicação Tasker, sistema de a
 
 #### Estrutura do ENV
 ```bash
-# Database Configuration
+# Database Settings
 DB_URL = "postgresql://USUARIO:SENHA@HOST:PORTA/NOME_DO_BANCO?schema=public"
-DB_USER = {seu_usuario}
-DB_PASS = {sua_senha}
-DB_NAME = {nome_do_banco}
-DB_HOST = {host/localhost}
-DB_PORT = {porta}
 DB_DIALECT = postgres
-#API Keys
+
+# API Settings
 API_PORT = {porta}
+
+#API Keys
 SECRET = "sua_key"
 ```
 
-Remova as chaves ({}).
+![IMPORTANT] Remova as chaves ({}).
+
+### Principais Bibliotecas
+
+- [NestJs](https://nestjs.com/) - biblioteca para estruturação da API, controllers, services e injeção de dependências.
+- [Prisma](https://www.prisma.io/) - ORM para conexão com banco de dados.
+- [@supabase/supabase-js](https://supabase.com/docs/reference/javascript/installing) - biblioteca para conexão com bancos e stores em nuvem.
+- [bcrypt](https://www.npmjs.com/package/bcrypt) - biblioteca para encriptação de dados.
+- [multer](https://www.npmjs.com/package/multer) - biblioteca para tratamento e upload de arquivos.
+- [nanoid](https://www.npmjs.com/package/nanoid) - biblioteca utilizada para gerar códigos de identificação personalizados.
+- [class-validator](https://www.npmjs.com/package/class-validator) - biblioteca de validação de dados, utilizada para garantir integridade de dados enviados nas rotas.
+
+#### Autenticação
+- [jsonwebtoken](https://www.npmjs.com/package/jsonwebtoken) - biblioteca para estruturação e tipagem de tokens JWT.
+- [@nestjs/jwt](https://www.npmjs.com/package/@nestjs/jwt) - biblioteca de integração e manipulação de tokens JWT para NestJs.
+- [passport-jwt](https://www.npmjs.com/package/passport-jwt) - biblioteca para auxiliar na autenticação de rotas utilizando JWT.
+
+## Autenticação
+
+Esta API utiliza de tokens JWT para autenticação dentro do sistema. para garantir a segurança dos dados.
+
+### Fluxo
+
+Para obter o token JWT, é necessário seguir os seguintes passos.
+
+**POST** `/auth/login`
+
+Para a rota `/login` é necessário enviar o seguinte objeto.
+```json
+{
+  "email": "email_registrado@email.com",
+  "senha": "sua_senha"
+}
+```
+
+Com os dados enviados com sucesso. O sistema irá retornar um objeto no seguinte modelo. 
+
+```json
+  {
+		"account": "id_sua_conta",
+		"email": "email_registrado@email.com",
+		"access_token": "seu_token_gerado"
+	},
+```
+
+**Enviando o token na requisição**
+
+A API segue a padronização de envio de tokens via Header da requisição. Seguindo o seguinte modelo:
+
+```bash
+  Authorization: Bearer <seu_token_jwt_aqui>
+```
+
+### Autorização
+
+Esta API é baseada em autorização de usuários por role e ABAC (Attribute Based Authorization Control), ou seja, cada usuário poderá somente realizar tarefas de acordo com seu cargo (Role) em uma organização e suas permissões.
+
+Para que o sistema identifique suas permissões e seu perfil (Role) é necessário enviar o ID da organização via Headers da requisição. Seguindo o seguinte padrão:
+
+```bash
+  X-Org-Key: <id_da_organização>
+```
+
+## Endpoints
+
+#### Contas (`/accounts`)
+
+| Método | Endpoint | Descrição | Autenticação |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/register` | Cria uma nova conta | - |
+| `DELETE` | `/del/:id` | Remove uma conta por ID | Sim |
+
+#### Usuários (`/users`)
+
+| Método | Endpoint | Descrição | Autenticação |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/` | Cria um novo usuário | - |
+| `GET` | `/` | Lista todos os usuários | - |
+| `GET` | `/:username` | Retorna usuário com _username_ equivalente | - |
+| `DELETE` | `/del/:username` | Remove um usuário pelo seu _username_ | - |
+
+> ![IMPORTANT]
+> Este endpoint ainda não possui autenticação, usar com CUIDADO.
+
+### Padrão de Respostas
+
+A API segue um sistema de tipagem dos dados para respostas e exceções. Onde o resultado de consultas a bancos de dados ou mensagens de erro estão contidos dentro deste objeto.
+
+Este modelo foi escolhido para garantir uma padronização geral, pensando principalmente no tratamento destes dados no front-end.
+
+**RESPONSE**
+
+Para resposes da API, o sistema retorna um objeto contendo as seguintes informações. 
+
+| Campo | Tipo | Descrição |
+| :--- | :--- | :--- |
+| `status` | `number` | Código de status HTTP (ex: 200, 201). |
+| `data` | `any` | O corpo da resposta. Contém o objeto solicitado ou null. |
+| `message` | `string` | Mensagem legível descrevendo o resultado da operação. |
+| `timestamp` | `string` | Data e hora da requisição no formato ISO 8601 UTC. |
+| `path` | `string` | O endpoint que foi chamado na requisição. |
+
+Exemplo de resposta:
+  ```json
+  {
+    "status": 201,
+	  "data": {
+      "id": "cmnxaeswa0004mdloig80axou",
+	  	"name": "org.tasker",
+	  	"ownerkey": "mikaelst",
+	  	"created_at": "2026-04-13T14:27:54.442Z",
+	  	"updated_at": "2026-04-13T14:27:54.442Z"
+	  },
+	  "message": "Organization created with success",
+	  "timestamp": "2026-04-13T14:27:54.598Z",
+	  "path": "/org"
+  }
+  ```
+> [!IMPORTANT]
+> Este objeto será retornado somente em casos de sucesso.
+
+**ERROR**
+
+Caso a API retorne um erro ou uma exceção, o objeto irá conter as seguintes informações. 
+
+| Campo | Tipo | Descrição |
+| :--- | :--- | :--- |
+| `status` | `number` | Código de status HTTP (ex: 401, 403, 500). |
+| `errors` | `Error` | Os erros ocorridos na requisição. Contém um conjunto de objetos (Padrão da API). |
+| `timestamp` | `string` | Data e hora da requisição no formato ISO 8601 UTC. |
+| `path` | `string` | O endpoint que foi chamado na requisição. |
+
+**Interface Error**
+
+| Campo | Tipo | Descrição |
+| :--- | :--- | :--- |
+| `level` | `ErrorLevel` | Representa gravidade do erro (ex: Aviso, Erro Interno, Validação). |
+| `message` | `string` | Mensagem legível descrevendo o erro ocorrido. |
+| `error` | `string` | Texto pequeno indicando o tipo de erro ocorrido. |
+
+**Níveis de Erro**
+
+| Nível | Descrição |
+| :--- | :--- |
+| `warning` | Avisos comuns relacionados aos dados enviados pelo usuário |
+| `error` | Erros gerais da API (ex: Dado não encontrado, Dado já existente, Senha ou Login incorreto) |
+| `critical` | Utilizado para indicar erros internos (ex: Internal Error - 500) |
+| `validation` | Erros de validação em Bancos de Dados (ex: Colisão de Chaves, Violação de Chaves Estrangeiras) |
+| `info` | Não utilizado na API (Somente padronizado com o Front-end) |
+
+Exemplo de erro:
+  ```json
+  {
+  	"status": 403,
+  	"errors": [
+  		{
+  			"level": "error",
+  			"message": "You don't have permission to perform this action.",
+  			"error": "Forbidden"
+  		}
+  	],
+  	"timestamp": "2026-04-23T12:07:07.942Z",
+  	"path": "/project"
+  }
+  ```
+
+### Organização do Projeto
+
+| Pasta | Descrição |
+| :--- | :--- |
+| `app` | Contém os arquivos e classes referentes a organização e configuração padrão da API em geral |
+| `config` | Arquivos de configuração de variáveis de ambiente e geração e conexão com *clients* externos |
+| `database` | Contém classes para configuração e conexão com o Prisma ou outro sistema ORM |
+| `decorators` | Contém *decorators* personalizados para lidar com meta-dados da API |
+| `guards` | Guarda *route guards* personalizados para lidar com acessos a rotas, tratamento de dados, etc |
+| `modules` | O coração da aplicação, onde são guardados os módulos e classes referentes a cada recurso da aplicação (ex: Projects, Tasks, Accounts, ...) |
+| `permissions` | Contém os arquivos e classes para tratamento de permissões |
+| `policy` | Arquivos para descrever como cada ação de usuário deve ser executada |
+| `security` | Arquivos para manipulação e geração dos tokens JWT |
+| `utils` | Utilitários do sistema (ex: Enums, Exceptions personalizadas, Http Filters, Interfaces/Types globais e funções globais) |

@@ -7,15 +7,19 @@ export class HttpExceptionFilter implements ExceptionFilter {
   catch(ex: HttpException, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
-    const request = ctx.getResponse<Request>();
+    const request = ctx.getRequest<Request>();
     const status = ex.getStatus();
-    const message = ex.message;
 
-    const exception: ApiError = {
+    const message = ex.message;
+    
+    const exception: any = ex.getResponse();
+
+    const error: ApiError = {
       status: status,
       errors: [{
         level: 'error',
-        message: message
+        message: message,
+        error: exception.error
       }],
       timestamp: new Date().toISOString(),
       path: request.url
@@ -23,6 +27,6 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
     response
       .status(status)
-      .json(exception)
+      .json(error)
   }
 }

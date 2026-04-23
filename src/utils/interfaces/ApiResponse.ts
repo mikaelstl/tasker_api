@@ -6,8 +6,6 @@ export interface ApiResponse {
   readonly data: any;
   
   readonly path: string;
-  
-  readonly error: boolean;
 
   readonly timestamp: string;
 }

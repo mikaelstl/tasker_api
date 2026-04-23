@@ -14,12 +14,6 @@ export class UserController {
     private readonly repository: UserRepository,
   ) {}
 
-  /* 
-    This method must recive a id of one organization,
-    the method to create users and automaticaly add
-    to a organizations is via link:
-    /users/add?orgkey={id} generated in front;
-  */
   @Post()
   async create(
     @Body() data: CreateUserDTO,
@@ -31,7 +25,7 @@ export class UserController {
       status: HttpStatus.CREATED,
       data: result,
       message: 'Registered with success',
-      error: false,
+      
       timestamp: new Date().toISOString(),
       path: '/users'
     };
@@ -49,7 +43,7 @@ export class UserController {
       status: HttpStatus.CREATED,
       data: result,
       message: 'Registered with success',
-      error: false,
+      
       timestamp: new Date().toISOString(),
       path: '/users'
     };
@@ -68,7 +62,7 @@ export class UserController {
       status: HttpStatus.CREATED,
       data: result,
       message: 'Registered with success',
-      error: false,
+      
       timestamp: new Date().toISOString(),
       path: '/users'
     };
@@ -76,7 +70,7 @@ export class UserController {
     return resp.status(response.status).json(response);
   }
 
-  @Delete(':username')
+  @Delete('del/:username')
   async delete(
     @Param('username') username: string,
     @Res() resp
@@ -87,7 +81,7 @@ export class UserController {
       status: HttpStatus.CREATED,
       data: result,
       message: 'Registered with success',
-      error: false,
+      
       timestamp: new Date().toISOString(),
       path: '/users/del'
     };

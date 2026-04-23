@@ -23,7 +23,7 @@ export class TasksController {
       status: HttpStatus.CREATED,
       data: result,
       message: 'New task added to project',
-      error: false,
+      
       timestamp: new Date().toISOString(),
       path: '/tasks'
     };
@@ -42,7 +42,7 @@ export class TasksController {
       status: HttpStatus.OK,
       data: result,
       message: '',
-      error: false,
+      
       timestamp: new Date().toISOString(),
       path: '/tasks'
     };

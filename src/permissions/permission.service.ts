@@ -62,7 +62,6 @@ export class PermissionService {
 
     // BUSCAR EM UM MAP PRIVADO DA CLASSE A ROLE
     const perms = this.ROLES_PERMISSIONS.get(role);
-    console.log(perms);
     if (!perms) return false;
 
     // VERIFICAR SE AS PERMISSÕES SÃO GLOBAIS
@@ -76,7 +75,6 @@ export class PermissionService {
     if (!hasAccess) return false;
 
     const abilities = perms.get(resource);
-    console.log(abilities);
 
     // VERIFICA SE ELE POSSUI ACESSO A ACTION
     const hasAbility = abilities.includes(action) || abilities.includes(Actions.ALL);

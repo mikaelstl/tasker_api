@@ -26,7 +26,7 @@ export class AffiliationController {
       status: HttpStatus.CREATED,
       data: result,
       message: 'Affiliation added.',
-      error: false,
+      
       timestamp: new Date().toISOString(),
       path: '/affiliations'
     };
@@ -46,7 +46,7 @@ export class AffiliationController {
       status: HttpStatus.NO_CONTENT,
       data: null,
       message: `Affiliation removed.`,
-      error: false,
+      
       timestamp: new Date().toISOString(),
       path: '/affiliations/del'
     };
@@ -66,7 +66,7 @@ export class AffiliationController {
       status: HttpStatus.OK,
       data: result,
       message: '',
-      error: false,
+      
       timestamp: new Date().toISOString(),
       path: '/affiliations/promote'
     };
@@ -86,7 +86,7 @@ export class AffiliationController {
       status: HttpStatus.OK,
       data: result,
       message: '',
-      error: false,
+      
       timestamp: new Date().toISOString(),
       path: '/affiliations/demote'
     };

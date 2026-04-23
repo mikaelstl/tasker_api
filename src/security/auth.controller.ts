@@ -30,7 +30,7 @@ export class AuthController {
       status: HttpStatus.OK,
       data: result,
       message: 'Logged',
-      error: false,
+      
       timestamp: new Date().toISOString(),
       path: '/auth/login'
     };
@@ -49,7 +49,7 @@ export class AuthController {
   //     status: HttpStatus.CREATED,
   //     data: result,
   //     message: 'Registered with success',
-  //     error: false,
+  //     
   //     timestamp: new Date().toISOString(),
   //     path: '/auth/register'
   //   };
@@ -70,7 +70,7 @@ export class AuthController {
       status: HttpStatus.OK,
       data: result,
       message: 'Valid token',
-      error: false,
+      
       timestamp: new Date().toISOString(),
       path: '/auth/validate'
     };

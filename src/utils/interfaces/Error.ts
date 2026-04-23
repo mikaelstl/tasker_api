@@ -1,6 +1,8 @@
 interface Error {
-  level: ErrorLevel;
-  message: string
+  readonly level: ErrorLevel;
+  readonly message: string;
+  readonly details?: string;
+  readonly error?: string;
 }
 
 type ErrorLevel =  'info' | 'warning' | 'error' | 'critical' | 'validation';

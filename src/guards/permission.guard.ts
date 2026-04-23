@@ -36,8 +36,6 @@ export class PermissionGuard implements CanActivate {
 
     const { user } = ctx.switchToHttp().getRequest();
 
-    console.log(user);
-
     if (!user || !orgkey) throw new UnauthorizedException('Missing authenticated user. Please login or create a account.')
 
     const affiliation = await this.affiliations.findByUserOrgKey(
@@ -45,18 +43,12 @@ export class PermissionGuard implements CanActivate {
       orgkey
     );
 
-    console.log(affiliation);
-    
-
     // MONTAR CONTEXT
     const payload = {
       action,
       resource,
       role: affiliation.role,
     } as PolicyContext;
-
-    console.log(payload);
-    
     
     // VERIFICAR SE O USUÁRIO PODE EXECUTAR TAREFA
     const hasPermission = this.permissions.can(payload);

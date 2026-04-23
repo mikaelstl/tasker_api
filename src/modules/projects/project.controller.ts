@@ -47,7 +47,7 @@ export class ProjectController {
       status: HttpStatus.CREATED,
       data: result,
       message: 'New project created with success',
-      error: false,
+      
       timestamp: new Date().toISOString(),
       path: '/project'
     };
@@ -68,7 +68,7 @@ export class ProjectController {
       status: HttpStatus.OK,
       data: result,
       message: '',
-      error: false,
+      
       timestamp: new Date().toISOString(),
       path: '/project/list'
     };
@@ -89,7 +89,7 @@ export class ProjectController {
       status: HttpStatus.OK,
       data: result,
       message: '',
-      error: false,
+      
       timestamp: new Date().toISOString(),
       path: '/project'
     };
@@ -111,7 +111,7 @@ export class ProjectController {
       status: HttpStatus.OK,
       data: result,
       message: 'Updated with success',
-      error: false,
+      
       timestamp: new Date().toISOString(),
       path: '/project'
     };
@@ -132,7 +132,7 @@ export class ProjectController {
       status: HttpStatus.OK,
       data: result,
       message: `Project delete with success`,
-      error: false,
+      
       timestamp: new Date().toISOString(),
       path: '/project/del'
     };
@@ -151,7 +151,7 @@ export class ProjectController {
       status: HttpStatus.OK,
       data: result,
       message: '',
-      error: false,
+      
       timestamp: new Date().toISOString(),
       path: '/project/members'
     };

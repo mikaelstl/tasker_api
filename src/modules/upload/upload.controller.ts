@@ -37,7 +37,7 @@ export class UploadController {
       status: HttpStatus.CREATED,
       data: result,
       message: 'Added image with success',
-      error: false,
+      
       timestamp: new Date().toISOString(),
       path: '/upload/image'
     };
@@ -56,7 +56,7 @@ export class UploadController {
       status: HttpStatus.OK,
       data: result,
       message: '',
-      error: false,
+      
       timestamp: new Date().toISOString(),
       path: '/comments'
     };

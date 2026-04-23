@@ -23,7 +23,7 @@ export class CommentsController {
       status: HttpStatus.CREATED,
       data: result,
       message: 'New comment added to project',
-      error: false,
+      
       timestamp: new Date().toISOString(),
       path: '/comments'
     };
@@ -42,7 +42,7 @@ export class CommentsController {
       status: HttpStatus.OK,
       data: result,
       message: '',
-      error: false,
+      
       timestamp: new Date().toISOString(),
       path: '/comments'
     };
@@ -61,7 +61,7 @@ export class CommentsController {
       status: HttpStatus.OK,
       data: result,
       message: '',
-      error: false,
+      
       timestamp: new Date().toISOString(),
       path: '/comments'
     };
@@ -80,7 +80,7 @@ export class CommentsController {
       status: HttpStatus.OK,
       data: result,
       message: 'Comment deleted with success',
-      error: false,
+      
       timestamp: new Date().toISOString(),
       path: '/comments'
     };
