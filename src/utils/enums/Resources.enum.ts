@@ -1,5 +1,5 @@
 export enum Resources {
-  ALL = 'all',
+  ALL = '*',
   ORGANIZATIONS = 'org',
   AFFILIATIONS = 'affiliations',
   PROJECTS = 'projects',

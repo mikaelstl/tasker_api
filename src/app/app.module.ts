@@ -9,6 +9,7 @@ import { UploadModule } from '../modules/upload/upload.module';
 import { AccountModule } from '@modules/accounts/account.module';
 import { OrganizationModule } from '@modules/organization/organization.module';
 import { PermissionModule } from '@permissions/permission.modules';
+import { AffiliationModule } from '@modules/affiliations/affiliations.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { PermissionModule } from '@permissions/permission.modules';
     UserModule,
     OrganizationModule,
     ProjectsModule,
+    AffiliationModule,
     PermissionModule
   ],
   controllers: [AppController],

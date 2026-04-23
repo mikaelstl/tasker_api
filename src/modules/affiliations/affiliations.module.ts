@@ -1,18 +1,18 @@
 import { Module } from '@nestjs/common';
 import { AffiliationController } from './affiliations.controller';
 import { AffiliationRepository } from './affiliations.repository';
-import { AffiliationsService } from './affiliations.service';
+import { AffiliationService } from './affiliations.service';
 
 @Module({
   imports: [],
   controllers: [AffiliationController],
   providers: [
     AffiliationRepository,
-    AffiliationsService
+    AffiliationService
   ],
   exports: [
     AffiliationRepository,
-    AffiliationsService
+    AffiliationService
   ]
 })
 export class AffiliationModule { }

@@ -9,8 +9,14 @@ import { EventsController } from "@modules/events/events.controller";
 import { ProjectController } from "@modules/projects/project.controller";
 import { TasksController } from "@modules/tasks/task.controller";
 import { ProjectRepository } from "@modules/projects/projects.repository";
+import { PermissionModule } from "@permissions/permission.modules";
+import { AffiliationModule } from "@modules/affiliations/affiliations.module";
 
 @Module({
+  imports: [
+    PermissionModule,
+    AffiliationModule
+  ],
   controllers: [
     ProjectController,
     TasksController,

@@ -7,7 +7,6 @@ import { compare, compareSync, hash } from 'bcrypt'
 import { LoginDTO } from 'src/security/dto/login.dto';
 import { JwtPayload } from 'jsonwebtoken';
 import { AccountRepository } from '@modules/accounts/account.repository';
-import { OrgRole } from 'generated/prisma';
 import { JWTPayload } from '@interfaces/JWTPayload';
 import { UserRepository } from '@modules/users/user.repository';
 import { AffiliationRepository } from '@modules/affiliations/affiliations.repository';
@@ -45,6 +44,8 @@ export class AuthService {
       accountkey: account.id
     })
 
+    console.log(account);
+
     console.log(user);
     
     const match: boolean = await compare(data.password, account.password);
@@ -57,7 +58,7 @@ export class AuthService {
       throw new WrongPasswordException();
     }
 
-    const payload: JWTPayload = { sub: account.id!, username: user.username };
+    const payload: JWTPayload = { sub: account.id!, username: user.username, email: account.email };
 
     const token = await this.jwt.signAsync(payload, { secret: SECRET })
 

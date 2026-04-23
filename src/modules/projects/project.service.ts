@@ -42,7 +42,7 @@ export class ProjectService {
     return member;
   }
 
-  async list(data: CurrentAccountDTO) {
+  /* async list(data: CurrentAccountDTO) {
     const methods: ListMethodCommand = {
       'OWNER': this.projectRepository.listByOrganizer,
       'MANAGER': this.projectRepository.listByManager,
@@ -50,5 +50,5 @@ export class ProjectService {
     };
 
     const result: ProjectDTO[] = await methods[data.role](data.username)
-  }
+  } */
 }

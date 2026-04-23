@@ -28,6 +28,7 @@
       "@exceptions/*":   [ "./src/utils/errors/*" ],
       "@filters/*":      [ "./src/utils/filters/*" ],
       "@interceptors/*": [ "./src/utils/interceptors/*" ],
+      "@decorators/*":   [ "./src/decorators/*" ],
       "@interfaces/*":   [ "./src/utils/interfaces/*" ],
       "@enums/*":        [ "./src/utils/enums/*" ],
     }

@@ -5,13 +5,13 @@ import { PermissionGuard } from "@guards/permission.guard";
 import { CurrentAccount } from "src/decorators/CurrentAccount.decorator";
 import { CurrentAccountDTO } from "@modules/users/dto/current-account.dto";
 import { DefineAffiliationDTO } from "@modules/affiliations/dto/define.dto";
-import { AffiliationsService } from "./affiliations.service";
+import { AffiliationService } from "./affiliations.service";
 
 @Controller('affiliations')
 @UseGuards(JwtAuthGuard)
 export class AffiliationController {
   constructor(
-    private readonly service: AffiliationsService,
+    private readonly service: AffiliationService,
   ) {}
 
   @Post()

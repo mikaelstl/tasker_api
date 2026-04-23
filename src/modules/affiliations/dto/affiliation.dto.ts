@@ -1,8 +1,8 @@
 import { OrgRole } from "generated/prisma";
 
-export type AffiliationDTO = {
-  id:      string,
-  orgkey:  string,
-  userkey: string,
+export interface AffiliationDTO {
+  readonly id:      string,
+  readonly orgkey:  string,
+  readonly userkey: string,
   role:    OrgRole,
 }

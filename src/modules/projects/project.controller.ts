@@ -1,5 +1,5 @@
 import { ApiResponse } from "@interfaces/ApiResponse";
-import { Body, Controller, Delete, Get, Headers, HttpStatus, Param, Post, Put, Query, Res, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Header, Headers, HttpStatus, Param, Post, Put, Query, Res, UseGuards } from "@nestjs/common";
 import { MembersRepository } from "../members/member.repository";
 import { JwtAuthGuard } from "../../security/auth.guard";
 import { ProjectService } from "@modules/projects/project.service";
@@ -11,9 +11,16 @@ import { OrgRole } from "generated/prisma";
 import { CurrentAccount } from "src/decorators/CurrentAccount.decorator";
 import { CurrentAccountDTO } from "@modules/users/dto/current-account.dto";
 import { EditProjectDTO } from "@modules/projects/dto/edit.dto";
+import { Resources } from "@enums/Resources.enum";
+import { Resource } from "@decorators/Resource";
+import { Role } from "@decorators/Role";
+import { OrgKey } from "@decorators/OrgKey";
+import { Action } from "@decorators/Action";
+import { Actions } from "@enums/Actions.enum";
 
 @Controller('project')
 @UseGuards(JwtAuthGuard)
+@Resource(Resources.PROJECTS)
 export class ProjectController {
   constructor(
     private readonly repository: ProjectRepository,
@@ -22,13 +29,19 @@ export class ProjectController {
   ) {}
 
   @Post()
+  @Action(Actions.CREATE)
+  @Role(OrgRole.OWNER)
   @UseGuards(PermissionGuard)
   async create(
     @CurrentAccount() account: CurrentAccountDTO,
+    @OrgKey() orgkey: string,
     @Body() data: CreateProjectDTO,
     @Res() response
   ) {
-    const result = await this.service.create(data); 
+    const result = await this.service.create({
+      ...data,
+      ownerkey: orgkey
+    }); 
     
     const resp: ApiResponse = {
       status: HttpStatus.CREATED,
@@ -45,10 +58,11 @@ export class ProjectController {
   @Get('/list')
   async list(
     @Query()  queries: ProjectQueryDTO,
+    @OrgKey() orgkey: string,
     @Res()    response,
     @CurrentAccount() account: CurrentAccountDTO,
   ) {
-    const result = await this.service.list(account);
+    const result = await this.repository.list({ ownerkey: orgkey });
     
     const resp: ApiResponse = {
       status: HttpStatus.OK,

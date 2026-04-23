@@ -1,3 +1,5 @@
+import { JWTPayload } from "@interfaces/JWTPayload";
+import { CurrentAccountDTO } from "@modules/users/dto/current-account.dto";
 import {
   ExecutionContext,
   Injectable,
@@ -29,12 +31,16 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     }
 
     try {
-      const payload = await this.jwtService.verifyAsync(
+      const payload: JWTPayload = await this.jwtService.verifyAsync(
         token,
         { secret: SECRET }
       )
 
-      request['user'] = payload;
+      request['user'] = {
+        id: payload.sub,
+        username: payload.username,
+        email: payload.email
+      } as CurrentAccountDTO;
     } catch (error) {
       throw new UnauthorizedException("You don't have authorization to perform this action. Please log-in or create a account");
     }

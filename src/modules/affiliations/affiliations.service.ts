@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable, Logger } from "@nestjs/common";
+import { BadRequestException, HttpException, HttpStatus, Injectable, Logger, NotFoundException } from "@nestjs/common";
 import { OrgRole } from "generated/prisma";
 import { AffiliationRepository } from "./affiliations.repository";
 import { DefineAffiliationDTO } from "./dto/define.dto";
@@ -14,8 +14,8 @@ type AffiliationRoleTrasistion = {
 }
 
 @Injectable()
-export class AffiliationsService {
-  private logger: Logger = new Logger('AffiliationsService');
+export class AffiliationService {
+  private logger: Logger = new Logger('AffiliationService');
 
   constructor(
     private readonly repository: AffiliationRepository,
@@ -92,6 +92,26 @@ export class AffiliationsService {
       return result;
     } catch (err: any) {
       throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async findByUserOrgKey(
+    userkey: string,
+    orgkey: string
+  ) {
+    try {
+      const result = await this.repository.findWithQueries({
+        userkey,
+        orgkey
+      });
+
+      if (!result) {
+        throw new NotFoundException("This Member don't exists in this Organization.")
+      }
+
+      return result;
+    } catch (err: any) {
+      throw new BadRequestException(err.message)
     }
   }
 }

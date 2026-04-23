@@ -2,6 +2,7 @@ import { HttpException, HttpStatus, Injectable, NotFoundException } from "@nestj
 import { PrismaService } from "src/database/prisma.service";
 import { DefineAffiliationDTO } from "./dto/define.dto";
 import { AffiliationDTO } from "./dto/affiliation.dto";
+import { AffiliationQuery } from "./dto/query.dto";
 
 @Injectable()
 export class AffiliationRepository {
@@ -64,11 +65,9 @@ export class AffiliationRepository {
     return value;
   }
 
-  async findByUser(key: string): Promise<AffiliationDTO> {
+  async findWithQueries(queries: AffiliationQuery): Promise<AffiliationDTO> {
     const value = await this.prisma.affiliation.findFirst({
-      where: {
-        userkey: key
-      }
+      where: queries
     });
 
     return value;
