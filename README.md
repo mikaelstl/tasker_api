@@ -26,7 +26,8 @@ API_PORT = {porta}
 SECRET = "sua_key"
 ```
 
-![IMPORTANT] Remova as chaves ({}).
+> [!IMPORTANT]
+> Remova as chaves ({}).
 
 ### Principais Bibliotecas
 
@@ -64,11 +65,11 @@ Para a rota `/login` é necessário enviar o seguinte objeto.
 Com os dados enviados com sucesso. O sistema irá retornar um objeto no seguinte modelo. 
 
 ```json
-  {
-		"account": "id_sua_conta",
-		"email": "email_registrado@email.com",
-		"access_token": "seu_token_gerado"
-	},
+{
+	"account": "id_sua_conta",
+	"email": "email_registrado@email.com",
+	"access_token": "seu_token_gerado"
+},
 ```
 
 **Enviando o token na requisição**
@@ -107,7 +108,7 @@ Para que o sistema identifique suas permissões e seu perfil (Role) é necessár
 | `GET` | `/:username` | Retorna usuário com _username_ equivalente | - |
 | `DELETE` | `/del/:username` | Remove um usuário pelo seu _username_ | - |
 
-> ![IMPORTANT]
+> [!IMPORTANT]
 > Este endpoint ainda não possui autenticação, usar com CUIDADO.
 
 ### Padrão de Respostas
