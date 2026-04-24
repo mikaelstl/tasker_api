@@ -207,3 +207,59 @@ Exemplo de erro:
 | `policy` | Arquivos para descrever como cada ação de usuário deve ser executada |
 | `security` | Arquivos para manipulação e geração dos tokens JWT |
 | `utils` | Utilitários do sistema (ex: Enums, Exceptions personalizadas, Http Filters, Interfaces/Types globais e funções globais) |
+
+### Scripts Importantes
+
+| Comando | Descrição | Como usar? |
+| :--- | :--- | :--- |
+| `npm run prisma:generate` | Gera o Prisma Client com as tipagens do TypeScript. | Após qualquer alteração no schema ou após instalar o projeto. |
+| `npm run migrate` | Sincroniza o schema com o banco sem criar arquivos de migration. | Para geração dos tabelas no banco em ambiente de desenvolvimento. |
+| `npm run migrate:new -- <nome>` | Cria uma nova migration e a aplica imediatamente. | Sempre que alterar o arquivo `schema.prisma` |
+| `npm run migrate:deploy` | Aplica todas as migrations pendentes no banco. | Usado em ambientes de Produção ou Staging. |
+| `npm run migrate:reset` | Apaga todos os dados, remove as tabelas e roda as migrations do zero. | Quando precisar de um banco limpo (cuidado: apaga tudo!). |
+
+## Executando
+
+Para interessados em estudar e observar o funcionamento da aplicação em sua máquina. Siga os passos.
+
+#### Clone o repositório
+
+**HTTPS**
+```bash
+git clone https://github.com/mikaelstl/komik-web.git
+cd komik-web
+```
+
+**SSH**
+```bash
+git clone git@github.com:mikaelstl/komik-web.git
+cd komik-web
+```
+
+#### Instale as dependências
+
+```bash
+npm i
+```
+
+#### Gere as tabelas e o PrismaClient
+
+```bash
+npm run prisma:generate
+
+npm run migrate
+```
+
+#### Inicie o projeto
+
+```bash
+npm start
+```
+A aplicação estará disponível em: [https://localhost:3000](https://localhost:3000)
+
+> [!IMPORTANT]
+> Para este projeto é necessário utilização de um banco de dados Postgres (Docker ou Servidor dedicado, adicione a URL para o banco dentro do ENV conforme passo descrito na seção [Estrutura do ENV](#estrutura-do-env)).
+
+## Licença
+
+Komik é licenciado sob a [Licença MIT](https://github.com/mikaelstl/tasker_api/blob/main/LICENSE)
