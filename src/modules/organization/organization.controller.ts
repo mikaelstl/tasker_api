@@ -41,7 +41,7 @@ export class OrganizationController {
     return resp.status(response.status).json(response);
   }
 
-  @Delete('del/:id')
+  @Delete('/del/:id')
   async delete(
     @Param('id') id: string,
     @Res() resp

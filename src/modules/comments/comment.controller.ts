@@ -14,7 +14,7 @@ export class CommentsController {
 
   @Post()
   async create(
-    @Body()  data: CreateCommentDTO,
+    @Body() data: CreateCommentDTO,
     @Res() response
   ) {
     const result = await this.repository.create(data); 
@@ -69,7 +69,7 @@ export class CommentsController {
     return response.status(resp.status).json(resp);
   }
 
-  @Delete('/:id')
+  @Delete('/del/:id')
   async delete(
     @Param('id') id: string,
     @Res() response

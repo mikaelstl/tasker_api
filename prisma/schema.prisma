@@ -143,8 +143,8 @@ model Member {
 }
 
 model Task {
-  id          String        @unique @default(cuid())
-  code        String        @id @unique
+  id          String        @id @unique @default(cuid())
+  code        String        @unique
   name        String
   description String
   due_date    DateTime

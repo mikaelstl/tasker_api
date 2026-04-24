@@ -31,12 +31,16 @@ export class TasksController {
     return response.status(resp.status).json(resp);
   }
 
-  @Get()
+  @Get('/:projectkey')
   async list(
     @Query() queries: TaskQueryDTO,
+    @Param('projectkey') projectkey,
     @Res() response
   ) {
-    const result = await this.repository.list(queries);
+    const result = await this.repository.list({
+      ...queries,
+      projectkey
+    });
 
     const resp: ApiResponse = {
       status: HttpStatus.OK,
@@ -65,7 +69,7 @@ export class TasksController {
     return await this.repository.edit(code, update);
   }
 
-  @Delete('/:id')
+  @Delete('/del/:id')
   async delete(
     @Param('id') id: string,
   ) {

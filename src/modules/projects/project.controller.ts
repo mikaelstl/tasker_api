@@ -121,6 +121,7 @@ export class ProjectController {
 
   @Delete('/del/:id')
   @UseGuards(PermissionGuard)
+  @Role(OrgRole.OWNER)
   async delete(
     @Param('id') id: string,
     @Res() response,
@@ -135,25 +136,6 @@ export class ProjectController {
       
       timestamp: new Date().toISOString(),
       path: '/project/del'
-    };
-
-    return response.status(resp.status).json(resp);
-  }
-
-  @Get('/:id/members')
-  async getMembers(
-    @Param('id') id: string,
-    @Res() response,
-  ) {
-    const result = await this.memberRepository.list(id);
-    
-    const resp: ApiResponse = {
-      status: HttpStatus.OK,
-      data: result,
-      message: '',
-      
-      timestamp: new Date().toISOString(),
-      path: '/project/members'
     };
 
     return response.status(resp.status).json(resp);

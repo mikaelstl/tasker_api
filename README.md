@@ -96,22 +96,85 @@ Para que o sistema identifique suas permissões e seu perfil (Role) é necessár
 
 #### Contas (`/accounts`)
 
-| Método | Endpoint | Descrição | Autenticação |
-| :--- | :--- | :--- | :--- |
-| `POST` | `/register` | Cria uma nova conta | - |
-| `DELETE` | `/del/:id` | Remove uma conta por ID | Sim |
+|  Método  |   Endpoint  |       Descrição         | Autenticação |      Autorização    |
+|   :---   |     :---    |         :---            |     :---     |         :---        |
+| `POST`   | `/register` | Cria uma nova conta     |       -      |           -         |
+| `DELETE` | `/del/:id`  | Remove uma conta por ID |      Sim     |           -         |
 
 #### Usuários (`/users`)
 
-| Método | Endpoint | Descrição | Autenticação |
-| :--- | :--- | :--- | :--- |
-| `POST` | `/` | Cria um novo usuário | - |
-| `GET` | `/` | Lista todos os usuários | - |
-| `GET` | `/:username` | Retorna usuário com _username_ equivalente | - |
-| `DELETE` | `/del/:username` | Remove um usuário pelo seu _username_ | - |
+|  Método  |    Endpoint      |               Descrição                    | Autenticação |      Autorização    |
+|   :---   |      :---        |                 :---                       |    :---      |         :---        |
+| `POST`   | `/`              | Cria um novo usuário                       |      -       |           -         |
+| `GET`    | `/`              | Lista todos os usuários                    |      -       |           -         |
+| `GET`    | `/:username`     | Retorna usuário com _username_ equivalente |      -       |           -         |
+| `DELETE` | `/del/:username` | Remove um usuário pelo seu _username_      |      -       |           -         |
 
 > [!IMPORTANT]
 > Este endpoint ainda não possui autenticação, usar com CUIDADO.
+
+#### Organizações (`/organizations`)
+
+|  Método  |  Endpoint  |              Descrição             | Autenticação |      Autorização    |
+|   :---   |    :---    |                :---                |     :---     |         :---        |
+|  `POST`  | `/`        | Cria uma nova organização          |      Sim     |           -         |
+| `DELETE` | `/del/:id` | Remove uma organização pelo seu ID |      Sim     |           -         |
+
+#### Afiliações (`/affiliations`)
+
+|  Método  |   Endpoint     |    Query   |           Descrição                        | Autenticação |     Autorização     |
+|   :---   |     :---       |    :---    |             :---                           |     :---     |        :---         |
+|  `POST`  | `/`            |      -     | Adiciona um novo membro a uma organização  |      Sim     | Sim (Somente OWNER) |
+|  `PATCH` | `/promote/:id` |      -     | Promove um membro                          |      Sim     |         Não         |
+|  `PATCH` | `/demote/:id`  |      -     | Rebaixa um membro                          |      Sim     |          -          |
+| `DELETE` | `/remove/:id`  |      -     | Remove um membro da organização            |      Sim     | Sim (Somente OWNER) |
+
+#### Projetos (`/projects`)
+
+|  Método  |  Endpoint  |    Query   |           Descrição            | Autenticação |     Autorização     |
+|   :---   |    :---    |    :---    |             :---               |     :---     |        :---         |
+|  `POST`  |   `/`      |      -     | Cria um novo usuário           |      Sim     | Sim (Somente OWNER) |
+|  `GET`   |   `/list`  |     Sim    | Lista todos os projetos        |      Sim     |         Não         |
+|  `GET`   |   `/:id`   | Via params | Retorna um projeto por id      |      Sim     |          -          |
+|  `PUT `  |   `/:id`   | Via params | Edita um projeto através do ID |      Sim     |          -          |
+| `DELETE` | `/del/:id` | Via params | Remove um projeto pelo seu ID  |      Sim     | Sim (Somente OWNER) |
+
+#### Tarefas (`/tasks`)
+
+|  Método  |  Endpoint  |    Query   |                    Descrição                        | Autenticação | Autorização |
+|   :---   |    :---    |    :---    |                      :---                           |     :---     |     :---    |
+| `POST`   | `/`        |      -     | Cria uma nova tarefa                                |      Sim     |       -     |
+| `GET`    | `/`        | Sim        | Lista todos as tarefas via queries                  |      Sim     |       -     |
+| `GET`    | `/:code`   | Via params | Retorna uma tarefa pelo código de identificação     |      Sim     |       -     |
+| `PUT`    | `/:code`   | Via params | Edita uma tarefa através do código de identificação |      Sim     |       -     |
+| `DELETE` | `/del/:id` | Via params | Remove uma tarefa pelo seu ID                       |      Sim     |       -     |
+
+#### Comentários (`/comments`)
+
+|  Método  |  Endpoint  |   Query    |                 Descrição                | Autenticação | Autorização |
+|   :---   |    :---    |   :---     |                   :---                   |     :---     |    :---     |
+| `POST`   | `/`        |     -      | Adiciona um novo comentário a um projeto |      Sim     |      -      |
+| `GET`    | `/`        |    Sim     | Lista todos os comentários via queries   |      Sim     |      -      |
+| `GET`    | `/:id`     | Via params | Retorna um comentário pelo ID            |      Sim     |      -      |
+| `DELETE` | `/del/:id` | Via params | Remove um comentário pelo seu ID         |      Sim     |      -      |
+
+#### Eventos (`/events`)
+
+|  Método  |  Endpoint  |    Query   |                       Descrição                     | Autenticação | Autorização |
+|   :---   |    :---    |    :---    |                         :---                        |     :---     |    :---     |
+| `POST`   | `/`        |      -     | Adiciona um novo evento a um projeto                |      Sim     |      -      |
+| `GET`    | `/`        |     Sim    | Lista todos os eventos via queries                  |      Sim     |      -      |
+| `GET`    | `/:code`   | Via params | Retorna um evento pelo código de identificação      |      Sim     |      -      |
+| `PUT`    | `/:code`   | Via params | Edita uma tarefa através do código de identificação |      Sim     |      -      |
+| `DELETE` | `/del/:id` | Via params | Remove um comentário pelo seu ID                    |      Sim     |      -      |
+
+#### Membros (`/members`)
+
+|  Método  |     Endpoint   |    Query   |              Descrição               | Autenticação | Autorização |
+|   :---   |      :---      |    :---    |                :---                  |     :---     |    :---     |
+|  `POST`  | `/`            |      -     | Adiciona um novo membro a um projeto |      Sim     |      -      |
+|  `GET`   | `/:projectkey` | Via params | Lista todos os membros de um projeto |      Sim     |      -      |
+| `DELETE` | `/remove/:id`  | Via params | Remove um comentário pelo seu ID     |      Sim     |      -      |
 
 ### Padrão de Respostas
 

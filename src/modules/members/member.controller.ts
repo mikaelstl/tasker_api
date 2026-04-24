@@ -55,7 +55,7 @@ export class MemberController {
     return response.status(resp.status).json(resp);
   }
 
-  @Delete('/del/:id')
+  @Delete('/remove/:id')
   async delete(
     @Param('id') id: string,
     @Res() response,
