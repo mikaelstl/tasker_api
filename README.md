@@ -2,9 +2,11 @@
   <img src="https://raw.githubusercontent.com/mikaelstl/tasker_app/develop/public/app_logo.png" width="124"/>
 
   # Tasker API
+	
+[![NestJS](https://img.shields.io/badge/NestJS-E0234E?style=flat-square&logo=nestjs&logoColor=white)](https://nestjs.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
+![Status: WIP](https://img.shields.io/badge/status-WIP-blue?style=flat-square)
 </div>
-
-![status](https://img.shields.io/badge/status-em_desenvolvimento-blue)
 
 Tasker é uma ferramenta de gestão de projetos e equipes, voltado para ambientes organizacionais e escolares, onde análise de desempenho é um fator altamente presente. Desenvolvido com Node.JS, ReactJS e NestJS.
 
@@ -226,14 +228,14 @@ Para interessados em estudar e observar o funcionamento da aplicação em sua m�
 
 **HTTPS**
 ```bash
-git clone https://github.com/mikaelstl/komik-web.git
-cd komik-web
+git clone https://github.com/mikaelstl/tasker_api.git
+cd tasker_api
 ```
 
 **SSH**
 ```bash
-git clone git@github.com:mikaelstl/komik-web.git
-cd komik-web
+git clone git@github.com:mikaelstl/tasker_api.git
+cd tasker_api
 ```
 
 #### Instale as dependências
@@ -262,4 +264,4 @@ A aplicação estará disponível em: [https://localhost:3000](https://localhost
 
 ## Licença
 
-Komik é licenciado sob a [Licença MIT](https://github.com/mikaelstl/tasker_api/blob/main/LICENSE)
+Tasker é licenciado sob a [Licença MIT](https://github.com/mikaelstl/tasker_api/blob/main/LICENSE)
