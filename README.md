@@ -101,6 +101,26 @@ Para que o sistema identifique suas permissões e seu perfil (Role) é necessár
 | `POST`   | `/register` | Cria uma nova conta     |       -      |           -         |
 | `DELETE` | `/del/:id`  | Remove uma conta por ID |      Sim     |           -         |
 
+#### Principais DTOS
+
+- **`POST`**
+```json
+{
+	"email": "string",
+	"password": "string"
+}
+```
+
+- **RETORNOS**
+```json
+{
+  "id": "string",
+  "email": "string",
+  "password": "string",
+}
+```
+
+
 #### Usuários (`/users`)
 
 |  Método  |    Endpoint      |               Descrição                    | Autenticação |      Autorização    |
@@ -113,7 +133,26 @@ Para que o sistema identifique suas permissões e seu perfil (Role) é necessár
 > [!IMPORTANT]
 > Este endpoint ainda não possui autenticação, usar com CUIDADO.
 
-#### Organizações (`/organizations`)
+#### Principais DTOS
+
+- **`POST`**
+```json
+{
+	"email": "string",
+	"password": "string"
+}
+```
+
+- **RETORNOS**
+```json
+{
+  "id": "string",
+  "email": "string",
+  "password": "string",
+}
+```
+
+#### Organizações (`/org`)
 
 |  Método  |  Endpoint  |              Descrição             | Autenticação |      Autorização    |
 |   :---   |    :---    |                :---                |     :---     |         :---        |
