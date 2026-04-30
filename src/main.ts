@@ -9,6 +9,11 @@ import { ValidationExceptionFilter } from 'src/common/filters/validation.filter'
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   
+  app.enableCors({
+    origin: true,
+    credentials: true,
+  });
+
   app.useGlobalPipes(new ValidationPipe({
     whitelist: true,
     forbidNonWhitelisted: true,
@@ -22,8 +27,8 @@ async function bootstrap() {
   
   // app.useGlobalInterceptors(new ResponseFilter());
   
-  const port = Number(API_PORT) || 1000
+  const port = Number(API_PORT) || 3000
 
-  await app.listen(port);
+  await app.listen(port, '0.0.0.0');
 }
 bootstrap();
