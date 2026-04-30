@@ -2,37 +2,7 @@ import { ForbiddenException, Injectable } from "@nestjs/common";
 import { Actions } from "@enums/Actions.enum";
 import { Resources } from "@enums/Resources.enum";
 import { OrgRole } from "generated/prisma";
-import { PolicyContext } from "@interfaces/ABACPayload";
-
-// type RolesPermissions = {
-//   [ K in OrgRole | '*' ]: {
-//     [ R in Resources ]?: Actions[] | '*'
-//   }
-// }
-
-/* OWNER: {
-    resources: [ Resources.ALL ],
-    actions: {}
-  },
-  MANAGER: {
-    resources: [
-      Resources.PROJECTS,
-      Resources.TASKS,
-      Resources.COMMENTS,
-      Resources.MEMBERS,
-      Resources.EVENTS
-    ],
-    actions: {}
-  },
-  MEMBER: {
-    resources: [
-      Resources.PROJECTS,
-      Resources.TASKS,
-      Resources.COMMENTS,
-      Resources.MEMBERS,
-    ],
-    actions: {}
-  } */
+import { AccessContext } from "@interfaces/AccessContext";
 
 type ResourceMap = Map<Resources, Actions[]>
 
@@ -42,7 +12,8 @@ type RolesPermissions = Map<OrgRole, ResourceMap>
 export class PermissionService {
   private readonly ROLES_PERMISSIONS: RolesPermissions = new Map();
 
-  constructor() {
+  constructor(
+  ) {
     // GERAR PERMISSÕES DO OWNER
     this.setOwnerPermissions();
 
@@ -53,14 +24,14 @@ export class PermissionService {
     this.setMemberPermissions();
   }
 
-  can(
-    ctx: PolicyContext,
+  async can(
+    ctx: AccessContext,
     // policy: () => boolean
-  ): boolean {
+  ): Promise<boolean> {
     // EXTRAIR role, action, resource DE ctx
-    const { role, action, resource } = ctx;
+    const { role, action, resource, subject } = ctx;
 
-    // BUSCAR EM UM MAP PRIVADO DA CLASSE A ROLE
+    // BUSCAR EM UM MAP PRIVADO DA CLASSE AS PERMISSOES PELA ROLE
     const perms = this.ROLES_PERMISSIONS.get(role);
     if (!perms) return false;
 
@@ -80,8 +51,9 @@ export class PermissionService {
     const hasAbility = abilities.includes(action) || abilities.includes(Actions.ALL);
     if (!hasAbility) return false;
 
-    // EXECUTA A POLICY
-    // const canPerform = policy();
+    // VERIFICA O NIVEL DE PERMISSÃO DONO, GERENCIA OU PARTICIPA
+
+    // PEGA A POLICY DE ACORDO COM A ROLE E A ACTION
 
     // RETORNA SE O USUÁRIO ESTÁ AUTORIZADO OU NÃO
     return true;
@@ -98,69 +70,13 @@ export class PermissionService {
   }
 
   private setManagerPermissions() {
-    /* MANAGER: {
-    resources: [
-      Resources.PROJECTS,
-      Resources.TASKS,
-      Resources.COMMENTS,
-      Resources.MEMBERS,
-      Resources.EVENTS
-    ],
-    actions: {}
-  }, */
-
-    const ManagerResourceAccess: ResourceMap = new Map();
-    
-    // const ManagerPermissions = new Set<Actions | '*'>();
-    // ManagerPermissions.add('*');
-
-    ManagerResourceAccess.set(
-      Resources.PROJECTS,
-      [
-        Actions.FIND,
-        Actions.LIST
-      ]
-    );
-    ManagerResourceAccess.set(
-      Resources.TASKS,
-      [
-        Actions.CREATE,
-        Actions.DEL,
-        Actions.FIND,
-        Actions.LIST,
-        Actions.EDIT
-      ]
-    );
-    ManagerResourceAccess.set(
-      Resources.COMMENTS,
-      [
-        Actions.CREATE,
-        Actions.DEL,
-        Actions.FIND,
-        Actions.LIST,
-        Actions.EDIT
-      ]
-    );
-    ManagerResourceAccess.set(
-      Resources.MEMBERS,
-      [
-        Actions.CREATE,
-        Actions.DEL,
-        Actions.FIND,
-        Actions.LIST,
-        Actions.EDIT
-      ]
-    );
-    ManagerResourceAccess.set(
-      Resources.EVENTS,
-      [
-        Actions.CREATE,
-        Actions.DEL,
-        Actions.FIND,
-        Actions.LIST,
-        Actions.EDIT
-      ]
-    );
+    const ManagerResourceAccess: ResourceMap = new Map([
+      [ Resources.PROJECTS, [ Actions.SEEK ] ],
+      [ Resources.TASKS,    [ Actions.CREATE,Actions.DEL,Actions.SEEK, Actions.EDIT] ],
+      [ Resources.COMMENTS, [ Actions.CREATE,Actions.DEL,Actions.SEEK,Actions.EDIT] ],
+      [ Resources.MEMBERS,  [ Actions.CREATE,Actions.DEL,Actions.SEEK,Actions.EDIT] ],
+      [ Resources.EVENTS,   [ Actions.CREATE,Actions.DEL,Actions.SEEK,Actions.EDIT] ]
+    ]);
 
     this.ROLES_PERMISSIONS.set(
       OrgRole.MANAGER, ManagerResourceAccess
@@ -177,8 +93,7 @@ export class PermissionService {
     MemberResourceAccess.set(
       Resources.PROJECTS,
       [
-        Actions.FIND,
-        Actions.LIST
+        Actions.SEEK,
       ]
     );
     MemberResourceAccess.set(
@@ -186,8 +101,7 @@ export class PermissionService {
       [
         Actions.CREATE,
         Actions.DEL,
-        Actions.FIND,
-        Actions.LIST,
+        Actions.SEEK,
         Actions.EDIT
       ]
     );
@@ -196,23 +110,20 @@ export class PermissionService {
       [
         Actions.CREATE,
         Actions.DEL,
-        Actions.FIND,
-        Actions.LIST,
+        Actions.SEEK,
         Actions.EDIT
       ]
     );
     MemberResourceAccess.set(
       Resources.MEMBERS,
       [
-        Actions.FIND,
-        Actions.LIST,
+        Actions.SEEK,
       ]
     );
     MemberResourceAccess.set(
       Resources.EVENTS,
       [
-        Actions.FIND,
-        Actions.LIST,
+        Actions.SEEK,
       ]
     );
 

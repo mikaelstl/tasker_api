@@ -1,9 +1,8 @@
-import { Resources } from "@enums/Resources.enum";
-import { PolicyContext } from "@interfaces/ABACPayload";
+import { Resources } from "src/common/enums/Resources.enum";
+import { AccessContext } from "@interfaces/AccessContext";
 import { AffiliationController } from "@modules/affiliations/affiliations.controller";
 import { CanActivate, ExecutionContext, ForbiddenException, Injectable, UnauthorizedException } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
-import { PermissionService } from "@permissions/permission.service";
 import { OrgRole } from "generated/prisma";
 import { Action } from "generated/prisma/runtime/library";
 import { Observable } from "rxjs";
@@ -13,6 +12,7 @@ import { ROLES_KEY } from "@decorators/Role";
 import { AffiliationService } from "@modules/affiliations/affiliations.service";
 import { ORG_KEY } from "@decorators/OrgKey";
 import { Request } from 'express';
+import { PermissionService } from "@permissions/permission.service";
 
 @Injectable()
 export class PermissionGuard implements CanActivate {
@@ -48,7 +48,7 @@ export class PermissionGuard implements CanActivate {
       action,
       resource,
       role: affiliation.role,
-    } as PolicyContext;
+    } as AccessContext;
     
     // VERIFICAR SE O USUÁRIO PODE EXECUTAR TAREFA
     const hasPermission = this.permissions.can(payload);
