@@ -23,14 +23,14 @@
       "@config/*":       [ "./src/config/*" ],
       "@modules/*":      [ "./src/modules/*" ],
       "@security/*":     [ "./src/security/*" ],
-      "@permissions/*":  [ "./src/permissions/*" ],
+      "@authorization/*":  [ "./src/authorization/*" ],
       "@guards/*":       [ "./src/guards/*" ],
-      "@exceptions/*":   [ "./src/utils/errors/*" ],
-      "@filters/*":      [ "./src/utils/filters/*" ],
-      "@interceptors/*": [ "./src/utils/interceptors/*" ],
+      "@exceptions/*":   [ "./src/common/errors/*" ],
+      "@filters/*":      [ "./src/common/filters/*" ],
+      "@interceptors/*": [ "./src/common/interceptors/*" ],
       "@decorators/*":   [ "./src/decorators/*" ],
-      "@interfaces/*":   [ "./src/utils/interfaces/*" ],
-      "@enums/*":        [ "./src/utils/enums/*" ],
+      "@interfaces/*":   [ "./src/common/interfaces/*" ],
+      "@enums/*":        [ "./src/common/enums/*" ],
     }
   }
 }
