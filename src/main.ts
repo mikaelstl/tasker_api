@@ -22,6 +22,8 @@ async function bootstrap() {
   
   // app.useGlobalInterceptors(new ResponseFilter());
   
-  await app.listen(API_PORT || 3000);
+  const port = Number(API_PORT) || 1000
+
+  await app.listen(port);
 }
 bootstrap();
