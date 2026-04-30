@@ -23,7 +23,7 @@
       "@config/*":       [ "./src/config/*" ],
       "@modules/*":      [ "./src/modules/*" ],
       "@security/*":     [ "./src/security/*" ],
-      "@authorization/*":  [ "./src/authorization/*" ],
+      "@permissions/*":  [ "./src/permissions/*" ],
       "@guards/*":       [ "./src/guards/*" ],
       "@exceptions/*":   [ "./src/common/errors/*" ],
       "@filters/*":      [ "./src/common/filters/*" ],
