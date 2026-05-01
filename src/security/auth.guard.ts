@@ -1,4 +1,4 @@
-import { JWTPayload } from "@interfaces/JWTPayload";
+import { JWTPayload } from "src/common/interfaces/JWTPayload";
 import { CurrentAccountDTO } from "@modules/users/dto/current-account.dto";
 import {
   ExecutionContext,

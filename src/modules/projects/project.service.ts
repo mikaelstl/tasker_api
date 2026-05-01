@@ -6,49 +6,80 @@ import { DefineMemberDTO } from "@modules/members/dto/member.create.dto";
 import { CreateProjectDTO } from "@modules/projects/dto/project.create.dto";
 import { CurrentAccountDTO } from "@modules/users/dto/current-account.dto";
 import { ProjectDTO } from "@modules/projects/dto/project.dto";
+import { AccessValidator } from "src/common/interfaces/AccessValidator";
 
 type ListMethodCommand = {
-  [key: string]: (key: string) => Promise<ProjectDTO[]>
+  [K in OrgRole]: (key: string) => Promise<ProjectDTO[]>
 }
 
 @Injectable()
-export class ProjectService {
-  private logger: Logger = new Logger('ProjectService');
+export class ProjectService implements AccessValidator {
+  private readonly logger: Logger = new Logger('ProjectService');
 
   constructor(
-    private readonly projectRepository: ProjectRepository,
-    private readonly projectMemberRepository: MembersRepository
+    private readonly repository: ProjectRepository,
   ) { }
 
   async create(data: CreateProjectDTO) {
-    return this.projectRepository.create(data)/* .then(
-      async (result) => {
-        const { id, ownerkey } = result;
-
-        const member = await this.projectMemberRepository.create({
-          user: ownerkey,
-          project: id,
-          role: $Enums.MemberRole.OWNER
-        });
-
-        return member;
-      }
-    ) */;
-  }
-
-  async addMember(data: DefineMemberDTO) {
-    const member = await this.projectMemberRepository.create(data);
-
-    return member;
+    return this.repository.create(data);
   }
 
   /* async list(data: CurrentAccountDTO) {
     const methods: ListMethodCommand = {
-      'OWNER': this.projectRepository.listByOrganizer,
-      'MANAGER': this.projectRepository.listByManager,
-      'MEMBER': this.projectRepository.listByMember,
+      'OWNER': this.repository.listByOrganizer,
+      'MANAGER': this.repository.listByManager,
+      'MEMBER': this.repository.listByMember,
     };
 
     const result: ProjectDTO[] = await methods[data.role](data.username)
+  
+    return result;
   } */
+
+  public async belongs(subjectkey: string, targetkey: string): Promise<boolean> {
+    try {
+      const result = await this.repository.exists(
+        targetkey,
+        {
+          id: targetkey,
+          ownerkey: subjectkey
+        }
+      );
+
+      return result;
+    } catch (err) {
+      this.logger.warn("[ERROR] to verify project ownership.", err);
+      return false;
+    }
+  }
+
+  public async manage(subjectkey: string, targetkey: string): Promise<boolean> {
+    try {
+      const result = await this.repository.exists(
+        targetkey,
+        {
+          id: targetkey,
+          managerkey: subjectkey
+        }
+      );
+
+      return result;
+    } catch (err) {
+      this.logger.warn("[ERROR] to check the project manager.", err);
+      return false;
+    }
+  }
+
+  public async participates(subjectkey: string, targetkey: string): Promise<boolean> {
+    try {
+      const result = await this.repository.find(targetkey);
+
+      const value = result.members.find(m => m.userkey === subjectkey);
+
+      return !!value;
+    } catch (err: any) {
+      this.logger.warn("[ERROR] to verify project membership.", err);
+      return false;
+    }
+  }
 }

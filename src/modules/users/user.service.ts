@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, UseInterceptors } from "@nestjs/common";
 import { UserRepository } from "@modules/users/user.repository";
-import { UserNotExistsException } from "src/utils/errors/user_not_exists.exception";
+import { UserNotExistsException } from "src/common/errors/user_not_exists.exception";
 
 @Injectable()
 export class UserSevice {

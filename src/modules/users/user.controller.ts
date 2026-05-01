@@ -5,7 +5,7 @@ import { UserDTO } from "@modules/users/dto/user.dto";
 import { UserRepository } from "@modules/users/user.repository";
 import { AuthService } from "src/security/auth.service";
 import { JwtAuthGuard } from "src/security/auth.guard";
-import { ApiResponse } from "@interfaces/ApiResponse";
+import { ApiResponse } from "src/common/interfaces/ApiResponse";
 
 @Controller('users')
 // @UseGuards(JwtAuthGuard)

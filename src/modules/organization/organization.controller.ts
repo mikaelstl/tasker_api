@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, HttpStatus, Param, Post, Req, Res, UseGuards, } from "@nestjs/common";
 import { OrganizationRepository } from "./organization.repository";
-import { ApiResponse } from "@interfaces/ApiResponse";
+import { ApiResponse } from "src/common/interfaces/ApiResponse";
 import { OrganizationService } from "./organization.service";
 import { OrganizationDTO } from "@modules/organization/dto/organization.dto";
 import { OrganizationCreateDTO } from "@modules/organization/dto/create.dto";

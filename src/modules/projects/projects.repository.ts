@@ -1,4 +1,4 @@
-import { ProjectNotExistsException } from "@exceptions/project_not_exists.exception";
+import { ProjectNotExistsException } from "src/common/errors/project_not_exists.exception";
 import { HttpException, HttpStatus, Injectable, NotFoundException } from "@nestjs/common";
 import { $Enums } from "generated/prisma";
 import { PrismaService } from "src/database/prisma.service";
@@ -28,149 +28,130 @@ export class ProjectRepository {
   }
 
   async create(data: CreateProjectDTO): Promise<ProjectDTO> {
-    try {
-      const result = await this.prisma.project.create({
-        data: {
-          title: data.title,
-          description: data.description,
-          ownerkey: data.ownerkey,
-          due_date: data.due_date
-        },
-      });
+    const result = await this.prisma.project.create({
+      data: {
+        title: data.title,
+        description: data.description,
+        ownerkey: data.ownerkey,
+        due_date: data.due_date
+      },
+    });
 
-      return result;
-    } catch (err: any) {
-      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
-    }
+    return result;
   };
 
   async list(queries: ProjectQueryDTO) {
-    try {
-      const projects = await this.prisma.project.findMany({
-        where: queries,
-      });
-      return projects;
-    } catch (err: any) {
-      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
-    }
+    const projects = await this.prisma.project.findMany({
+      where: queries,
+    });
+    return projects;
   };
 
   async listByMember(key: string): Promise<ProjectDTO[]> {
-    try {
-      const projects = await this.prisma.project.findMany({
-        where: {
-          members: {
-            some: {
-              userkey: key
-            }
-          },
+    const projects = await this.prisma.project.findMany({
+      where: {
+        members: {
+          some: {
+            userkey: key
+          }
         },
-        select: {
-          id: true,
-          title: true,
-          due_date: true
-        }
-      });
+      },
+      select: {
+        id: true,
+        title: true,
+        due_date: true
+      }
+    });
 
-      return projects;
-    } catch (err: any) {
-      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
-    }
+    return projects;
   };
 
   async listByOrganizer(key: string): Promise<ProjectDTO[]> {
-    try {
-      const projects = await this.prisma.project.findMany({
-        where: {
-          owner: {
-            ownerkey: {
-              equals: key
-            }
-          },
+    const projects = await this.prisma.project.findMany({
+      where: {
+        owner: {
+          ownerkey: {
+            equals: key
+          }
         },
-      });
+      },
+    });
 
-      return projects;
-    } catch (err: any) {
-      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
-    }
+    return projects;
   };
 
   async listByManager(key: string): Promise<ProjectDTO[]> {
-    try {
-      const projects = await this.prisma.project.findMany({
-        where: {
-          members: {
-            some: {
-              userkey: key
-            }
-          },
+    const projects = await this.prisma.project.findMany({
+      where: {
+        members: {
+          some: {
+            userkey: key
+          }
         },
-        select: {
-          id: true,
-          title: true,
-          due_date: true
-        }
-      });
+      },
+      select: {
+        id: true,
+        title: true,
+        due_date: true
+      }
+    });
 
-      return projects;
-    } catch (err: any) {
-      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
-    }
+    return projects;
   };
 
-  async find(key: string) {
-    try {
-      const projects = await this.prisma.project.findUnique({
-        where: {
-          id: key
-        },
-        include: {
-          members: true
-        }
-      })
-
-      if (!projects) {
-        throw new ProjectNotExistsException();
+  async find(key: string, query?: ProjectQueryDTO) {
+    const projects = await this.prisma.project.findUnique({
+      where: {
+        id: key,
+        ...query
+      },
+      include: {
+        members: true
       }
+    })
 
-      return projects;
-    } catch (err: any) {
-      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+    if (!projects) {
+      throw new ProjectNotExistsException();
     }
+
+    return projects;
   };
 
   async edit(key: string, update: EditProjectDTO): Promise<ProjectDTO> {
     await this.projectExists(key);
-    try {
-      const result = await this.prisma.project.update({
-        where: {
-          id: key
-        },
-        data: update,
-      });
 
-      return result;
-    } catch (err: any) {
-      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
-    }
+    const result = await this.prisma.project.update({
+      where: {
+        id: key
+      },
+      data: update,
+    });
+
+    return result;
   }
 
   async delete(id: string) {
-    try {
-      const response = await this.prisma.project.delete({
-        where: {
-          id: id
-        }
-      });
-
-      if (!response) {
-        throw new NotFoundException();
+    const response = await this.prisma.project.delete({
+      where: {
+        id: id
       }
+    });
 
-      return response;
-    } catch (err: any) {
-      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+    if (!response) {
+      throw new NotFoundException();
     }
+
+    return response;
   };
+
+  async exists(key: string, query: ProjectQueryDTO): Promise<boolean> {
+    const result = await this.prisma.organization.count({
+      where: {
+        id: key,
+        ...query
+      }
+    });
+
+    return result > 0;
+  }
 }

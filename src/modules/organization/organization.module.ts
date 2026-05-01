@@ -18,7 +18,7 @@ import { AffiliationModule } from '@modules/affiliations/affiliations.module';
     OrganizationService
   ],
   exports: [
-    OrganizationRepository
+    OrganizationService
   ]
 })
 export class OrganizationModule { }

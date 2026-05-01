@@ -4,6 +4,7 @@ import { AffiliationRepository } from "./affiliations.repository";
 import { DefineAffiliationDTO } from "./dto/define.dto";
 import { AffiliationDTO } from "./dto/affiliation.dto";
 import { APIMessage } from "@interfaces/ApiMessage";
+import { AccessValidator } from "@interfaces/AccessValidator";
 
 // type ListMethodCommand = {
 //   [key: string]: (key: string) => Promise<ProjectDTO[]>
@@ -14,7 +15,7 @@ type AffiliationRoleTrasistion = {
 }
 
 @Injectable()
-export class AffiliationService {
+export class AffiliationService implements AccessValidator {
   private logger: Logger = new Logger('AffiliationService');
 
   constructor(
@@ -113,5 +114,9 @@ export class AffiliationService {
     } catch (err: any) {
       throw new BadRequestException(err.message)
     }
+  }
+
+  async belongs(subjectkey: string, targetkey: string): Promise<boolean> {
+    return false;
   }
 }

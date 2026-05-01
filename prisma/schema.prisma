@@ -5,254 +5,250 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
-  output   = "../generated/prisma"
+ provider = "prisma-client-js"
+ output   = "../generated/prisma"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DB_URL")
-  directUrl = env("DIRECT_URL")
+ provider = "postgresql"
+ url      = env("DB_URL")
+ directUrl = env("DIRECT_URL")
 }
 
 model Account {
-  id                 String           @id @default(cuid())
-  password           String         
-  email              String           @unique
+ id                 String           @id @default(cuid())
+ password           String        
+ email              String           @unique
 
-  user               User?
+ user               User?
 
-  created_at         DateTime         @default(now())
-  updated_at         DateTime         @updatedAt
+ created_at         DateTime         @default(now())
+ updated_at         DateTime         @updatedAt
 
-  @@map("accounts")
+ @@map("accounts")
 }
 
 model User {
-  id                 String           @default(cuid())
-  username           String           @id @unique
-  name               String         
+ id                 String           @default(cuid())
+ username           String           @id @unique
+ name               String        
 
-  photo              Image?
+ photo              Image?
 
-  accountkey         String           @unique
-  account            Account          @relation(fields: [accountkey], references: [id], onDelete: Cascade)
+ accountkey         String           @unique
+ account            Account          @relation(fields: [accountkey], references: [id], onDelete: Cascade)
 
-  comments           Comment[]
-  notifications      Notification[]
-  participates_in    Affiliation[]
+ comments           Comment[]
+ notifications      Notification[]
+ participates_in    Affiliation[]
 
-  organization       Organization?    @relation("OrgOwner")
+ organization       Organization?    @relation("OrgOwner")
 
-  created_at         DateTime         @default(now())
-  updated_at         DateTime         @updatedAt
+ created_at         DateTime         @default(now())
+ updated_at         DateTime         @updatedAt
 
-  @@map("users")
+ @@map("users")
 }
 
 model Organization {
-  id                 String           @id @default(cuid())
-  
+ id                 String           @id @default(cuid())
   name               String
 
-  ownerkey           String           @unique
-  owner              User             @relation("OrgOwner", fields: [ownerkey], references: [username])
+ ownerkey           String           @unique
+ owner              User             @relation("OrgOwner", fields: [ownerkey], references: [username])
 
-  projects           Project[]
-  members            Affiliation[]
+ projects           Project[]
+ members            Affiliation[]
 
-  created_at         DateTime         @default(now())
-  updated_at         DateTime         @updatedAt
+ created_at         DateTime         @default(now())
+ updated_at         DateTime         @updatedAt
 
-  @@map("organizations")
+ @@map("organizations")
 }
 
 model Affiliation {
-  id                 String           @id @default(cuid())
+ id                 String           @id @default(cuid())
 
-  orgkey             String
-  in_org             Organization     @relation(fields: [orgkey], references: [id])
+ orgkey             String
+ in_org             Organization     @relation(fields: [orgkey], references: [id])
 
-  role               OrgRole          @default(MEMBER)
+ role               OrgRole          @default(MEMBER)
 
-  userkey            String
-  user               User             @relation(fields: [userkey], references: [username])
+ userkey            String
+ user               User             @relation(fields: [userkey], references: [username])
 
-  member_in          Member[]
+ member_in          Member[]
+ manage             Project[]
 
-  created_at         DateTime         @default(now())
-  updated_at         DateTime         @updatedAt
+ created_at         DateTime         @default(now())
+ updated_at         DateTime         @updatedAt
 
-  @@unique([userkey, orgkey])
+ @@unique([userkey, orgkey])
 
-  @@map("affiliations")
+ @@map("affiliations")
 }
 
 model Image {
-  id             String      @id @default(cuid())
-  filename       String
-  url            String
-    
-  userkey        String      @unique
-  user           User        @relation(fields: [userkey], references: [username])
+ id             String      @id @default(cuid())
+ filename       String
+ url            String
+  
+ userkey        String      @unique
+ user           User        @relation(fields: [userkey], references: [username])
 
-  created_at     DateTime    @default(now())
-  updated_at     DateTime    @updatedAt
+ created_at     DateTime    @default(now())
+ updated_at     DateTime    @updatedAt
 
-  @@map("images")
+ @@map("images")
 }
 
 model Project {
-  id                 String                  @id @default(cuid())
-  title              String
-  description        String
-  due_date           DateTime
+ id                 String                  @id @default(cuid())
+ title              String
+ description        String
+ due_date           DateTime
 
-  progress           ProjectProgress         @default(STARTED)
+ progress           ProjectProgress         @default(STARTED)
 
-  ownerkey           String
-  owner              Organization            @relation(fields: [ownerkey], references: [id])
+ ownerkey           String
+ owner              Organization            @relation(fields: [ownerkey], references: [id])
 
-  members            Member[]
-  comments           Comment[]
-  tasks              Task[]
-  events             Event[]
+ managerkey         String
+ manager            Affiliation             @relation(fields: [managerkey], references: [id])
 
-  created_at         DateTime            @default(now())
-  updated_at         DateTime            @updatedAt
+ members            Member[]
+ comments           Comment[]
+ tasks              Task[]
+ events             Event[]
 
-  @@map("projects")
+ created_at         DateTime            @default(now())
+ updated_at         DateTime            @updatedAt
+
+ @@map("projects")
 }
 
 model Member {
-  id                 String           @id @default(cuid())
-  
+ id                 String           @id @default(cuid())
   projectkey         String
-  project            Project          @relation(fields: [projectkey], references: [id], onDelete: Cascade)
-  
+ project            Project          @relation(fields: [projectkey], references: [id], onDelete: Cascade)
   userkey            String
-  user               Affiliation      @relation(fields: [userkey], references: [id], onDelete: Cascade)
+ user               Affiliation      @relation(fields: [userkey], references: [id], onDelete: Cascade)
   
-  role               MemberRole       @default(MEMBER)
-  
-  tasks              Task[]
-  
+ tasks              Task[]
   created_at         DateTime         @default(now())
-  updated_at         DateTime         @updatedAt
+ updated_at         DateTime         @updatedAt
 
-  @@map("member")
+ @@map("member")
 }
 
 model Task {
-  id          String        @id @unique @default(cuid())
-  code        String        @unique
-  name        String
-  description String
-  due_date    DateTime
+ id          String        @id @unique @default(cuid())
+ code        String        @unique
+ name        String
+ description String
+ due_date    DateTime
 
-  stage       TaskStage     @default(PENDING)
-  priority    TaskPriority
-  
+ stage       TaskStage     @default(PENDING)
+ priority    TaskPriority
   projectkey  String
-  project     Project       @relation(fields: [projectkey], references: [id], onDelete: Cascade)
+ project     Project       @relation(fields: [projectkey], references: [id], onDelete: Cascade)
 
-  ownerkey    String
-  owner       Member @relation(fields: [ownerkey], references: [id])
+ ownerkey    String
+ owner       Member @relation(fields: [ownerkey], references: [id])
 
-  created_at         DateTime         @default(now())
-  updated_at         DateTime         @updatedAt
+ created_at         DateTime         @default(now())
+ updated_at         DateTime         @updatedAt
 
-  @@map("tasks")
+ @@map("tasks")
 }
 
 model Comment {
-  id          String    @id @default(cuid())
-  content     String
-  date     DateTime  @default(now())
+ id          String    @id @default(cuid())
+ content     String
+ date     DateTime  @default(now())
 
-  ownerkey    String
-  owner       User      @relation(fields: [ownerkey], references: [username])
+ ownerkey    String
+ owner       User      @relation(fields: [ownerkey], references: [username])
 
-  projectkey  String
-  project     Project   @relation(fields: [projectkey], references: [id])
+ projectkey  String
+ project     Project   @relation(fields: [projectkey], references: [id])
 
-  created_at         DateTime         @default(now())
-  updated_at         DateTime         @updatedAt
- 
-  @@map("comments")
+ created_at         DateTime         @default(now())
+ updated_at         DateTime         @updatedAt
+ @@map("comments")
 }
 
 model Event {
-  id                 String           @id @unique @default(cuid())
-  title              String
-  date               DateTime
+ id                 String           @id @unique @default(cuid())
+ title              String
+ date               DateTime
 
-  projectkey         String
-  project            Project          @relation(fields: [projectkey], references: [id])
+ projectkey         String
+ project            Project          @relation(fields: [projectkey], references: [id])
 
-  category           EventCategory
+ category           EventCategory
 
-  created_at         DateTime         @default(now())
-  updated_at         DateTime         @updatedAt
+ created_at         DateTime         @default(now())
+ updated_at         DateTime         @updatedAt
 
-  @@map("events")
+ @@map("events")
 }
 
 model Notification {
-  id                 String      @id @default(cuid())
+ id                 String      @id @default(cuid())
 
-  action             String
+ action             String
 
-  actorkey           String
-  actor              User      @relation(fields: [actorkey], references: [username])
+ actorkey           String
+ actor              User      @relation(fields: [actorkey], references: [username])
 
-  created_at         DateTime         @default(now())
-  updated_at         DateTime         @updatedAt
+ created_at         DateTime         @default(now())
+ updated_at         DateTime         @updatedAt
 
-  @@map("notifications")
+ @@map("notifications")
 }
 
 enum ProjectProgress {
-  STARTED
-  PENDING
-  IN_PROGRESS
-  PAUSED
-  COMPLETED
-  DELAYED
+ STARTED
+ PENDING
+ IN_PROGRESS
+ PAUSED
+ COMPLETED
+ DELAYED
 }
 
 enum EventCategory {
-  RELEASE
-  MEETING
-  REVIEW
-  PLANNING
-  TESTS
-  LAUNCH
+ RELEASE
+ MEETING
+ REVIEW
+ PLANNING
+ TESTS
+ LAUNCH
 }
 
 enum OrgRole {
-  OWNER
-  MANAGER
-  MEMBER
+ OWNER
+ MANAGER
+ MEMBER
 }
 
-enum MemberRole {
-  MANAGER
-  MEMBER
-}
+// enum MemberRole {
+//   MANAGER
+//   MEMBER
+// }
 
 enum TaskStage {
-  STARTED
-  PENDING
-  IN_PROGRESS
-  REVIEW
-  DONE
-  DELAYED
+ STARTED
+ PENDING
+ IN_PROGRESS
+ REVIEW
+ DONE
+ DELAYED
 }
 
 enum TaskPriority {
-  LOW
-  MEDIUM
-  HIGH
-  EXTREME
+ LOW
+ MEDIUM
+ HIGH
+ EXTREME
 }

@@ -1,4 +1,4 @@
-import { ApiResponse } from "@interfaces/ApiResponse";
+import { ApiResponse } from "src/common/interfaces/ApiResponse";
 import { Body, Controller, Delete, Get, Headers, HttpException, HttpStatus, Param, Post, Put, Query, Res, UploadedFile, UseGuards, UseInterceptors } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { JwtAuthGuard } from "../../security/auth.guard";

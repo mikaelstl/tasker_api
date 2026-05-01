@@ -19,7 +19,6 @@ export class PermissionGuard implements CanActivate {
   constructor(
     private reflector: Reflector,
     private readonly permissions: PermissionService,
-    private readonly affiliations: AffiliationService
   ) {}
 
   async canActivate(ctx:ExecutionContext): Promise<boolean> {
@@ -38,16 +37,14 @@ export class PermissionGuard implements CanActivate {
 
     if (!user || !orgkey) throw new UnauthorizedException('Missing authenticated user. Please login or create a account.')
 
-    const affiliation = await this.affiliations.findByUserOrgKey(
-      user.username,
-      orgkey
-    );
-
     // MONTAR CONTEXT
     const payload = {
       action,
       resource,
-      role: affiliation.role,
+      subject: {
+        userkey: user.username,
+        orgkey: orgkey
+      }
     } as AccessContext;
     
     // VERIFICAR SE O USUÁRIO PODE EXECUTAR TAREFA

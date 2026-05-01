@@ -10,10 +10,13 @@ import { AccountModule } from '@modules/accounts/account.module';
 import { OrganizationModule } from '@modules/organization/organization.module';
 import { PermissionModule } from '@permissions/permission.modules';
 import { AffiliationModule } from '@modules/affiliations/affiliations.module';
+import { ValidatorModule } from 'src/authorization/validator/validator.module';
 
 @Module({
   imports: [
     PrismaModule,
+    ValidatorModule,
+    PermissionModule,
     // UploadModule,
     AccountModule,
     AuthModule,
@@ -21,7 +24,6 @@ import { AffiliationModule } from '@modules/affiliations/affiliations.module';
     OrganizationModule,
     ProjectsModule,
     AffiliationModule,
-    PermissionModule
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -6,10 +6,12 @@ import { OrganizationDTO } from "@modules/organization/dto/organization.dto";
 import { OrganizationCreateDTO } from "./dto/create.dto";
 import { AffiliationRepository } from "@modules/affiliations/affiliations.repository";
 import { OrgRole } from "generated/prisma";
+import { AccessValidator } from "src/common/interfaces/AccessValidator";
+import { Resources } from "src/common/enums/Resources.enum";
 
 @Injectable()
-export class OrganizationService {
-  private logger: Logger = new Logger('AcountService');
+export class OrganizationService implements AccessValidator {
+  private readonly logger: Logger = new Logger('AcountService');
 
   constructor(
     private readonly repository: OrganizationRepository,
@@ -43,5 +45,32 @@ export class OrganizationService {
         )
       }
     );
+  }
+
+  public async belongs(subjectkey: string, targetkey: string): Promise<boolean> {
+    try {
+      const result = await this.repository.exists({
+        id: targetkey,
+        ownerkey: subjectkey
+      });
+
+      return result;
+    } catch (err) {
+      this.logger.warn("[ERROR] to verify organization ownership.", err)
+      return false;
+    }
+  }
+
+  public async participates(subjectkey: string, targetkey: string): Promise<boolean> {
+    try {
+      const result = await this.repository.find(targetkey);
+    
+      const value = result.members.find(m => m.userkey === subjectkey);
+
+      return !!value;
+    } catch (err) {
+      this.logger.warn("[ERROR] to verify organization membership.", err)
+      return false;
+    }
   }
 }

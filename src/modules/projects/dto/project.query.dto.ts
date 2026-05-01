@@ -5,6 +5,7 @@ export interface ProjectQueryDTO {
   readonly title?: string;
   readonly description?: string;
   readonly ownerkey?: string;
+  readonly managerkey?: string;
   readonly due_date?: Date;
   readonly progress?: $Enums.ProjectProgress;
 }

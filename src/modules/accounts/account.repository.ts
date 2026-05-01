@@ -1,5 +1,5 @@
-import { AlreadyExistsException } from "@exceptions/user_exists.error";
-import { UserNotExistsException } from "@exceptions/user_not_exists.exception";
+import { AlreadyExistsException } from "src/common/errors/user_exists.error";
+import { UserNotExistsException } from "src/common/errors/user_not_exists.exception";
 import { HttpException, HttpStatus, Injectable, Logger } from "@nestjs/common";
 import { PrismaService } from "src/database/prisma.service";
 import { AccountDTO } from "@modules/accounts/dto/account.dto";

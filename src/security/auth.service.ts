@@ -2,12 +2,12 @@ import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/co
 import { JwtService } from '@nestjs/jwt';
 import { SECRET } from '@config/env.config';
 import { AuthDTO } from '@security/dto/auth.dto';
-import { WrongPasswordException } from '@exceptions/wrong_password.exception';
+import { WrongPasswordException } from 'src/common/errors/wrong_password.exception';
 import { compare, compareSync, hash } from 'bcrypt'
 import { LoginDTO } from '@security/dto/login.dto';
 import { JwtPayload } from 'jsonwebtoken';
 import { AccountRepository } from '@modules/accounts/account.repository';
-import { JWTPayload } from '@interfaces/JWTPayload';
+import { JWTPayload } from 'src/common/interfaces/JWTPayload';
 import { UserRepository } from '@modules/users/user.repository';
 
 @Injectable()

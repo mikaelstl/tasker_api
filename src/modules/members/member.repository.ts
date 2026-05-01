@@ -57,4 +57,15 @@ export class MembersRepository {
       throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
+
+  async participates(projectkey: string, userkey: string) {
+    const result = await this.prisma.member.count({
+      where: {
+        projectkey: projectkey,
+        userkey: userkey
+      }
+    });
+
+    return result > 0;
+  }
 }

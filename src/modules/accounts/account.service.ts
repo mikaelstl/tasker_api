@@ -1,6 +1,6 @@
 import { BadRequestException, HttpException, HttpStatus, Injectable, Logger, UseInterceptors } from "@nestjs/common";
 import { UserRepository } from "@modules/users/user.repository";
-import { UserNotExistsException } from "src/utils/errors/user_not_exists.exception";
+import { UserNotExistsException } from "src/common/errors/user_not_exists.exception";
 import { AccountRepository } from "./account.repository";
 import { CreateAccountDTO } from "@modules/accounts/dto/create.dto";
 import { RegisterAccount } from "./register-account";

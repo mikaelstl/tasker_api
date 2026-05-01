@@ -3,6 +3,7 @@ import { Actions } from "@enums/Actions.enum";
 import { Resources } from "@enums/Resources.enum";
 import { OrgRole } from "generated/prisma";
 import { AccessContext } from "@interfaces/AccessContext";
+import { AffiliationService } from "@modules/affiliations/affiliations.service";
 
 type ResourceMap = Map<Resources, Actions[]>
 
@@ -13,6 +14,7 @@ export class PermissionService {
   private readonly ROLES_PERMISSIONS: RolesPermissions = new Map();
 
   constructor(
+    private readonly affiliations: AffiliationService
   ) {
     // GERAR PERMISSÕES DO OWNER
     this.setOwnerPermissions();
@@ -29,7 +31,10 @@ export class PermissionService {
     // policy: () => boolean
   ): Promise<boolean> {
     // EXTRAIR role, action, resource DE ctx
-    const { role, action, resource, subject } = ctx;
+    const { action, resource, subject } = ctx;
+
+    const role = (await this.getRole(subject.userkey, subject.orgkey)).role;
+    console.log(role);
 
     // BUSCAR EM UM MAP PRIVADO DA CLASSE AS PERMISSOES PELA ROLE
     const perms = this.ROLES_PERMISSIONS.get(role);
@@ -130,5 +135,12 @@ export class PermissionService {
     this.ROLES_PERMISSIONS.set(
       OrgRole.MEMBER, MemberResourceAccess
     )
+  }
+
+  public async getRole(userkey: string, orgkey:string) {
+    return await this.affiliations.findByUserOrgKey(
+      userkey,
+      orgkey
+    );
   }
 }

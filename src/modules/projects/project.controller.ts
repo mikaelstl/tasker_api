@@ -1,4 +1,4 @@
-import { ApiResponse } from "@interfaces/ApiResponse";
+import { ApiResponse } from "src/common/interfaces/ApiResponse";
 import { Body, Controller, Delete, Get, Header, Headers, HttpStatus, Param, Post, Put, Query, Res, UseGuards } from "@nestjs/common";
 import { MembersRepository } from "../members/member.repository";
 import { JwtAuthGuard } from "../../security/auth.guard";
@@ -11,12 +11,12 @@ import { OrgRole } from "generated/prisma";
 import { CurrentAccount } from "src/decorators/CurrentAccount.decorator";
 import { CurrentAccountDTO } from "@modules/users/dto/current-account.dto";
 import { EditProjectDTO } from "@modules/projects/dto/edit.dto";
-import { Resources } from "@enums/Resources.enum";
+import { Resources } from "src/common/enums/Resources.enum";
 import { Resource } from "@decorators/Resource";
 import { Role } from "@decorators/Role";
 import { OrgKey } from "@decorators/OrgKey";
 import { Action } from "@decorators/Action";
-import { Actions } from "@enums/Actions.enum";
+import { Actions } from "src/common/enums/Actions.enum";
 
 @Controller('project')
 @UseGuards(JwtAuthGuard)
@@ -24,7 +24,6 @@ import { Actions } from "@enums/Actions.enum";
 export class ProjectController {
   constructor(
     private readonly repository: ProjectRepository,
-    private readonly memberRepository: MembersRepository,
     private readonly service: ProjectService,
   ) {}
 
