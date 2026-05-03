@@ -40,6 +40,18 @@ export class AccessValidatorService implements Record<OrgRole, RolesPermissions>
     this.setMemberPermissions();
   }
 
+  private orgMembership = async (sub: AccessSubject): Promise<boolean> => {
+    const participates = await this.orgs.participates(sub.orgkey, sub.projectkey);
+
+    return participates;
+  }
+
+  private orgOwnership = async (sub: AccessSubject): Promise<boolean> => {
+    const isOwner = await this.orgs.belongs(sub.userkey, sub.orgkey);
+
+    return isOwner;
+  }
+
   private projectOwnership = async (sub: AccessSubject): Promise<boolean> => {
     const isOwner = await this.orgs.belongs(sub.userkey, sub.orgkey);
 
@@ -58,18 +70,6 @@ export class AccessValidatorService implements Record<OrgRole, RolesPermissions>
     const participates = await this.projects.manage(sub.userkey, sub.projectkey);
 
     return participates;
-  }
-
-  private orgMembership = async (sub: AccessSubject): Promise<boolean> => {
-    const participates = await this.orgs.participates(sub.orgkey, sub.projectkey);
-
-    return participates;
-  }
-
-  private orgOwnership = async (sub: AccessSubject): Promise<boolean> => {
-    const isOwner = await this.orgs.belongs(sub.userkey, sub.orgkey);
-
-    return isOwner;
   }
 
   private taskOwnership = async (sub: AccessSubject): Promise<boolean> => {
@@ -264,7 +264,7 @@ type ResourcePermissionsType = { res: Resources, actions: Actions[], validator: 
 
 function resourcePermissionsFactory(defs: Array<ResourcePermissionsType>) {
   const resources: ResourceMap = new Map();
-  
+
   defs.forEach(
     def => {
       const actions: ActionValidatorMap = new Map();

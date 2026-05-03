@@ -7,7 +7,7 @@ import { OrganizationModule } from "@modules/organization/organization.module";
 import { ProjectsModule } from "@modules/projects/projects.module";
 import { TasksModule } from "@modules/tasks/tasks.module";
 import { PermissionService } from "@permissions/permission.service";
-import { AccessValidatorService } from "./access_validator.service";
+import { AccessValidatorService } from "./access-validator.service";
 import { Module } from "@nestjs/common";
 
 @Module({
@@ -23,6 +23,6 @@ import { Module } from "@nestjs/common";
   providers: [
     AccessValidatorService
   ],
-  exports: []
+  exports: [AccessValidatorService]
 })
 export class ValidatorModule {}

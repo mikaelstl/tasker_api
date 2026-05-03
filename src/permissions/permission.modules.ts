@@ -10,8 +10,7 @@ import { AffiliationModule } from "@modules/affiliations/affiliations.module";
   ],
   providers: [
     PermissionService,
-    PermissionGuard,
   ],
-  exports: [ PermissionGuard ]
+  exports: [PermissionService]
 })
 export class PermissionModule {}
