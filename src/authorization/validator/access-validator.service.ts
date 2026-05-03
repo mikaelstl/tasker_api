@@ -60,11 +60,11 @@ export class AccessValidatorService implements Record<OrgRole, RolesPermissions>
     return isOwner && projectInOrg;
   }
 
-  private projectMembership = async (sub: AccessSubject): Promise<boolean> => {
-    const participates = await this.projects.participates(sub.userkey, sub.projectkey);
+  // private projectMembership = async (sub: AccessSubject): Promise<boolean> => {
+  //   const participates = await this.projects.participates(sub.userkey, sub.projectkey);
 
-    return participates;
-  }
+  //   return participates;
+  // }
 
   private projectManager = async (sub: AccessSubject): Promise<boolean> => {
     const participates = await this.projects.manage(sub.userkey, sub.projectkey);
