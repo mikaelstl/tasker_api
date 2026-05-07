@@ -4,8 +4,14 @@ import { TasksRepository } from "@modules/tasks/tasks.repository";
 import { JwtAuthGuard } from "../../security/auth.guard";
 import { TaskCreateDTO } from "@modules/tasks/dto/task.create.dto";
 import { TaskQueryDTO } from "@modules/tasks/dto/task.query.dto";
+import { PermissionGuard } from "@guards/permission.guard";
+import { Action } from "@decorators/Action";
+import { BaseActions } from "@enums/Actions.enum";
+import { Resource } from "@decorators/Resource";
+import { Resources } from "@enums/Resources.enum";
 
 @Controller('tasks')
+@Resource(Resources.TASKS)
 @UseGuards(JwtAuthGuard)
 export class TasksController {
   constructor (
@@ -13,6 +19,8 @@ export class TasksController {
   ) {}
 
   @Post()
+  @Action(BaseActions.CREATE)
+  @UseGuards(PermissionGuard)
   async create(
     @Body()  data: TaskCreateDTO,
     @Res() response
@@ -23,7 +31,6 @@ export class TasksController {
       status: HttpStatus.CREATED,
       data: result,
       message: 'New task added to project',
-      
       timestamp: new Date().toISOString(),
       path: '/tasks'
     };
@@ -32,6 +39,8 @@ export class TasksController {
   }
 
   @Get('/:projectkey')
+  @Action(BaseActions.SEEK)
+  @UseGuards(PermissionGuard)
   async list(
     @Query() queries: TaskQueryDTO,
     @Param('projectkey') projectkey,
@@ -55,6 +64,8 @@ export class TasksController {
   }
 
   @Get('/:code')
+  @Action(BaseActions.SEEK)
+  @UseGuards(PermissionGuard)
   async find(
     @Param('code') code: string
   ) {
@@ -62,6 +73,8 @@ export class TasksController {
   }
 
   @Put('/:code')
+  @Action(BaseActions.EDIT)
+  @UseGuards(PermissionGuard)
   async update(
     @Param('code') code: string,
     @Body()        update: any
@@ -70,6 +83,8 @@ export class TasksController {
   }
 
   @Delete('/del/:id')
+  @Action(BaseActions.DEL)
+  @UseGuards(PermissionGuard)
   async delete(
     @Param('id') id: string,
   ) {

@@ -15,7 +15,7 @@ export class OrganizationService implements AccessValidator {
 
   constructor(
     private readonly repository: OrganizationRepository,
-    private readonly projects: ProjectRepository,
+    // private readonly projects: ProjectRepository,
     private readonly affiliations: AffiliationRepository,
     private readonly users: UserRepository
   ) { }
@@ -34,17 +34,7 @@ export class OrganizationService implements AccessValidator {
   }
 
   async delete(key: string) {
-    return this.repository.delete(key).then(
-      async (org) => {
-        org.projects.forEach(
-          (p) => this.projects.delete(p.id)
-        );
-
-        org.members.forEach(
-          (aff) => this.users.edit(aff.userkey, { orgkey: null })
-        )
-      }
-    );
+    return this.repository.delete(key);
   }
 
   public async belongs(subjectkey: string, targetkey: string): Promise<boolean> {

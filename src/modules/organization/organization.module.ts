@@ -9,16 +9,15 @@ import { AffiliationModule } from '@modules/affiliations/affiliations.module';
 @Module({
   imports: [
     UserModule,
-    ProjectsModule,
-    AffiliationModule
+    AffiliationModule,
   ],
   controllers: [OrganizationController],
   providers: [
     OrganizationRepository,
-    OrganizationService
+    OrganizationService,
   ],
   exports: [
-    OrganizationService
+    OrganizationService,
   ]
 })
 export class OrganizationModule { }

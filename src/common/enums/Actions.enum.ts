@@ -1,12 +1,18 @@
-export enum Actions {
-  ALL = '*',
-  CREATE = 'create',
-  DEL = 'del',
-  EDIT = 'edit',
-  SEEK = 'seek',
+enum BaseActions {
+  CREATE = 'CREATE',
+  DEL = 'DEL',
+  EDIT = 'EDIT',
+  SEEK = 'SEEK',
+}
 
-  MANAGE = `manage`,
+enum EnhancedActions {
+  // MANAGE = `MANAGE`,
   
-  PROMOTE = `promote`,
-  DEMOTE = `demote`,
+  PROMOTE = `PROMOTE`,
+  DEMOTE = `DEMOTE`,
+}
+
+export {
+  BaseActions,
+  EnhancedActions
 }

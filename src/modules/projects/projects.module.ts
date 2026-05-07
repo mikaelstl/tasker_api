@@ -3,11 +3,12 @@ import { ProjectService } from "@modules/projects/project.service";
 import { ProjectController } from "@modules/projects/project.controller";
 import { ProjectRepository } from "@modules/projects/projects.repository";
 import { AffiliationModule } from "@modules/affiliations/affiliations.module";
-import { ProjectMembershipPolicy } from "./policies/project-membership.policy";
+import { OrganizationModule } from "@modules/organization/organization.module";
 
 @Module({
   imports: [
     AffiliationModule,
+    OrganizationModule
   ],
   controllers: [
     ProjectController,
@@ -19,7 +20,6 @@ import { ProjectMembershipPolicy } from "./policies/project-membership.policy";
   exports: [
     ProjectRepository,
     ProjectService,
-    ProjectMembershipPolicy
   ]
 })
 export class ProjectsModule {}

@@ -10,13 +10,15 @@ import { AccountModule } from '@modules/accounts/account.module';
 import { OrganizationModule } from '@modules/organization/organization.module';
 import { PermissionModule } from '@permissions/permission.modules';
 import { AffiliationModule } from '@modules/affiliations/affiliations.module';
-import { ValidatorModule } from 'src/authorization/validator/validator.module';
+import { AccessControlModule } from 'src/authorization/access-control/access-control.module';
+import { PoliciesModule } from '@authorization/policies/policies.module';
 
 @Module({
   imports: [
     PrismaModule,
-    ValidatorModule,
     PermissionModule,
+    AccessControlModule,
+    PoliciesModule,
     // UploadModule,
     AccountModule,
     AuthModule,

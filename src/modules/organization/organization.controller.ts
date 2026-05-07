@@ -7,8 +7,16 @@ import { OrganizationCreateDTO } from "@modules/organization/dto/create.dto";
 import { CurrentAccount } from "src/decorators/CurrentAccount.decorator";
 import { CurrentAccountDTO } from "@modules/users/dto/current-account.dto";
 import { JwtAuthGuard } from "@security/auth.guard";
+import { PermissionGuard } from "@guards/permission.guard";
+import { Resources } from "@enums/Resources.enum";
+import { Resource } from "@decorators/Resource";
+import { Action } from "@decorators/Action";
+import { BaseActions } from "@enums/Actions.enum";
+import { Role } from "@decorators/Role";
+import { OrgRole } from "generated/prisma";
 
 @Controller('org')
+@Resource(Resources.ORGANIZATIONS)
 @UseGuards(JwtAuthGuard)
 export class OrganizationController {
   constructor(
@@ -42,6 +50,9 @@ export class OrganizationController {
   }
 
   @Delete('/del/:id')
+  @Role(OrgRole.OWNER)
+  @Action(BaseActions.DEL)
+  @UseGuards(PermissionGuard)
   async delete(
     @Param('id') id: string,
     @Res() resp

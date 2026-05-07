@@ -41,10 +41,6 @@ export class AuthService {
     const user = await this.users.find({
       accountkey: account.id
     })
-
-    console.log(account);
-
-    console.log(user);
     
     const match: boolean = await compare(data.password, account.password);
 

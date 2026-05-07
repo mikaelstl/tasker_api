@@ -16,7 +16,7 @@ import { Resource } from "@decorators/Resource";
 import { Role } from "@decorators/Role";
 import { OrgKey } from "@decorators/OrgKey";
 import { Action } from "@decorators/Action";
-import { Actions } from "src/common/enums/Actions.enum";
+import { BaseActions } from "src/common/enums/Actions.enum";
 
 @Controller('project')
 @UseGuards(JwtAuthGuard)
@@ -28,7 +28,7 @@ export class ProjectController {
   ) {}
 
   @Post()
-  @Action(Actions.CREATE)
+  @Action(BaseActions.CREATE)
   @Role(OrgRole.OWNER)
   @UseGuards(PermissionGuard)
   async create(
@@ -55,6 +55,8 @@ export class ProjectController {
   }
 
   @Get('/list')
+  @Action(BaseActions.SEEK)
+  @UseGuards(PermissionGuard)
   async list(
     @Query()  queries: ProjectQueryDTO,
     @OrgKey() orgkey: string,
@@ -76,6 +78,7 @@ export class ProjectController {
   }
 
   @Get('/:id')
+  @Action(BaseActions.SEEK)
   @UseGuards(PermissionGuard)
   async find(
     @Param('id') id: string,
@@ -88,7 +91,6 @@ export class ProjectController {
       status: HttpStatus.OK,
       data: result,
       message: '',
-      
       timestamp: new Date().toISOString(),
       path: '/project'
     };
@@ -97,6 +99,8 @@ export class ProjectController {
   }
 
   @Put('/:id')
+  @Role(OrgRole.OWNER)
+  @Action(BaseActions.EDIT)
   @UseGuards(PermissionGuard)
   async edit(
     @Param('id') id: string,
@@ -110,7 +114,6 @@ export class ProjectController {
       status: HttpStatus.OK,
       data: result,
       message: 'Updated with success',
-      
       timestamp: new Date().toISOString(),
       path: '/project'
     };
@@ -119,8 +122,9 @@ export class ProjectController {
   }
 
   @Delete('/del/:id')
-  @UseGuards(PermissionGuard)
   @Role(OrgRole.OWNER)
+  @Action(BaseActions.DEL)
+  @UseGuards(PermissionGuard)
   async delete(
     @Param('id') id: string,
     @Res() response,

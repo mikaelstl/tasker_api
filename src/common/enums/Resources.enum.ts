@@ -1,10 +1,9 @@
 export enum Resources {
-  ALL = '*',
-  ORGANIZATIONS = 'org',
-  AFFILIATIONS = 'affiliations',
-  PROJECTS = 'projects',
-  MEMBERS = 'members',
-  TASKS = 'tasks',
-  COMMENTS = 'comments',
-  EVENTS = 'events'
+  ORGANIZATIONS = 'ORGS',
+  AFFILIATIONS = 'AFFILIATIONS',
+  PROJECTS = 'PROJECTS',
+  MEMBERS = 'MEMBERS',
+  TASKS = 'TASKS',
+  COMMENTS = 'COMMENTS',
+  EVENTS = 'EVENTS'
 }

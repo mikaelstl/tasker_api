@@ -9,7 +9,7 @@ export class ProjectMembershipPolicy implements ResourcePolicyHandler {
     private readonly service: ProjectService
   ) {}
 
-  async validate(subject: string, target: string): Promise<boolean> {
-    return await this.service.participates(subject, target);
+  async validate(subject: AccessSubject): Promise<boolean> {
+    return await this.service.participates(subject.userkey, subject.targetkey);
   }
 }

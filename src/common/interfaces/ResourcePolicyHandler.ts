@@ -1,3 +1,5 @@
+import { AccessSubject } from "./AccessContext";
+
 export interface ResourcePolicyHandler {
-  validate(subject: string, target: string): Promise<boolean>;
+  validate(subject: AccessSubject): Promise<boolean>;
 }

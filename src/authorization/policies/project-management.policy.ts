@@ -9,7 +9,7 @@ export class ProjectManagementPolicy implements ResourcePolicyHandler {
     private readonly service: ProjectService
   ) {}
 
-  async validate(subject: string, target: string): Promise<boolean> {
-    return await this.service.manage(subject, target);
+  async validate(subject: AccessSubject): Promise<boolean> {
+    return await this.service.manage(subject.userkey, subject.targetkey);
   }
 }

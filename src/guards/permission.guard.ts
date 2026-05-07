@@ -1,21 +1,18 @@
 import { Resources } from "src/common/enums/Resources.enum";
 import { AccessContext } from "@interfaces/AccessContext";
-import { AffiliationController } from "@modules/affiliations/affiliations.controller";
 import { CanActivate, ExecutionContext, ForbiddenException, Injectable, UnauthorizedException } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 import { OrgRole } from "generated/prisma";
-import { Action } from "generated/prisma/runtime/library";
-import { Observable } from "rxjs";
 import { ACTION_KEY } from "src/decorators/Action";
 import { RESOURCE_KEY } from "src/decorators/Resource";
 import { ROLES_KEY } from "@decorators/Role";
-import { AffiliationService } from "@modules/affiliations/affiliations.service";
 import { ORG_KEY } from "@decorators/OrgKey";
 import { Request } from 'express';
 import { PermissionService } from "@permissions/permission.service";
+import { BaseActions, EnhancedActions } from "@enums/Actions.enum";
 
 @Injectable()
-export class PermissionGuard implements CanActivate {
+export class PermissionGuard implements CanActivate {  
   constructor(
     private reflector: Reflector,
     private readonly permissions: PermissionService,
@@ -23,9 +20,10 @@ export class PermissionGuard implements CanActivate {
 
   async canActivate(ctx:ExecutionContext): Promise<boolean> {
     const role = this.reflector.getAllAndOverride<OrgRole>(ROLES_KEY, [ctx.getHandler(), ctx.getClass()]);
-    const action = this.reflector.getAllAndOverride<Action>(ACTION_KEY, [ctx.getHandler(), ctx.getClass()])
+    const action = this.reflector.getAllAndOverride<BaseActions | EnhancedActions>(ACTION_KEY, [ctx.getHandler(), ctx.getClass()])
     const resource = this.reflector.getAllAndOverride<Resources>(RESOURCE_KEY, [ctx.getHandler(), ctx.getClass()])
-    const headers = this.getHeaders(ctx.switchToHttp().getRequest())
+    const req = ctx.switchToHttp().getRequest();
+    const headers = this.getHeaders(req);
     
     const orgkey = headers.get(ORG_KEY) as string;
 
@@ -37,18 +35,22 @@ export class PermissionGuard implements CanActivate {
 
     if (!user || !orgkey) throw new UnauthorizedException('Missing authenticated user. Please login or create a account.')
 
+    const id = req.body.id;
+
     // MONTAR CONTEXT
     const payload = {
       action,
       resource,
+      role,
       subject: {
         userkey: user.username,
-        orgkey: orgkey
+        orgkey: orgkey,
+        targetkey: id
       }
     } as AccessContext;
     
     // VERIFICAR SE O USUÁRIO PODE EXECUTAR TAREFA
-    const hasPermission = this.permissions.can(payload);
+    const hasPermission = await this.permissions.can(payload);
 
     // WHEN USER DON'T HAVE ACCESS TO RESOURCE, THROWS A ForbiddenException
     if (!hasPermission) {
