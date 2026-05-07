@@ -11,7 +11,7 @@
   "scripts": {
     "prisma:generate": "npx prisma generate",
     "migrate": "npx prisma migrate dev",
-    "migrate:new": "npx prisma migrate dev --",
+    "migrate:new": "npx prisma migrate dev",
     "migrate:reset": "npx prisma migrate reset",
     "migrate:deploy": "npx prisma migrate deploy",
     "build": "nest build",
