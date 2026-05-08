@@ -4,15 +4,22 @@ import { CommentsRepository } from "./comments.repository";
 import { JwtAuthGuard } from "../../security/auth.guard";
 import { CreateCommentDTO } from "@modules/comments/dto/comment.create.dto";
 import { CommentQueryDTO } from "@modules/comments/dto/comment.query.dto";
+import { PermissionGuard } from "@guards/permission.guard";
+import { BaseActions } from "@enums/Actions.enum";
+import { Action } from "@decorators/Action";
+import { Resource } from "@decorators/Resource";
+import { Resources } from "@enums/Resources.enum";
 
 @Controller('comments')
-@UseGuards(JwtAuthGuard)
+@Resource(Resources.COMMENTS)
+@UseGuards(JwtAuthGuard,PermissionGuard)
 export class CommentsController {
   constructor (
     private readonly repository: CommentsRepository
   ) {}
 
   @Post()
+  @Action(BaseActions.CREATE)
   async create(
     @Body() data: CreateCommentDTO,
     @Res() response
@@ -32,6 +39,7 @@ export class CommentsController {
   }
 
   @Get()
+  @Action(BaseActions.SEEK)
   async list(
     @Query() queries: CommentQueryDTO,
     @Res() response
@@ -51,6 +59,7 @@ export class CommentsController {
   }
 
   @Get('/:id')
+  @Action(BaseActions.SEEK)
   async find(
     @Param('id') id: string,
     @Res() response
@@ -70,6 +79,7 @@ export class CommentsController {
   }
 
   @Delete('/del/:id')
+  @Action(BaseActions.DEL)
   async delete(
     @Param('id') id: string,
     @Res() response

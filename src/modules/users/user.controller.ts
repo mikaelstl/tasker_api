@@ -34,6 +34,7 @@ export class UserController {
   }
 
   @Get()
+  @UseGuards(JwtAuthGuard)
   async list(
     @Res() resp
   ) {
@@ -52,6 +53,7 @@ export class UserController {
   }
 
   @Get(':username')
+  @UseGuards(JwtAuthGuard)
   async find(
     @Param('username') username: string,
     @Res() resp
@@ -71,6 +73,7 @@ export class UserController {
   }
 
   @Delete('del/:username')
+  @UseGuards(JwtAuthGuard)
   async delete(
     @Param('username') username: string,
     @Res() resp

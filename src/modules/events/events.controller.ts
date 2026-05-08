@@ -4,15 +4,22 @@ import { EventsRepository } from "./events.repository";
 import { JwtAuthGuard } from "../../security/auth.guard";
 import { EventCreateDTO } from "@modules/events/dto/event.create.dto";
 import { EventQueryDTO } from "@modules/events/dto/event.query.dto";
+import { Action } from "@decorators/Action";
+import { BaseActions } from "@enums/Actions.enum";
+import { PermissionGuard } from "@guards/permission.guard";
+import { Resources } from "@enums/Resources.enum";
+import { Resource } from "@decorators/Resource";
 
 @Controller('events')
-@UseGuards(JwtAuthGuard)
+@Resource(Resources.EVENTS)
+@UseGuards(JwtAuthGuard,PermissionGuard)
 export class EventsController {
   constructor (
     private readonly repository: EventsRepository
   ) {}
 
   @Post()
+  @Action(BaseActions.CREATE)
   async create(
     @Body()  data: EventCreateDTO,
     @Res() response
@@ -32,6 +39,7 @@ export class EventsController {
   }
 
   @Get()
+  @Action(BaseActions.SEEK)
   async list(
     @Query() queries: EventQueryDTO,
     @Res() response
@@ -51,6 +59,7 @@ export class EventsController {
   }
 
   @Get('/:code')
+  @Action(BaseActions.SEEK)
   async find(
     @Param('code') code: string
   ) {
@@ -58,6 +67,7 @@ export class EventsController {
   }
 
   @Put('/:code')
+  @Action(BaseActions.EDIT)
   async update(
     @Param('code') code: string,
     @Body()        update: any
@@ -66,6 +76,7 @@ export class EventsController {
   }
 
   @Delete('/:id')
+  @Action(BaseActions.DEL)
   async delete(
     @Param('id') id: string,
   ) {

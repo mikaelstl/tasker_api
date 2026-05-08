@@ -6,15 +6,24 @@ import { CurrentAccount } from "src/decorators/CurrentAccount.decorator";
 import { CurrentAccountDTO } from "@modules/users/dto/current-account.dto";
 import { DefineAffiliationDTO } from "@modules/affiliations/dto/define.dto";
 import { AffiliationService } from "./affiliations.service";
+import { Action } from "@decorators/Action";
+import { BaseActions, EnhancedActions } from "@enums/Actions.enum";
+import { Role } from "@decorators/Role";
+import { OrgRole } from "generated/prisma";
+import { Resource } from "@decorators/Resource";
+import { Resources } from "@enums/Resources.enum";
 
 @Controller('affiliations')
-@UseGuards(JwtAuthGuard)
+@Resource(Resources.AFFILIATIONS)
+@UseGuards(JwtAuthGuard, PermissionGuard)
 export class AffiliationController {
   constructor(
     private readonly service: AffiliationService,
   ) {}
 
   @Post()
+  @Role(OrgRole.OWNER)
+  @Action(BaseActions.CREATE)
   async create(
     @CurrentAccount() account: CurrentAccountDTO,
     @Body() data: DefineAffiliationDTO,
@@ -35,6 +44,8 @@ export class AffiliationController {
   }
 
   @Delete('/remove/:id')
+  @Role(OrgRole.OWNER)
+  @Action(BaseActions.DEL)
   async delete(
     @Param('id') id: string,
     @Res() response,
@@ -55,6 +66,8 @@ export class AffiliationController {
   }
 
   @Patch('/promote/:id')
+  @Role(OrgRole.OWNER)
+  @Action(EnhancedActions.PROMOTE)
   async promote(
     @Param('id') id: string,
     @Res() response,
@@ -75,6 +88,8 @@ export class AffiliationController {
   }
 
   @Patch('/demote/:id')
+  @Role(OrgRole.OWNER)
+  @Action(EnhancedActions.DEMOTE)
   async demote(
     @Param('id') id: string,
     @Res() response,
