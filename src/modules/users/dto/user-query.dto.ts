@@ -3,6 +3,6 @@ export interface UserQueryDTO {
   readonly name?: string;
   readonly username?: string;
   readonly orgkey?: string;
-  readonly accountkey?: string;
+  readonly accountkey: string;
   readonly member_in?: string;
 }

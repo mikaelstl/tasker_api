@@ -56,10 +56,14 @@ export class AuthService {
 
     const token = await this.jwt.signAsync(payload, { secret: SECRET })
 
-    return {
+    const acc: AuthDTO = {
       account: account.id,
       email: account.email,
+      username: user.username,
       access_token: token
-    } as AuthDTO;
+    };
+
+    
+    return acc;
   }
 }

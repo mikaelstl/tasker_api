@@ -4,6 +4,7 @@ import { AlreadyExistsException } from "src/common/errors/user_exists.error";
 import { UserNotExistsException } from "src/common/errors/user_not_exists.exception";
 import { CreateUserDTO } from "@modules/users/dto/create.dto";
 import { PrismaService } from "src/database/prisma.service";
+import { UserQueryDTO } from "./dto/user-query.dto";
 
 @Injectable()
 export class UserRepository {
@@ -52,11 +53,11 @@ export class UserRepository {
     }
   }
 
-  async find(querie: any): Promise<UserDTO> {
-    console.log(querie);
+  async find(queries: UserQueryDTO): Promise<UserDTO> {
+    console.log(queries);
     
     const user = await this.prisma.user.findUnique({
-      where: querie,
+      where: queries,
     });
     
     if (!user) {

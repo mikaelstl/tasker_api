@@ -6,6 +6,7 @@ import { UserRepository } from "@modules/users/user.repository";
 import { AuthService } from "src/security/auth.service";
 import { JwtAuthGuard } from "src/security/auth.guard";
 import { ApiResponse } from "src/common/interfaces/ApiResponse";
+import { UserQueryDTO } from "./dto/user-query.dto";
 
 @Controller('users')
 // @UseGuards(JwtAuthGuard)
@@ -52,13 +53,14 @@ export class UserController {
     return resp.status(response.status).json(response);
   }
 
-  @Get(':username')
+  @Get()
   @UseGuards(JwtAuthGuard)
   async find(
-    @Param('username') username: string,
+    @Query()  queries: UserQueryDTO,
     @Res() resp
+    
   ) {
-    const result: UserDTO = await this.repository.find(username);
+    const result: UserDTO = await this.repository.find(queries);
     
     const response: ApiResponse = {
       status: HttpStatus.CREATED,
