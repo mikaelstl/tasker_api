@@ -47,7 +47,7 @@ export class PermissionService {
   }
 
   public async getRole(userkey: string, orgkey:string) {
-    return await this.affiliations.findByUserOrgKey(
+    return await this.affiliations.findByUserOrgkey(
       userkey,
       orgkey
     );

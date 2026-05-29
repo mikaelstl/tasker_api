@@ -1,6 +1,6 @@
 import { createParamDecorator, ExecutionContext, SetMetadata } from "@nestjs/common";
 
-export const ORG_KEY = 'x-org-key';
+export const ORG_KEY = 'X-Org-Key';
 export const OrgKey = createParamDecorator(
   (data: unknown, ctx: ExecutionContext) => {
     const req = ctx.switchToHttp().getRequest();

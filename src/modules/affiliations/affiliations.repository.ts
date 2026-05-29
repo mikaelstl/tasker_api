@@ -44,18 +44,18 @@ export class AffiliationRepository {
     }
   }
 
-  async update(key:string, update: AffiliationDTO): Promise<AffiliationDTO> {
+  async update(key: string, update: AffiliationDTO): Promise<AffiliationDTO> {
     const result = await this.prisma.affiliation.update({
       where: {
         id: key
       },
       data: update
     });
-    
+
     return result;
   }
 
-  async find(key: string): Promise<AffiliationDTO> {
+  async findById(key: string): Promise<AffiliationDTO> {
     const value = await this.prisma.affiliation.findUnique({
       where: {
         id: key
@@ -68,6 +68,38 @@ export class AffiliationRepository {
   async findWithQueries(queries: AffiliationQuery): Promise<AffiliationDTO> {
     const value = await this.prisma.affiliation.findFirst({
       where: queries
+    });
+
+    return value;
+  }
+
+  async findUserOwnedOrganizations(
+    userkey: string,
+    orgkey: string
+  ): Promise<AffiliationDTO[]> {
+    const value = await this.prisma.affiliation.findMany({
+      where: {
+        orgkey,
+        org: {
+          ownerkey: userkey
+        }
+      }
+    });
+
+    return value;
+  }
+
+  async findOrganizationsByUser(
+    userkey: string
+  ): Promise<AffiliationDTO[]> {
+    const value = await this.prisma.affiliation.findMany({
+      where: {
+        member_in: {
+          some: {
+            userkey
+          }
+        }
+      }
     });
 
     return value;

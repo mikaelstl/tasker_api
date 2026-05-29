@@ -44,7 +44,7 @@ export class AffiliationService implements AccessValidator {
     }
 
     try {
-      const value = await this.repository.find(key);
+      const value = await this.repository.findById(key);
 
       if (value.role === OrgRole.OWNER) {
         return {
@@ -77,7 +77,7 @@ export class AffiliationService implements AccessValidator {
     }
 
     try {
-      const value = await this.repository.find(key);
+      const value = await this.repository.findById(key);
 
       if (value.role === OrgRole.OWNER) {
         return {
@@ -96,7 +96,7 @@ export class AffiliationService implements AccessValidator {
     }
   }
 
-  async findByUserOrgKey(
+  async findByUserOrgkey(
     userkey: string,
     orgkey: string
   ) {
@@ -108,6 +108,42 @@ export class AffiliationService implements AccessValidator {
 
       if (!result) {
         throw new NotFoundException("This Member don't exists in this Organization.")
+      }
+
+      return result;
+    } catch (err: any) {
+      throw new BadRequestException(err.message)
+    }
+  }
+
+  async getUserOrganizations(
+    userkey: string,
+    orgkey: string
+  ) {
+    try {
+      const result = await this.repository.findUserOwnedOrganizations(
+        userkey,
+        orgkey
+      );
+
+      if (!result) {
+        return [];
+      }
+
+      return result;
+    } catch (err: any) {
+      throw new BadRequestException(err.message)
+    }
+  }
+
+  async getOrganizationsByUser(
+    userkey: string,
+  ) {
+    try {
+      const result = await this.repository.findOrganizationsByUser(userkey);
+
+      if (!result) {
+        return [];
       }
 
       return result;

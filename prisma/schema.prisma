@@ -70,7 +70,7 @@ model Affiliation {
   id String @id @default(cuid())
 
   orgkey String
-  in_org Organization @relation(fields: [orgkey], references: [id])
+  org    Organization @relation(fields: [orgkey], references: [id])
 
   role OrgRole @default(MEMBER)
 

@@ -1,5 +1,5 @@
 import { ApiResponse } from "src/common/interfaces/ApiResponse";
-import { Body, Controller, Delete, HttpStatus, Param, Patch, Post, Res, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, Get, HttpStatus, Param, Patch, Post, Res, UseGuards } from "@nestjs/common";
 import { JwtAuthGuard } from "@security/auth.guard";
 import { PermissionGuard } from "@guards/permission.guard";
 import { CurrentAccount } from "src/decorators/CurrentAccount.decorator";
@@ -12,6 +12,7 @@ import { Role } from "@decorators/Role";
 import { OrgRole } from "generated/prisma";
 import { Resource } from "@decorators/Resource";
 import { Resources } from "@enums/Resources.enum";
+import { OrgKey } from "@decorators/OrgKey";
 
 @Controller('affiliations')
 @Resource(Resources.AFFILIATIONS)
@@ -41,6 +42,14 @@ export class AffiliationController {
     };
 
     return response.status(resp.status).json(resp);
+  }
+
+  @Get()
+  async list(
+    @CurrentAccount() account,
+    @OrgKey() orgkey
+  ) {
+
   }
 
   @Delete('/remove/:id')
