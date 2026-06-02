@@ -5,6 +5,7 @@ import { DefineAffiliationDTO } from "./dto/define.dto";
 import { AffiliationDTO } from "./dto/affiliation.dto";
 import { APIMessage } from "@interfaces/ApiMessage";
 import { AccessValidator } from "@interfaces/AccessValidator";
+import { OrganizationDTO } from "@modules/organization/dto/organization.dto";
 
 // type ListMethodCommand = {
 //   [key: string]: (key: string) => Promise<ProjectDTO[]>
@@ -121,14 +122,18 @@ export class AffiliationService implements AccessValidator {
     orgkey: string
   ) {
     try {
-      const result = await this.repository.findUserOwnedOrganizations(
+      const owned = await this.repository.findUserOwnedOrganizations(
         userkey,
         orgkey
       );
 
-      if (!result) {
+      const member = await this.repository.findOrganizationsByUser(userkey);
+
+      if (!owned && !member) {
         return [];
       }
+
+      const result: AffiliationDTO[] = [...owned, ...member];
 
       return result;
     } catch (err: any) {

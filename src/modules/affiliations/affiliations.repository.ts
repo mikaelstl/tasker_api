@@ -3,6 +3,7 @@ import { PrismaService } from "src/database/prisma.service";
 import { DefineAffiliationDTO } from "./dto/define.dto";
 import { AffiliationDTO } from "./dto/affiliation.dto";
 import { AffiliationQuery } from "./dto/query.dto";
+import { AffiliationEditDTO } from "./dto/edit.dto";
 
 @Injectable()
 export class AffiliationRepository {
@@ -44,7 +45,7 @@ export class AffiliationRepository {
     }
   }
 
-  async update(key: string, update: AffiliationDTO): Promise<AffiliationDTO> {
+  async update(key: string, update: AffiliationEditDTO): Promise<AffiliationDTO> {
     const result = await this.prisma.affiliation.update({
       where: {
         id: key
@@ -83,6 +84,9 @@ export class AffiliationRepository {
         org: {
           ownerkey: userkey
         }
+      },
+      include: {
+        org: true
       }
     });
 
@@ -99,6 +103,9 @@ export class AffiliationRepository {
             userkey
           }
         }
+      },
+      include: {
+        org: true
       }
     });
 

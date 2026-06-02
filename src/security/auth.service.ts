@@ -49,7 +49,7 @@ export class AuthService {
     }
 
     if (account && !match) {
-      throw new WrongPasswordException();
+      throw new UnauthorizedException('Wrong Password. Please insert right password ou change password.');
     }
 
     const payload: JWTPayload = { sub: account.id!, username: user.username, email: account.email };

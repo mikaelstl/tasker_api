@@ -46,10 +46,21 @@ export class AffiliationController {
 
   @Get()
   async list(
-    @CurrentAccount() account,
-    @OrgKey() orgkey
+    @CurrentAccount() account: CurrentAccountDTO,
+    @OrgKey() orgkey: string,
+    @Res() response
   ) {
+    const result = await this.service.getUserOrganizations(account.username, orgkey);
 
+    const resp: ApiResponse = {
+      status: HttpStatus.CREATED,
+      data: result,
+      message: 'Affiliations founded.',
+      timestamp: new Date().toISOString(),
+      path: '/affiliations'
+    };
+
+    return response.status(resp.status).json(resp);
   }
 
   @Delete('/remove/:id')
