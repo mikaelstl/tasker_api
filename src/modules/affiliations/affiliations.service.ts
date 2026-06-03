@@ -120,12 +120,12 @@ export class AffiliationService implements AccessValidator {
   async getUserOrganizations(
     userkey: string,
     orgkey: string
-  ) {
+  ): Promise<AffiliationDTO[]> {
     try {
       const owned = await this.repository.findUserOwnedOrganizations(
         userkey,
         orgkey
-      );
+      );      
 
       const member = await this.repository.findOrganizationsByUser(userkey);
 

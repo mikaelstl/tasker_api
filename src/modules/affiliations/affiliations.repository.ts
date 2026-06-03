@@ -81,6 +81,7 @@ export class AffiliationRepository {
     const value = await this.prisma.affiliation.findMany({
       where: {
         orgkey,
+        role: 'OWNER',
         org: {
           ownerkey: userkey
         }
@@ -96,6 +97,9 @@ export class AffiliationRepository {
   async findOrganizationsByUser(
     userkey: string
   ): Promise<AffiliationDTO[]> {
+    console.log(userkey);
+    
+
     const value = await this.prisma.affiliation.findMany({
       where: {
         member_in: {
