@@ -33,7 +33,9 @@ export class PermissionGuard implements CanActivate {
 
     const { user } = ctx.switchToHttp().getRequest();
 
-    if (!user || !orgkey) throw new UnauthorizedException('Missing authenticated user. Please login or create a account.')
+    if (!user) throw new UnauthorizedException('Missing authenticated user. Please login or create a account.');
+
+    if (!orgkey) throw new UnauthorizedException('Missing valid organization. Please select a valid organization or create one.');
 
     const id = req.body.id;
 

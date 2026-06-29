@@ -4,6 +4,7 @@ import { DefineAffiliationDTO } from "./dto/define.dto";
 import { AffiliationDTO } from "./dto/affiliation.dto";
 import { AffiliationQuery } from "./dto/query.dto";
 import { AffiliationEditDTO } from "./dto/edit.dto";
+import { UserOrganizationSummaryDTO } from "./dto/summary.dto";
 
 @Injectable()
 export class AffiliationRepository {
@@ -74,45 +75,36 @@ export class AffiliationRepository {
     return value;
   }
 
-  async findUserOwnedOrganizations(
-    userkey: string,
-    orgkey: string
-  ): Promise<AffiliationDTO[]> {
-    const value = await this.prisma.affiliation.findMany({
-      where: {
-        orgkey,
-        role: 'OWNER',
-        org: {
-          ownerkey: userkey
-        }
-      },
-      include: {
-        org: true
-      }
-    });
-
-    return value;
-  }
-
   async findOrganizationsByUser(
     userkey: string
-  ): Promise<AffiliationDTO[]> {
-    console.log(userkey);
-    
-
-    const value = await this.prisma.affiliation.findMany({
+  ): Promise<UserOrganizationSummaryDTO[]> {
+    const affiliations = await this.prisma.affiliation.findMany({
       where: {
-        member_in: {
-          some: {
-            userkey
+        userkey: userkey
+      },
+      select: {
+        role: true,
+        org: {
+          select: {
+            id: true,
+            name: true,
+            _count: {
+              select: {
+                projects: true,
+                members: true,
+              }
+            }
           }
         }
       },
-      include: {
-        org: true
-      }
     });
 
-    return value;
+    return affiliations.map((affiliation) => ({
+      orgkey: affiliation.org.id,
+      role: affiliation.role,
+      name: affiliation.org.name,
+      projects: affiliation.org._count.projects,
+      members: affiliation.org._count.members,
+    }));
   }
 }

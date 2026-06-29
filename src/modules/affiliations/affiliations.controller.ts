@@ -12,7 +12,6 @@ import { Role } from "@decorators/Role";
 import { OrgRole } from "generated/prisma";
 import { Resource } from "@decorators/Resource";
 import { Resources } from "@enums/Resources.enum";
-import { OrgKey } from "@decorators/OrgKey";
 
 @Controller('affiliations')
 @Resource(Resources.AFFILIATIONS)
@@ -47,15 +46,14 @@ export class AffiliationController {
   @Get()
   async list(
     @CurrentAccount() account: CurrentAccountDTO,
-    @OrgKey() orgkey: string,
     @Res() response
   ) {
-    const result = await this.service.getUserOrganizations(account.username, orgkey);
+    const result = await this.service.getUserOrganizations(account.username);
 
     const resp: ApiResponse = {
-      status: HttpStatus.CREATED,
+      status: HttpStatus.OK,
       data: result,
-      message: 'Affiliations founded.',
+      message: 'User organizations found.',
       timestamp: new Date().toISOString(),
       path: '/affiliations'
     };

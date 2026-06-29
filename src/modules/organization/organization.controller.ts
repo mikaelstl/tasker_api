@@ -30,8 +30,6 @@ export class OrganizationController {
     @Body() data: OrganizationCreateDTO,
     @Res() resp
   ) {
-    console.log(account);
-
     const result: OrganizationDTO = await this.service.create({
       name: data.name,
       ownerkey: account.username
