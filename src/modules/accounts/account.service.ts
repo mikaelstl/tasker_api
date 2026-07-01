@@ -33,9 +33,4 @@ export class AccountService {
 
     return this.repository.create(encryptedPass);
   }
-
-  async promoteAccountToManager() {
-    // TO_DO
-    // Função restrita ao Organizer onde deve mudar o tipo de conta (role) para OrgRole.MANAGER
-  }
 }

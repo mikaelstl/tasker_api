@@ -1,4 +1,4 @@
-import { Body, Controller, HttpStatus, Param, Post, Res, UseGuards, } from "@nestjs/common";
+import { Body, Controller, Delete, HttpStatus, Param, Post, Res, UseGuards, } from "@nestjs/common";
 import { AccountRepository } from "./account.repository";
 import { AccountDTO } from "@modules/accounts/dto/account.dto";
 import { ApiResponse } from "src/common/interfaces/ApiResponse";
@@ -31,7 +31,7 @@ export class AccountController {
     return resp.status(response.status).json(response);
   }
 
-  @Post('del/:id')
+  @Delete('del/:id')
   @UseGuards(JwtAuthGuard)
   async delete(
     @Param() id: string,
@@ -42,7 +42,7 @@ export class AccountController {
     const response: ApiResponse = {
       status: HttpStatus.CREATED,
       data: null,
-      message: 'Accoutn deleted with success',
+      message: 'Account deleted with success',
       timestamp: new Date().toISOString(),
       path: '/accounts/del'
     };

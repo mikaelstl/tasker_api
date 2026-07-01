@@ -42,7 +42,7 @@ export class UserController {
     const result: UserDTO[] = await this.repository.list();
 
     const response: ApiResponse = {
-      status: HttpStatus.CREATED,
+      status: HttpStatus.OK,
       data: result,
       message: 'Registered with success',
       
@@ -63,7 +63,7 @@ export class UserController {
     const result: UserDTO = await this.repository.find(queries);
     
     const response: ApiResponse = {
-      status: HttpStatus.CREATED,
+      status: HttpStatus.OK,
       data: result,
       message: 'Registered with success',
       
@@ -83,7 +83,7 @@ export class UserController {
     const result: UserDTO = await this.repository.delete(username);
     
     const response: ApiResponse = {
-      status: HttpStatus.CREATED,
+      status: HttpStatus.OK,
       data: result,
       message: 'Registered with success',
       
