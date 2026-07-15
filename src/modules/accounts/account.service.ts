@@ -1,11 +1,8 @@
-import { BadRequestException, HttpException, HttpStatus, Injectable, Logger, UseInterceptors } from "@nestjs/common";
-import { UserRepository } from "@modules/users/user.repository";
-import { UserNotExistsException } from "src/common/errors/user_not_exists.exception";
+import { HttpException, HttpStatus, Injectable, Logger } from "@nestjs/common";
 import { AccountRepository } from "./account.repository";
 import { CreateAccountDTO } from "@modules/accounts/dto/create.dto";
-import { RegisterAccount } from "./register-account";
 import { AccountDTO } from "@modules/accounts/dto/account.dto";
-import { compare, compareSync, hash } from 'bcrypt'
+import {  hash } from 'bcrypt'
 
 @Injectable()
 export class AccountService {
@@ -15,7 +12,7 @@ export class AccountService {
     private readonly repository: AccountRepository
   ) { }
 
-  async dataWithEncryptedPass(data: RegisterAccount): Promise<RegisterAccount> {
+  async dataWithEncryptedPass(data: CreateAccountDTO): Promise<CreateAccountDTO> {
     try {
       const hashed = await hash(data.password, 8);
 
@@ -28,7 +25,7 @@ export class AccountService {
     }
   }
 
-  async createAccount(data: RegisterAccount): Promise<AccountDTO> {
+  async createAccount(data: CreateAccountDTO): Promise<AccountDTO> {
     const encryptedPass = await this.dataWithEncryptedPass(data);
 
     return this.repository.create(encryptedPass);

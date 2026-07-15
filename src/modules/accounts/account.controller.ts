@@ -3,8 +3,8 @@ import { AccountRepository } from "./account.repository";
 import { AccountDTO } from "@modules/accounts/dto/account.dto";
 import { ApiResponse } from "src/common/interfaces/ApiResponse";
 import { AccountService } from "./account.service";
-import { RegisterAccount } from "./register-account";
 import { JwtAuthGuard } from "@security/auth.guard";
+import { CreateAccountDTO } from "./dto/create.dto";
 
 @Controller('accounts')
 export class AccountController {
@@ -15,7 +15,7 @@ export class AccountController {
 
   @Post('register/')
   async register(
-    @Body() data: RegisterAccount,
+    @Body() data: CreateAccountDTO,
     @Res() resp
   ) {
     const result: AccountDTO = await this.service.createAccount(data);

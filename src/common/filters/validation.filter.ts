@@ -15,7 +15,7 @@ export class ValidationExceptionFilter implements ExceptionFilter {
 
     logger.log(exceptionResponse)
 
-    const errors: string[] = exceptionResponse.message;
+    const errors: string[] = Array.of(exceptionResponse.message);
 
     const resp: ApiError = {
       status: 400,

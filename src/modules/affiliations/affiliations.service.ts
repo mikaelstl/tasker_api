@@ -107,6 +107,8 @@ export class AffiliationService implements AccessValidator {
         orgkey
       });
 
+      this.logger.log(result);
+
       if (!result) {
         throw new NotFoundException("This Member don't exists in this Organization.")
       }
