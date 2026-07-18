@@ -12,6 +12,7 @@ import { PermissionModule } from '@permissions/permission.modules';
 import { AffiliationModule } from '@modules/affiliations/affiliations.module';
 import { AccessControlModule } from 'src/authorization/access-control/access-control.module';
 import { PoliciesModule } from '@authorization/policies/policies.module';
+import { StatsModule } from '@modules/stats/stats.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { PoliciesModule } from '@authorization/policies/policies.module';
     OrganizationModule,
     ProjectsModule,
     AffiliationModule,
+    StatsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
