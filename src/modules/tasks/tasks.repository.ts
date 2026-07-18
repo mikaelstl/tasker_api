@@ -1,4 +1,4 @@
-import { BadRequestException, HttpException, HttpStatus, Injectable, NotFoundException } from "@nestjs/common";
+import { Injectable, NotFoundException } from "@nestjs/common";
 import { customAlphabet } from "nanoid";
 import { PrismaService } from "src/database/prisma.service";
 import { TaskCreateDTO } from "@modules/tasks/dto/task.create.dto";
@@ -16,6 +16,28 @@ export class TasksRepository {
     private readonly prisma: PrismaService
   ) { }
 
+  private toTaskDTO(task: any): TaskDTO {
+    if (!task) {
+      return task;
+    }
+
+    const { due_date, ...rest } = task;
+
+    return {
+      ...rest,
+      deadline: due_date,
+    };
+  }
+
+  private toTaskWhere(queries: TaskQueryDTO) {
+    const { deadline, ...rest } = queries;
+
+    return {
+      ...rest,
+      due_date: deadline,
+    };
+  }
+
   private generateCode(): string {
     const prefix = 'TSK-';
     const code = this.nanoid();
@@ -32,31 +54,29 @@ export class TasksRepository {
         projectkey: data.project,
         ownerkey: data.owner,
         priority: data.priority,
-        due_date: data.due_date
+        due_date: data.deadline
       }
     });
 
-    return task;
+    return this.toTaskDTO(task);
   }
 
   async list(queries: TaskQueryDTO): Promise<TaskDTO[]> {
-    const { ownerkey, ...filters } = queries;
-
     const tasks = await this.prisma.task.findMany({
-      where: filters,
+      where: this.toTaskWhere(queries),
       include: {
         owner: true
       }
     });
 
-    return tasks;
+    return tasks.map((task) => this.toTaskDTO(task));
   }
 
   async find(key: string, query?: TaskQueryDTO): Promise<TaskDTO> {
     const task = await this.prisma.task.findUnique({
       where: {
         id: key,
-        ...query
+        ...this.toTaskWhere(query ?? {})
       },
       include: {
         owner: true
@@ -67,18 +87,24 @@ export class TasksRepository {
       throw new NotFoundException();
     }
 
-    return task;
+    return this.toTaskDTO(task);
   }
 
   async edit(code: string, update: any): Promise<TaskDTO> {
     const response = await this.prisma.task.update({
-      data: update,
+      data: {
+        name: update.name,
+        description: update.description,
+        priority: update.priority,
+        stage: update.stage,
+        due_date: update.deadline,
+      },
       where: {
         code: code
       },
     });
 
-    return response;
+    return this.toTaskDTO(response);
   }
 
   async delete(key: string): Promise<TaskDTO> {
@@ -99,7 +125,7 @@ export class TasksRepository {
     const result = await this.prisma.task.count({
       where: {
         id: key,
-        ...query
+        ...this.toTaskWhere(query)
       }
     });
 

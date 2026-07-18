@@ -1,6 +1,5 @@
 import { ProjectNotExistsException } from "src/common/errors/project_not_exists.exception";
-import { HttpException, HttpStatus, Injectable, NotFoundException } from "@nestjs/common";
-import { $Enums } from "generated/prisma";
+import { Injectable, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "src/database/prisma.service";
 import { EditProjectDTO } from "@modules/projects/dto/edit.dto";
 import { CreateProjectDTO } from "@modules/projects/dto/project.create.dto";
@@ -12,6 +11,30 @@ export class ProjectRepository {
   constructor(
     private readonly prisma: PrismaService
   ) { }
+
+  private toProjectDTO(project: any): ProjectDTO {
+    if (!project) {
+      return project;
+    }
+
+    const { progress, due_date, ...rest } = project;
+
+    return {
+      ...rest,
+      deadline: due_date,
+      stage: progress,
+    };
+  }
+
+  private toProjectWhere(queries: ProjectQueryDTO) {
+    const { stage, deadline, ...rest } = queries;
+
+    return {
+      ...rest,
+      due_date: deadline,
+      progress: stage,
+    };
+  }
 
   async projectExists(id: string) {
     const exists = await this.prisma.project.findUnique({
@@ -33,18 +56,18 @@ export class ProjectRepository {
         title: data.title,
         description: data.description,
         ownerkey: data.ownerkey,
-        due_date: data.due_date
+        due_date: data.deadline
       },
     });
 
-    return result;
+    return this.toProjectDTO(result);
   };
 
   async list(queries: ProjectQueryDTO) {
     const projects = await this.prisma.project.findMany({
-      where: queries,
+      where: this.toProjectWhere(queries),
     });
-    return projects;
+    return projects.map((project) => this.toProjectDTO(project));
   };
 
   async listByMember(key: string): Promise<ProjectDTO[]> {
@@ -59,11 +82,12 @@ export class ProjectRepository {
       select: {
         id: true,
         title: true,
+        progress: true,
         due_date: true
       }
     });
 
-    return projects;
+    return projects.map((project) => this.toProjectDTO(project));
   };
 
   async listByOrganizer(key: string): Promise<ProjectDTO[]> {
@@ -77,7 +101,7 @@ export class ProjectRepository {
       },
     });
 
-    return projects;
+    return projects.map((project) => this.toProjectDTO(project));
   };
 
   async listByManager(key: string): Promise<ProjectDTO[]> {
@@ -92,18 +116,19 @@ export class ProjectRepository {
       select: {
         id: true,
         title: true,
+        progress: true,
         due_date: true
       }
     });
 
-    return projects;
+    return projects.map((project) => this.toProjectDTO(project));
   };
 
   async find(key: string, query?: ProjectQueryDTO) {
     const projects = await this.prisma.project.findUnique({
       where: {
         id: key,
-        ...query
+        ...this.toProjectWhere(query ?? {})
       },
       include: {
         members: true
@@ -114,7 +139,7 @@ export class ProjectRepository {
       throw new ProjectNotExistsException();
     }
 
-    return projects;
+    return this.toProjectDTO(projects);
   };
 
   async edit(key: string, update: EditProjectDTO): Promise<ProjectDTO> {
@@ -124,10 +149,15 @@ export class ProjectRepository {
       where: {
         id: key
       },
-      data: update,
+      data: {
+        title: update.title,
+        description: update.description,
+        due_date: update.deadline,
+        progress: update.stage,
+      },
     });
 
-    return result;
+    return this.toProjectDTO(result);
   }
 
   async delete(id: string) {
@@ -148,7 +178,7 @@ export class ProjectRepository {
     const result = await this.prisma.organization.count({
       where: {
         id: key,
-        ...query
+        ...this.toProjectWhere(query)
       }
     });
 

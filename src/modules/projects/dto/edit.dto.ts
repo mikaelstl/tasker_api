@@ -1,8 +1,8 @@
-import { $Enums } from "generated/prisma"
+import { ProjectStage } from "@modules/projects/dto/project.dto";
 
 export type EditProjectDTO = {
   title?: string,
   description?: string,
-  due_date?: Date,
-  progress?: $Enums.ProjectProgress
+  deadline?: Date,
+  stage?: ProjectStage
 }

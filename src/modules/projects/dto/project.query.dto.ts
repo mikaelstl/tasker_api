@@ -1,4 +1,4 @@
-import { $Enums } from "generated/prisma";
+import { ProjectStage } from "@modules/projects/dto/project.dto";
 
 export interface ProjectQueryDTO {
   readonly id?: string;
@@ -6,6 +6,6 @@ export interface ProjectQueryDTO {
   readonly description?: string;
   readonly ownerkey?: string;
   readonly managerkey?: string;
-  readonly due_date?: Date;
-  readonly progress?: $Enums.ProjectProgress;
+  readonly deadline?: Date;
+  readonly stage?: ProjectStage;
 }

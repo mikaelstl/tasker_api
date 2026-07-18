@@ -105,9 +105,11 @@ model Project {
   id          String   @id @default(cuid())
   title       String
   description String
-  due_date    DateTime
+  deadline    DateTime @map("due_date")
+  started_at  DateTime?
+  done_at     DateTime?
 
-  progress ProjectProgress @default(STARTED)
+  stage ProjectStage @default(STARTED) @map("progress")
 
   ownerkey String
   owner    Organization @relation(fields: [ownerkey], references: [id])
@@ -115,10 +117,13 @@ model Project {
   managerkey String?
   manager    Affiliation? @relation(fields: [managerkey], references: [id])
 
-  members  Member[]
-  comments Comment[]
-  tasks    Task[]
-  events   Event[]
+  members         Member[]
+  comments        Comment[]
+  tasks           Task[]
+  events          Event[]
+  work_logs       TaskWorkLog[]
+  stats_snapshots ProjectStatsPeriodSnapshot[]
+  stats_reports    ProjectStatsReport[]
 
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
@@ -135,7 +140,9 @@ model Member {
   userkey String
   user    Affiliation @relation(fields: [userkey], references: [id], onDelete: Cascade)
 
-  tasks Task[]
+  tasks          Task[]
+  work_logs      TaskWorkLog[]
+  period_entries ProjectStatsPeriodTask[]
 
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
@@ -149,7 +156,9 @@ model Task {
 
   name        String
   description String
-  due_date    DateTime
+  deadline    DateTime @map("due_date")
+  started_at  DateTime?
+  done_at     DateTime?
 
   stage    TaskStage    @default(PENDING)
   priority TaskPriority
@@ -159,6 +168,9 @@ model Task {
 
   ownerkey String
   owner    Member @relation(fields: [ownerkey], references: [id])
+
+  work_logs      TaskWorkLog[]
+  period_entries ProjectStatsPeriodTask[]
 
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
@@ -200,6 +212,112 @@ model Event {
   @@map("events")
 }
 
+model TaskWorkLog {
+  id String @id @default(cuid())
+
+  projectkey String
+  project    Project @relation(fields: [projectkey], references: [id], onDelete: Cascade)
+
+  taskkey String
+  task    Task @relation(fields: [taskkey], references: [id], onDelete: Cascade)
+
+  memberkey String
+  member    Member @relation(fields: [memberkey], references: [id], onDelete: Cascade)
+
+  minutes   Int
+  logged_at DateTime
+  note      String?
+  source    String?
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@index([projectkey, logged_at])
+  @@index([taskkey, logged_at])
+  @@index([memberkey, logged_at])
+  @@map("task_work_logs")
+}
+
+model ProjectStatsPeriodSnapshot {
+  id String @id @default(cuid())
+
+  projectkey String
+  project    Project @relation(fields: [projectkey], references: [id], onDelete: Cascade)
+
+  period_type StatsPeriodType
+  period_start DateTime
+  period_end DateTime
+  generated_at DateTime @default(now())
+  cutoff_at DateTime
+
+  performance_per_member_json Json
+  productivity_json           Json
+  summary_json                Json
+
+  health_status ProjectHealthStatus
+  health_score  Int
+
+  period_tasks ProjectStatsPeriodTask[]
+  reports      ProjectStatsReport[]
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@unique([projectkey, period_type, period_start, cutoff_at])
+  @@index([projectkey, period_type, period_start, period_end])
+  @@map("project_stats_period_snapshots")
+}
+
+model ProjectStatsPeriodTask {
+  id String @id @default(cuid())
+
+  snapshotkey String
+  snapshot    ProjectStatsPeriodSnapshot @relation(fields: [snapshotkey], references: [id], onDelete: Cascade)
+
+  taskkey String
+  task    Task @relation(fields: [taskkey], references: [id], onDelete: Cascade)
+
+  memberkey String
+  member    Member @relation(fields: [memberkey], references: [id], onDelete: Cascade)
+
+  spent_minutes Int
+  started_at    DateTime?
+  done_at       DateTime?
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@unique([snapshotkey, taskkey, memberkey])
+  @@index([snapshotkey])
+  @@index([taskkey])
+  @@index([memberkey])
+  @@map("project_stats_period_tasks")
+}
+
+model ProjectStatsReport {
+  id String @id @default(cuid())
+
+  projectkey String
+  project    Project @relation(fields: [projectkey], references: [id], onDelete: Cascade)
+
+  generated_at DateTime @default(now())
+  cutoff_at    DateTime
+  period_type   StatsPeriodType
+
+  snapshotkey String?
+  snapshot    ProjectStatsPeriodSnapshot? @relation(fields: [snapshotkey], references: [id], onDelete: SetNull)
+
+  file_url    String?
+  payload_json Json?
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@index([projectkey, generated_at])
+  @@index([projectkey, cutoff_at])
+  @@map("project_stats_reports")
+}
+
 model Notification {
   id String @id @default(cuid())
 
@@ -214,7 +332,7 @@ model Notification {
   @@map("notifications")
 }
 
-enum ProjectProgress {
+enum ProjectStage {
   STARTED
   PENDING
   IN_PROGRESS
@@ -252,4 +370,16 @@ enum TaskPriority {
   MEDIUM
   HIGH
   EXTREME
+}
+
+enum StatsPeriodType {
+  WEEK
+  MONTH
+  QUARTER
+}
+
+enum ProjectHealthStatus {
+  SAFE
+  WARNING
+  CRITICAL
 }

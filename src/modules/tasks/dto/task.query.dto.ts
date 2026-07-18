@@ -7,5 +7,5 @@ export interface TaskQueryDTO {
   readonly ownerkey?: string;
   readonly stage?: $Enums.TaskStage;
   readonly priority?: $Enums.TaskPriority;
-  readonly due_date?: Date;
+  readonly deadline?: Date;
 }
