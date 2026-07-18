@@ -31,7 +31,7 @@ export class MemberController {
     const resp: ApiResponse = {
       status: HttpStatus.CREATED,
       data: result,
-      message: 'Member added.',
+      message: 'Membro adicionado com sucesso.',
       
       timestamp: new Date().toISOString(),
       path: '/members'
@@ -73,7 +73,7 @@ export class MemberController {
     const resp: ApiResponse = {
       status: HttpStatus.OK,
       data: result,
-      message: `Member removed.`,
+      message: `Membro removido com sucesso.`,
       
       timestamp: new Date().toISOString(),
       path: '/members/del'

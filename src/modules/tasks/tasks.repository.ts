@@ -84,7 +84,7 @@ export class TasksRepository {
     });
 
     if (!task) {
-      throw new NotFoundException();
+      throw new NotFoundException('Tarefa não encontrada.');
     }
 
     return this.toTaskDTO(task);
@@ -115,7 +115,7 @@ export class TasksRepository {
     });
 
     if (!result) {
-      throw new NotFoundException();
+      throw new NotFoundException('Tarefa não encontrada.');
     }
 
     return result;

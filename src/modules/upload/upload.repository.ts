@@ -16,7 +16,7 @@ export class UploadRepository {
 
       return image
     } catch (err: any) {
-      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+      throw new HttpException('Não foi possível salvar a imagem.', HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -30,7 +30,7 @@ export class UploadRepository {
 
       return image
     } catch (err: any) {
-      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+      throw new HttpException('Não foi possível excluir a imagem.', HttpStatus.BAD_REQUEST);
     }
   }
 }

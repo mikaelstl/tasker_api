@@ -1,15 +1,15 @@
 import { IsEmail, IsNotEmpty, Matches, MaxLength, MinLength } from "class-validator";
 
 export class CreateUserDTO {
-  @IsNotEmpty({ message: 'Please enter your name' })
+  @IsNotEmpty({ message: 'Informe seu nome.' })
   public name: string;
 
-  @IsNotEmpty({ message: 'Please enter your username' })
+  @IsNotEmpty({ message: 'Informe seu nome de usuário.' })
   public username: string;
   
-  // @IsNotEmpty({ message: 'Your must have create a user with link to a Organization, please ask for a Organization a create account link.' })
+  // @IsNotEmpty({ message: 'O usuário deve estar vinculado a uma organização.' })
   public orgkey?: string;
 
-  @IsNotEmpty()
+  @IsNotEmpty({ message: 'A conta vinculada deve ser informada.' })
   readonly accountkey: string;
 }

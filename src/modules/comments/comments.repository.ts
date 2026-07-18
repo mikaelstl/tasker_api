@@ -39,7 +39,7 @@ export class CommentsRepository {
     });
 
     if (!comment) {
-      throw new NotFoundException();
+      throw new NotFoundException('Comentário não encontrado.');
     }
 
     return comment;
@@ -64,7 +64,7 @@ export class CommentsRepository {
     });
 
     if (!result) {
-      throw new NotFoundException();
+      throw new NotFoundException('Comentário não encontrado.');
     }
 
     return result;

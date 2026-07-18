@@ -24,7 +24,7 @@ export class AffiliationRepository {
 
       return result;
     } catch (err: any) {
-      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+      throw new HttpException('Não foi possível criar a afiliação.', HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -37,12 +37,12 @@ export class AffiliationRepository {
       });
 
       if (!result) {
-        throw new NotFoundException();
+        throw new NotFoundException('Afiliação não encontrada.');
       }
 
       return result;
     } catch (err: any) {
-      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+      throw new HttpException('Não foi possível excluir a afiliação.', HttpStatus.BAD_REQUEST);
     }
   }
 

@@ -29,7 +29,7 @@ export class EventsController {
     const resp: ApiResponse = {
       status: HttpStatus.CREATED,
       data: result,
-      message: 'New task added to project',
+      message: 'Novo evento adicionado ao projeto.',
       
       timestamp: new Date().toISOString(),
       path: '/events'

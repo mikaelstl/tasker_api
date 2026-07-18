@@ -45,7 +45,7 @@ export class EventsRepository {
     });
 
     if (!event) {
-      throw new NotFoundException();
+      throw new NotFoundException('Evento não encontrado.');
     }
 
     return event;
@@ -70,7 +70,7 @@ export class EventsRepository {
     });
 
     if (!result) {
-      throw new NotFoundException();
+      throw new NotFoundException('Evento não encontrado.');
     }
 
     return result;

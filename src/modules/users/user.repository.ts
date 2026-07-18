@@ -22,7 +22,7 @@ export class UserRepository {
     });
 
     if (exists) {
-      throw new AlreadyExistsException('User with this username already exists.')
+      throw new AlreadyExistsException('Já existe um usuário com este nome de usuário.')
     }
   }
 
@@ -39,7 +39,7 @@ export class UserRepository {
   
       return result;
     } catch (err: any) {
-      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+      throw new HttpException('Não foi possível criar o usuário.', HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -49,7 +49,7 @@ export class UserRepository {
 
       return response;
     } catch (err: any) {
-      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+      throw new HttpException('Não foi possível listar os usuários.', HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -78,7 +78,7 @@ export class UserRepository {
       
       return result;
     } catch (err: any) {
-      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+      throw new HttpException('Não foi possível atualizar o usuário.', HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -92,7 +92,7 @@ export class UserRepository {
       
       return result;
     } catch (err: any) {
-      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+      throw new HttpException('Não foi possível excluir o usuário.', HttpStatus.BAD_REQUEST);
     }
   }
 }

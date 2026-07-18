@@ -45,7 +45,7 @@ export class ProjectController {
     const resp: ApiResponse = {
       status: HttpStatus.CREATED,
       data: result,
-      message: 'New project created with success',
+      message: 'Novo projeto criado com sucesso.',
       
       timestamp: new Date().toISOString(),
       path: '/project'
@@ -113,7 +113,7 @@ export class ProjectController {
     const resp: ApiResponse = {
       status: HttpStatus.OK,
       data: result,
-      message: 'Updated with success',
+      message: 'Projeto atualizado com sucesso.',
       timestamp: new Date().toISOString(),
       path: '/project'
     };
@@ -135,7 +135,7 @@ export class ProjectController {
     const resp: ApiResponse = {
       status: HttpStatus.OK,
       data: result,
-      message: `Project delete with success`,
+      message: `Projeto excluído com sucesso.`,
       
       timestamp: new Date().toISOString(),
       path: '/project/del'

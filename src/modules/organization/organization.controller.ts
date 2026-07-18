@@ -38,7 +38,7 @@ export class OrganizationController {
     const response: ApiResponse = {
       status: HttpStatus.CREATED,
       data: result,
-      message: 'Organization created with success',
+      message: 'Organização criada com sucesso.',
       
       timestamp: new Date().toISOString(),
       path: '/org'
@@ -60,7 +60,7 @@ export class OrganizationController {
     const response: ApiResponse = {
       status: HttpStatus.CREATED,
       data: result,
-      message: 'Organization delete',
+      message: 'Organização excluída com sucesso.',
       
       timestamp: new Date().toISOString(),
       path: '/org/del'

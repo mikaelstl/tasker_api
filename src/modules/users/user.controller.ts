@@ -25,7 +25,7 @@ export class UserController {
     const response: ApiResponse = {
       status: HttpStatus.CREATED,
       data: result,
-      message: 'Registered with success',
+      message: 'Usuário cadastrado com sucesso.',
       
       timestamp: new Date().toISOString(),
       path: '/users'
@@ -44,7 +44,7 @@ export class UserController {
     const response: ApiResponse = {
       status: HttpStatus.OK,
       data: result,
-      message: 'Registered with success',
+      message: 'Usuários listados com sucesso.',
       
       timestamp: new Date().toISOString(),
       path: '/users'
@@ -65,7 +65,7 @@ export class UserController {
     const response: ApiResponse = {
       status: HttpStatus.OK,
       data: result,
-      message: 'Registered with success',
+      message: 'Usuário encontrado com sucesso.',
       
       timestamp: new Date().toISOString(),
       path: '/users'
@@ -85,7 +85,7 @@ export class UserController {
     const response: ApiResponse = {
       status: HttpStatus.OK,
       data: result,
-      message: 'Registered with success',
+      message: 'Usuário excluído com sucesso.',
       
       timestamp: new Date().toISOString(),
       path: '/users/del'

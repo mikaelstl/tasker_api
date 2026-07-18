@@ -44,7 +44,7 @@ export class ProjectRepository {
     });
 
     if (!exists) {
-      throw new NotFoundException("This project don't exists.")
+      throw new NotFoundException("Projeto não encontrado.")
     }
 
     return;
@@ -168,7 +168,7 @@ export class ProjectRepository {
     });
 
     if (!response) {
-      throw new NotFoundException();
+      throw new NotFoundException('Projeto não encontrado.');
     }
 
     return response;

@@ -53,7 +53,7 @@ export class StatsService {
     const project = await this.queries.findProject(projectkey);
 
     if (!project) {
-      throw new NotFoundException("Project not found.");
+      throw new NotFoundException("Projeto não encontrado.");
     }
 
     const effectivePeriod = period
@@ -181,28 +181,28 @@ export class StatsService {
     ]);
 
     if (!task) {
-      throw new NotFoundException("Task not found.");
+      throw new NotFoundException("Tarefa não encontrada.");
     }
 
     if (!member) {
-      throw new NotFoundException("Member not found.");
+      throw new NotFoundException("Membro não encontrado.");
     }
 
     if (task.projectkey !== member.projectkey) {
       throw new BadRequestException(
-        "Task and member must belong to the same project."
+        "A tarefa e o membro devem pertencer ao mesmo projeto."
       );
     }
 
     if (task.ownerkey !== member.id) {
       throw new BadRequestException(
-        "The work log member must be the task owner."
+        "O membro do registro de trabalho deve ser o responsável pela tarefa."
       );
     }
 
     if (!task.started_at) {
       throw new BadRequestException(
-        "Task must have started_at before its work time can be recorded."
+        "A tarefa deve possuir started_at antes que seu tempo de trabalho possa ser registrado."
       );
     }
 
@@ -228,7 +228,7 @@ export class StatsService {
 
     if (minutes <= 0) {
       throw new BadRequestException(
-        "There is no unrecorded task work time."
+        "Não há tempo de trabalho da tarefa pendente de registro."
       );
     }
 
@@ -312,7 +312,7 @@ export class StatsService {
     const snapshot = await this.snapshots.findById(snapshotkey);
 
     if (!snapshot) {
-      throw new NotFoundException("Stats snapshot not found.");
+      throw new NotFoundException("Snapshot de estatísticas não encontrado.");
     }
 
     const tasks = await this.periodTasks.list(
@@ -384,7 +384,7 @@ export class StatsService {
     const report = await this.reports.findById(reportkey);
 
     if (!report) {
-      throw new NotFoundException("Stats report not found.");
+      throw new NotFoundException("Relatório de estatísticas não encontrado.");
     }
 
     return report;
@@ -507,7 +507,7 @@ export class StatsService {
       return {
         status: ProjectHealthStatus.SAFE,
         score: 100,
-        reason: "Project has no pending work.",
+        reason: "O projeto não possui trabalho pendente.",
         projectedDeliveryAt: null
       };
     }
@@ -557,8 +557,8 @@ export class StatsService {
         status: ProjectHealthStatus.CRITICAL,
         score,
         reason: overdue
-          ? "Project deadline has passed with open tasks."
-          : "Current progress and delayed work indicate a high delivery risk.",
+          ? "O prazo do projeto terminou e ainda há tarefas abertas."
+          : "O progresso atual e o trabalho atrasado indicam alto risco de entrega.",
         projectedDeliveryAt
       };
     }
@@ -567,7 +567,7 @@ export class StatsService {
       return {
         status: ProjectHealthStatus.WARNING,
         score,
-        reason: "Current completion pace is close to or beyond the deadline.",
+        reason: "O ritmo atual de conclusão está próximo ou além do prazo.",
         projectedDeliveryAt
       };
     }
@@ -575,7 +575,7 @@ export class StatsService {
     return {
       status: ProjectHealthStatus.SAFE,
       score,
-      reason: "Current completion pace indicates delivery within deadline.",
+      reason: "O ritmo atual de conclusão indica entrega dentro do prazo.",
       projectedDeliveryAt
     };
   }
@@ -606,7 +606,7 @@ export class StatsService {
     }
 
     if (periodType !== StatsPeriodType.WEEK) {
-      throw new BadRequestException("Unsupported stats period type.");
+      throw new BadRequestException("Tipo de período estatístico não suportado.");
     }
 
     const start = this.startOfIsoWeek(reference);
@@ -626,13 +626,13 @@ export class StatsService {
 
     if (period.start.getTime() > period.end.getTime()) {
       throw new BadRequestException(
-        "Period start must be before period end."
+        "O início do período deve ser anterior ao fim do período."
       );
     }
 
     if (cutoffAt.getTime() < period.start.getTime()) {
       throw new BadRequestException(
-        "Cutoff must be inside or after the requested period."
+        "A data de corte deve estar dentro ou depois do período solicitado."
       );
     }
 
@@ -753,7 +753,7 @@ export class StatsService {
 
   private assertValidDate(value: Date, field: string): void {
     if (!(value instanceof Date) || Number.isNaN(value.getTime())) {
-      throw new BadRequestException(`${field} must be a valid date.`);
+      throw new BadRequestException(`${field} deve ser uma data válida.`);
     }
   }
 

@@ -21,7 +21,7 @@ export class AccountRepository {
     });
 
     if (exists) {
-      throw new AlreadyExistsException('Email already registred.')
+      throw new AlreadyExistsException('Este e-mail já está cadastrado.')
     }
   }
 
@@ -37,7 +37,7 @@ export class AccountRepository {
 
       return result;
     } catch (err: any) {
-      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+      throw new HttpException('Não foi possível criar a conta.', HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -65,7 +65,7 @@ export class AccountRepository {
 
       return result;
     } catch (err: any) {
-      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+      throw new HttpException('Não foi possível excluir a conta.', HttpStatus.BAD_REQUEST);
     }
   }
 }

@@ -27,12 +27,12 @@ export class AuthService {
       const exists = await this.accounts.find(decoded.email);
 
       if (!exists) {
-        throw new UnauthorizedException("You don't have authorization to perform this action. Please log-in or create a account");
+        throw new UnauthorizedException("Você não tem autorização para realizar esta ação. Entre na sua conta ou crie uma nova.");
       }
 
       return true;
     } catch (err: any) {
-      throw new UnauthorizedException("You don't have authorization to perform this action. Please log-in or create a account");
+      throw new UnauthorizedException("Você não tem autorização para realizar esta ação. Entre na sua conta ou crie uma nova.");
     }
   }
 
@@ -45,11 +45,11 @@ export class AuthService {
     const match: boolean = await compare(data.password, account.password);
 
     if (!account || !user) {
-      throw new NotFoundException('No User or Account found with this infos.')
+      throw new NotFoundException('Nenhum usuário ou conta foi encontrado com os dados informados.')
     }
 
     if (account && !match) {
-      throw new UnauthorizedException('Wrong Password. Please insert right password ou change password.');
+      throw new UnauthorizedException('Senha incorreta. Informe a senha correta ou altere sua senha.');
     }
 
     const payload: JWTPayload = { sub: account.id!, username: user.username, email: account.email };

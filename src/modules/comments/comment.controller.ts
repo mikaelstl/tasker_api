@@ -29,7 +29,7 @@ export class CommentsController {
     const resp: ApiResponse = {
       status: HttpStatus.CREATED,
       data: result,
-      message: 'New comment added to project',
+      message: 'Novo comentário adicionado ao projeto.',
       
       timestamp: new Date().toISOString(),
       path: '/comments'
@@ -89,7 +89,7 @@ export class CommentsController {
     const resp: ApiResponse = {
       status: HttpStatus.OK,
       data: result,
-      message: 'Comment deleted with success',
+      message: 'Comentário excluído com sucesso.',
       
       timestamp: new Date().toISOString(),
       path: '/comments'

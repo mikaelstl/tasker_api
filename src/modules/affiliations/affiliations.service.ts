@@ -49,7 +49,7 @@ export class AffiliationService implements AccessValidator {
 
       if (value.role === OrgRole.OWNER) {
         return {
-          message: `YOUR HAVE THE MAX ROLE: OWNER. IT IS NOT POSSIBLE TO PROMOTE.`,
+          message: `O usuário já possui a função máxima: OWNER. Não é possível promovê-lo.`,
           timestamp: new Date().toISOString()
         } as APIMessage;
       }
@@ -60,7 +60,7 @@ export class AffiliationService implements AccessValidator {
 
       return result;
     } catch (err: any) {
-      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+      throw new HttpException('Não foi possível promover a afiliação.', HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -82,7 +82,7 @@ export class AffiliationService implements AccessValidator {
 
       if (value.role === OrgRole.OWNER) {
         return {
-          message: `YOUR HAVE THE MAX ROLE: OWNER. IT IS NOT POSSIBLE TO PROMOTE.`,
+          message: `O usuário possui a função OWNER. Não é possível rebaixá-lo por esta operação.`,
           timestamp: new Date().toISOString()
         } as APIMessage;
       }
@@ -93,7 +93,7 @@ export class AffiliationService implements AccessValidator {
       
       return result;
     } catch (err: any) {
-      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+      throw new HttpException('Não foi possível rebaixar a afiliação.', HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -110,12 +110,12 @@ export class AffiliationService implements AccessValidator {
       this.logger.log(result);
 
       if (!result) {
-        throw new NotFoundException("This Member don't exists in this Organization.")
+        throw new NotFoundException("Este membro não pertence à organização.")
       }
 
       return result;
     } catch (err: any) {
-      throw new BadRequestException(err.message)
+      throw new BadRequestException('Não foi possível localizar o membro na organização.')
     }
   }
 
@@ -125,7 +125,7 @@ export class AffiliationService implements AccessValidator {
     try {
       return await this.repository.findOrganizationsByUser(userkey);
     } catch (err: any) {
-      throw new BadRequestException(err.message)
+      throw new BadRequestException('Não foi possível listar as organizações do usuário.')
     }
   }
 
@@ -141,7 +141,7 @@ export class AffiliationService implements AccessValidator {
 
       return result;
     } catch (err: any) {
-      throw new BadRequestException(err.message)
+      throw new BadRequestException('Não foi possível listar as organizações do usuário.')
     }
   }
 

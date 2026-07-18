@@ -18,8 +18,8 @@ export class UploadService {
   }
 
   async upload(file: Express.Multer.File, user: string) {
-    if (!file) throw new HttpException('No files to upload', HttpStatus.BAD_REQUEST);
-    if (!file.mimetype.startsWith('image/')) throw new HttpException('Only upload images.', HttpStatus.BAD_REQUEST);
+    if (!file) throw new HttpException('Nenhum arquivo foi enviado.', HttpStatus.BAD_REQUEST);
+    if (!file.mimetype.startsWith('image/')) throw new HttpException('Envie apenas arquivos de imagem.', HttpStatus.BAD_REQUEST);
 
     const fileExt = file.originalname.split('.').pop();
     const filename = `${randomUUID()}.${fileExt}`;
@@ -32,7 +32,7 @@ export class UploadService {
                                     upsert: false
                                   });
 
-    if (error) throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    if (error) throw new HttpException('Não foi possível enviar a imagem.', HttpStatus.BAD_REQUEST);
 
     const { data: publicUrl } = this.supabase.storage.from(SUPABASE_BUCKET).getPublicUrl(filename);
 

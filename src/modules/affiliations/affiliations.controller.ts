@@ -34,7 +34,7 @@ export class AffiliationController {
     const resp: ApiResponse = {
       status: HttpStatus.CREATED,
       data: result,
-      message: 'Affiliation added.',
+      message: 'Afiliação adicionada com sucesso.',
       
       timestamp: new Date().toISOString(),
       path: '/affiliations'
@@ -53,7 +53,7 @@ export class AffiliationController {
     const resp: ApiResponse = {
       status: HttpStatus.OK,
       data: result,
-      message: 'User organizations found.',
+      message: 'Organizações do usuário encontradas.',
       timestamp: new Date().toISOString(),
       path: '/affiliations'
     };
@@ -74,7 +74,7 @@ export class AffiliationController {
     const resp: ApiResponse = {
       status: HttpStatus.NO_CONTENT,
       data: null,
-      message: `Affiliation removed.`,
+      message: `Afiliação removida com sucesso.`,
       
       timestamp: new Date().toISOString(),
       path: '/affiliations/del'

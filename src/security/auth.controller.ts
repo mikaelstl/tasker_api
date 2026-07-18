@@ -16,7 +16,7 @@ export class AuthController {
   async status(
     @Res() response
   ) {
-    return response.status(HttpStatus.OK).json('AUTH ONLINE');
+    return response.status(HttpStatus.OK).json('Autenticação disponível.');
   }
 
   @Post('login')
@@ -29,7 +29,7 @@ export class AuthController {
     const response: ApiResponse = {
       status: HttpStatus.OK,
       data: result,
-      message: 'Logged',
+      message: 'Autenticação realizada com sucesso.',
       
       timestamp: new Date().toISOString(),
       path: '/auth/login'
@@ -48,7 +48,7 @@ export class AuthController {
   //   const response: ApiResponse = {
   //     status: HttpStatus.CREATED,
   //     data: result,
-  //     message: 'Registered with success',
+  //     message: 'Cadastro realizado com sucesso.',
   //     
   //     timestamp: new Date().toISOString(),
   //     path: '/auth/register'
@@ -69,7 +69,7 @@ export class AuthController {
     const response: ApiResponse = {
       status: HttpStatus.OK,
       data: result,
-      message: 'Valid token',
+      message: 'Token válido.',
       
       timestamp: new Date().toISOString(),
       path: '/auth/validate'

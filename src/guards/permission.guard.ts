@@ -33,9 +33,9 @@ export class PermissionGuard implements CanActivate {
 
     const { user } = ctx.switchToHttp().getRequest();
 
-    if (!user) throw new UnauthorizedException('Missing authenticated user. Please login or create a account.');
+    if (!user) throw new UnauthorizedException('Usuário autenticado não encontrado. Entre na sua conta ou crie uma nova.');
 
-    if (!orgkey) throw new UnauthorizedException('Missing valid organization. Please select a valid organization or create one.');
+    if (!orgkey) throw new UnauthorizedException('Organização válida não encontrada. Selecione uma organização válida ou crie uma nova.');
 
     const id = req.body.id;
 
@@ -56,7 +56,7 @@ export class PermissionGuard implements CanActivate {
 
     // WHEN USER DON'T HAVE ACCESS TO RESOURCE, THROWS A ForbiddenException
     if (!hasPermission) {
-      throw new ForbiddenException("You don't have permission to perform this action.")
+      throw new ForbiddenException("Você não tem permissão para realizar esta ação.")
     }
 
     return hasPermission;

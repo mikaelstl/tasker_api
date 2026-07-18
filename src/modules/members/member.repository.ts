@@ -20,7 +20,7 @@ export class MembersRepository {
 
       return result;
     } catch (err: any) {
-      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+      throw new HttpException('Não foi possível adicionar o membro.', HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -36,7 +36,7 @@ export class MembersRepository {
       });
       return projects;
     } catch (err: any) {
-      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+      throw new HttpException('Não foi possível listar os membros.', HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -49,12 +49,12 @@ export class MembersRepository {
       });
 
       if (!result) {
-        throw new NotFoundException();
+        throw new NotFoundException('Membro não encontrado.');
       }
 
       return result;
     } catch (err: any) {
-      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+      throw new HttpException('Não foi possível remover o membro.', HttpStatus.BAD_REQUEST);
     }
   }
 

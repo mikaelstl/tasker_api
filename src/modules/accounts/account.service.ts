@@ -21,7 +21,7 @@ export class AccountService {
         password: hashed
       };
     } catch (err: any) {
-      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+      throw new HttpException('Não foi possível processar a senha.', HttpStatus.BAD_REQUEST);
     }
   }
 

@@ -30,7 +30,7 @@ export class TasksController {
     const resp: ApiResponse = {
       status: HttpStatus.CREATED,
       data: result,
-      message: 'New task added to project',
+      message: 'Nova tarefa adicionada ao projeto.',
       timestamp: new Date().toISOString(),
       path: '/tasks'
     };

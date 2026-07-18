@@ -15,7 +15,22 @@ export class ValidationExceptionFilter implements ExceptionFilter {
 
     logger.log(exceptionResponse)
 
-    const errors: string[] = Array.of(exceptionResponse.message);
+    const messages = Array.isArray(exceptionResponse.message)
+      ? exceptionResponse.message
+      : [exceptionResponse.message];
+    const errors: string[] = messages.map((message: unknown) => {
+      if (typeof message !== 'string') {
+        return 'Os dados informados são inválidos.';
+      }
+
+      const forbiddenProperty = message.match(/^property (.+) should not exist$/);
+
+      if (forbiddenProperty) {
+        return `A propriedade ${forbiddenProperty[1]} não é permitida.`;
+      }
+
+      return message;
+    });
 
     const resp: ApiError = {
       status: 400,

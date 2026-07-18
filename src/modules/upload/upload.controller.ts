@@ -18,7 +18,7 @@ export class UploadController {
     fileFilter: (_, file, callback) => {
       if (!file.mimetype.startsWith('image/')) {
         return callback(
-          new HttpException('Only upload images.', HttpStatus.BAD_REQUEST),
+          new HttpException('Envie apenas arquivos de imagem.', HttpStatus.BAD_REQUEST),
           false
         );
       }
@@ -36,7 +36,7 @@ export class UploadController {
     const resp: ApiResponse = {
       status: HttpStatus.CREATED,
       data: result,
-      message: 'Added image with success',
+      message: 'Imagem adicionada com sucesso.',
       
       timestamp: new Date().toISOString(),
       path: '/upload/image'

@@ -23,7 +23,7 @@ export class AccountController {
     const response: ApiResponse = {
       status: HttpStatus.CREATED,
       data: result,
-      message: 'Registered with success',
+      message: 'Conta cadastrada com sucesso.',
       timestamp: new Date().toISOString(),
       path: '/accounts/register/'
     };
@@ -42,7 +42,7 @@ export class AccountController {
     const response: ApiResponse = {
       status: HttpStatus.CREATED,
       data: null,
-      message: 'Account deleted with success',
+      message: 'Conta excluída com sucesso.',
       timestamp: new Date().toISOString(),
       path: '/accounts/del'
     };
