@@ -4,11 +4,13 @@ import { ProjectController } from "@modules/projects/project.controller";
 import { ProjectRepository } from "@modules/projects/projects.repository";
 import { AffiliationModule } from "@modules/affiliations/affiliations.module";
 import { OrganizationModule } from "@modules/organization/organization.module";
+import { StatsModule } from "@modules/stats/stats.module";
 
 @Module({
   imports: [
     AffiliationModule,
-    OrganizationModule
+    OrganizationModule,
+    StatsModule,
   ],
   controllers: [
     ProjectController,

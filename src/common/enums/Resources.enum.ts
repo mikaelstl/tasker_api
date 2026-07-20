@@ -5,5 +5,6 @@ export enum Resources {
   MEMBERS = 'MEMBERS',
   TASKS = 'TASKS',
   COMMENTS = 'COMMENTS',
-  EVENTS = 'EVENTS'
+  EVENTS = 'EVENTS',
+  PROJECT_STATS = 'PROJECT_STATS'
 }

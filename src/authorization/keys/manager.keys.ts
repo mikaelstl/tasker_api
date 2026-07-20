@@ -9,4 +9,10 @@ type ManagerAccessResources = Resources.TASKS | Resources.COMMENTS | Resources.E
 
 type ManagerResourcesKeys = `MANAGER:${ManagerAccessResources}:${BaseActions}`
 
-export type ManagerResourceAccessKeys = ManagerReadonlyResourcesKeys | ManagerResourcesKeys;
+type ManagerProjectStatsKeys =
+  `MANAGER:${Resources.PROJECT_STATS}:${BaseActions.SEEK | BaseActions.CREATE}`;
+
+export type ManagerResourceAccessKeys =
+  | ManagerReadonlyResourcesKeys
+  | ManagerResourcesKeys
+  | ManagerProjectStatsKeys;

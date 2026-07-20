@@ -12,7 +12,7 @@ import { PermissionService } from "@permissions/permission.service";
 import { BaseActions, EnhancedActions } from "@enums/Actions.enum";
 
 @Injectable()
-export class PermissionGuard implements CanActivate {  
+export class PermissionGuard implements CanActivate {
   constructor(
     private reflector: Reflector,
     private readonly permissions: PermissionService,
@@ -24,7 +24,7 @@ export class PermissionGuard implements CanActivate {
     const resource = this.reflector.getAllAndOverride<Resources>(RESOURCE_KEY, [ctx.getHandler(), ctx.getClass()])
     const req = ctx.switchToHttp().getRequest();
     const headers = this.getHeaders(req);
-    
+
     const orgkey = headers.get(ORG_KEY) as string;
 
     if (!role && !action) {
@@ -37,7 +37,10 @@ export class PermissionGuard implements CanActivate {
 
     if (!orgkey) throw new UnauthorizedException('Organização válida não encontrada. Selecione uma organização válida ou crie uma nova.');
 
-    const id = req.body.id;
+    const id = req.body?.id
+      ?? req.params?.id
+      ?? req.params?.projectkey
+      ?? req.params?.code;
 
     // MONTAR CONTEXT
     const payload = {
@@ -50,7 +53,7 @@ export class PermissionGuard implements CanActivate {
         targetkey: id
       }
     } as AccessContext;
-    
+
     // VERIFICAR SE O USUÁRIO PODE EXECUTAR TAREFA
     const hasPermission = await this.permissions.can(payload);
 

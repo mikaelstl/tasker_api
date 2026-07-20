@@ -380,10 +380,13 @@ export class StatsService {
     });
   }
 
-  async getReport(reportkey: string) {
+  async getReport(reportkey: string, projectkey?: string) {
     const report = await this.reports.findById(reportkey);
 
-    if (!report) {
+    if (!report || (
+      projectkey !== undefined
+      && report.projectkey !== projectkey
+    )) {
       throw new NotFoundException("Relatório de estatísticas não encontrado.");
     }
 

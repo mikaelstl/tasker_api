@@ -87,6 +87,14 @@ const ManagerAccessHandlers: Array<ResourcePolicies> = [
     handler: ProjectManagementPolicy
   },
   {
+    key: "MANAGER:PROJECT_STATS:SEEK",
+    handler: ProjectManagementPolicy
+  },
+  {
+    key: "MANAGER:PROJECT_STATS:CREATE",
+    handler: ProjectManagementPolicy
+  },
+  {
     key: "MANAGER:MEMBERS:CREATE",
     handler: ProjectManagementPolicy
   },
@@ -199,6 +207,14 @@ const OwnerAccessHandlers: Array<ResourcePolicies> = [
   },
   {
     key: "OWNER:PROJECTS:SEEK",
+    handler: ProjectOwnershipPolicy
+  },
+  {
+    key: "OWNER:PROJECT_STATS:SEEK",
+    handler: ProjectOwnershipPolicy
+  },
+  {
+    key: "OWNER:PROJECT_STATS:CREATE",
     handler: ProjectOwnershipPolicy
   },
   {

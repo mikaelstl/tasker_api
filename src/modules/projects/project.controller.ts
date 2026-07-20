@@ -7,7 +7,7 @@ import { CreateProjectDTO } from "@modules/projects/dto/project.create.dto";
 import { ProjectQueryDTO } from "@modules/projects/dto/project.query.dto";
 import { ProjectRepository } from "@modules/projects/projects.repository";
 import { PermissionGuard } from "@guards/permission.guard";
-import { OrgRole } from "generated/prisma";
+import { OrgRole, StatsPeriodType } from "generated/prisma";
 import { CurrentAccount } from "src/decorators/CurrentAccount.decorator";
 import { CurrentAccountDTO } from "@modules/users/dto/current-account.dto";
 import { EditProjectDTO } from "@modules/projects/dto/edit.dto";
@@ -17,6 +17,9 @@ import { Role } from "@decorators/Role";
 import { OrgKey } from "@decorators/OrgKey";
 import { Action } from "@decorators/Action";
 import { BaseActions } from "src/common/enums/Actions.enum";
+import { ProjectStatsQueryDTO } from "@modules/stats/dto/project-stats-query.dto";
+import { GenerateStatsReportDTO } from "@modules/stats/dto/generate-stats-report.dto";
+import { StatsService } from "@modules/stats/stats.service";
 
 @Controller('project')
 @UseGuards(JwtAuthGuard)
@@ -25,7 +28,8 @@ export class ProjectController {
   constructor(
     private readonly repository: ProjectRepository,
     private readonly service: ProjectService,
-  ) {}
+    private readonly stats: StatsService
+  ) { }
 
   @Post()
   @Action(BaseActions.CREATE)
@@ -40,13 +44,13 @@ export class ProjectController {
     const result = await this.service.create({
       ...data,
       ownerkey: orgkey
-    }); 
-    
+    });
+
     const resp: ApiResponse = {
       status: HttpStatus.CREATED,
       data: result,
       message: 'Novo projeto criado com sucesso.',
-      
+
       timestamp: new Date().toISOString(),
       path: '/project'
     };
@@ -58,18 +62,18 @@ export class ProjectController {
   @Action(BaseActions.SEEK)
   @UseGuards(PermissionGuard)
   async list(
-    @Query()  queries: ProjectQueryDTO,
+    @Query() queries: ProjectQueryDTO,
     @OrgKey() orgkey: string,
-    @Res()    response,
+    @Res() response,
     @CurrentAccount() account: CurrentAccountDTO,
   ) {
     const result = await this.repository.list({ ownerkey: orgkey });
-    
+
     const resp: ApiResponse = {
       status: HttpStatus.OK,
       data: result,
       message: '',
-      
+
       timestamp: new Date().toISOString(),
       path: '/project/list'
     };
@@ -86,7 +90,7 @@ export class ProjectController {
     @CurrentAccount() account: CurrentAccountDTO,
   ) {
     const result = await this.repository.find(id);
-    
+
     const resp: ApiResponse = {
       status: HttpStatus.OK,
       data: result,
@@ -109,7 +113,7 @@ export class ProjectController {
     @CurrentAccount() account: CurrentAccountDTO,
   ) {
     const result = await this.repository.edit(id, data);
-    
+
     const resp: ApiResponse = {
       status: HttpStatus.OK,
       data: result,
@@ -129,18 +133,124 @@ export class ProjectController {
     @Param('id') id: string,
     @Res() response,
     @CurrentAccount() account: CurrentAccountDTO,
-  ){
+  ) {
     const result = await this.repository.delete(id);
-    
+
     const resp: ApiResponse = {
       status: HttpStatus.OK,
       data: result,
       message: `Projeto excluído com sucesso.`,
-      
+
       timestamp: new Date().toISOString(),
       path: '/project/del'
     };
 
     return response.status(resp.status).json(resp);
+  }
+
+  @Get('/:id/stats')
+  @Action(BaseActions.SEEK)
+  @UseGuards(PermissionGuard)
+  async getProjectStats(
+    @Param("id") id: string,
+    @Query() query: ProjectStatsQueryDTO,
+    @Res() response
+  ) {
+    const cutoffAt = query.cutoffAt
+      ? new Date(query.cutoffAt)
+      : new Date();
+    const result = await this.stats.getProjectStats(
+      id,
+      cutoffAt
+    );
+
+    return this.respond(
+      response,
+      HttpStatus.OK,
+      result,
+      `/project/${id}/stats`
+    );
+  }
+
+  @Post("/:id/stats/report")
+  @Action(BaseActions.CREATE)
+  @UseGuards(PermissionGuard)
+  async generateReport(
+    @Param("id") id: string,
+    @Body() data: GenerateStatsReportDTO,
+    @Res() response
+  ) {
+    const result = await this.stats.generateReport({
+      projectkey: id,
+      periodType: data.periodType ?? StatsPeriodType.WEEK,
+      cutoffAt: data.cutoffAt
+        ? new Date(data.cutoffAt)
+        : new Date(),
+      fileUrl: data.fileUrl
+    });
+
+    return this.respond(
+      response,
+      HttpStatus.CREATED,
+      result,
+      `/project/${id}/stats/report`,
+      "Relatório de desempenho gerado com sucesso."
+    );
+  }
+
+  @Get("/:id/stats/reports")
+  @Action(BaseActions.SEEK)
+  @UseGuards(PermissionGuard)
+  async listReports(
+    @Param("id") id: string,
+    @Res() response
+  ) {
+    const result = await this.stats.listReports(id);
+
+    return this.respond(
+      response,
+      HttpStatus.OK,
+      result,
+      `/project/${id}/stats/reports`
+    );
+  }
+
+  @Get("/:id/stats/reports/:reportkey")
+  @Action(BaseActions.SEEK)
+  @UseGuards(PermissionGuard)
+  async getReport(
+    @Param("id") id: string,
+    @Param("reportkey") reportkey: string,
+    @Res() response
+  ) {
+    const result = await this.stats.getReport(
+      reportkey,
+      id
+    );
+
+    return this.respond(
+      response,
+      HttpStatus.OK,
+      result,
+      `/project/${id}/stats/reports/${reportkey}`
+    );
+  }
+
+  private respond(
+    response: any,
+    status: HttpStatus,
+    data: unknown,
+    path: string,
+    message = ""
+  ) {
+    const payload: ApiResponse = {
+      status,
+      data,
+      message,
+      timestamp: new Date().toISOString(),
+      path
+    };
+
+    return response.status(status).json(payload);
   }
 }
