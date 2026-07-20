@@ -22,6 +22,7 @@ export type StatsTask = {
   stage: TaskStage;
   delayed: boolean;
   spentMinutes: number;
+  deadline: Date;
   startedAt: Date | null;
   doneAt: Date | null;
 };
@@ -29,11 +30,11 @@ export type StatsTask = {
 export type MemberPerformance = {
   memberId: string;
   user: StatsUser;
-  weeks: Array<{
-    week: string;
-    hours: number;
+  months: Array<{
+    month: string;
+    averageHours: number;
   }>;
-  averageHoursPerWeek: number;
+  averageHoursPerMonth: number;
 };
 
 export type MemberProductivity = {
@@ -65,6 +66,8 @@ export type ProjectStats = {
     doneAt: Date | null;
     deadline: Date;
     delayed: boolean;
+    organization: string;
+    manager: string | null;
   };
   summary: {
     totalTasks: number;
@@ -88,6 +91,12 @@ export type ProjectStats = {
   performancePerMember: MemberPerformance[];
   productivity: MemberProductivity[];
   members: MemberStats[];
+  events: Array<{
+    id: string;
+    title: string;
+    date: Date;
+    category: string;
+  }>;
 };
 
 export type RecordTaskWorkLogInput = {
@@ -108,7 +117,11 @@ export type GenerateReportInput = {
   projectkey: string;
   periodType: StatsPeriodType;
   cutoffAt?: Date;
-  fileUrl?: string;
+};
+
+export type GeneratedProjectReport = {
+  filename: string;
+  document: Buffer;
 };
 
 export type StatsTaskRecord = {

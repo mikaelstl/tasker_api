@@ -55,15 +55,7 @@ export class ProjectService implements AccessValidator {
 
   public async manage(subjectkey: string, targetkey: string): Promise<boolean> {
     try {
-      const result = await this.repository.exists(
-        targetkey,
-        {
-          id: targetkey,
-          managerkey: subjectkey
-        }
-      );
-
-      return result;
+      return this.repository.isManagedByUser(targetkey, subjectkey);
     } catch (err) {
       this.logger.warn("[ERROR] to check the project manager.", err);
       return false;
@@ -72,11 +64,7 @@ export class ProjectService implements AccessValidator {
 
   public async participates(subjectkey: string, targetkey: string): Promise<boolean> {
     try {
-      const result = await this.repository.find(targetkey);
-
-      const value = result.members.find(m => m.userkey === subjectkey);
-
-      return !!value;
+      return this.repository.hasMemberUser(targetkey, subjectkey);
     } catch (err: any) {
       this.logger.warn("[ERROR] to verify project membership.", err);
       return false;

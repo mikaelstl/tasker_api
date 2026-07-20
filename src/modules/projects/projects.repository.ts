@@ -13,27 +13,11 @@ export class ProjectRepository {
   ) { }
 
   private toProjectDTO(project: any): ProjectDTO {
-    if (!project) {
-      return project;
-    }
-
-    const { progress, due_date, ...rest } = project;
-
-    return {
-      ...rest,
-      deadline: due_date,
-      stage: progress,
-    };
+    return project;
   }
 
   private toProjectWhere(queries: ProjectQueryDTO) {
-    const { stage, deadline, ...rest } = queries;
-
-    return {
-      ...rest,
-      due_date: deadline,
-      progress: stage,
-    };
+    return queries;
   }
 
   async projectExists(id: string) {
@@ -56,7 +40,7 @@ export class ProjectRepository {
         title: data.title,
         description: data.description,
         ownerkey: data.ownerkey,
-        due_date: data.deadline
+        deadline: data.deadline
       },
     });
 
@@ -82,8 +66,8 @@ export class ProjectRepository {
       select: {
         id: true,
         title: true,
-        progress: true,
-        due_date: true
+        stage: true,
+        deadline: true
       }
     });
 
@@ -116,8 +100,8 @@ export class ProjectRepository {
       select: {
         id: true,
         title: true,
-        progress: true,
-        due_date: true
+        stage: true,
+        deadline: true
       }
     });
 
@@ -152,8 +136,8 @@ export class ProjectRepository {
       data: {
         title: update.title,
         description: update.description,
-        due_date: update.deadline,
-        progress: update.stage,
+        deadline: update.deadline,
+        stage: update.stage,
       },
     });
 
@@ -175,10 +159,46 @@ export class ProjectRepository {
   };
 
   async exists(key: string, query: ProjectQueryDTO): Promise<boolean> {
-    const result = await this.prisma.organization.count({
+    const result = await this.prisma.project.count({
       where: {
         id: key,
         ...this.toProjectWhere(query)
+      }
+    });
+
+    return result > 0;
+  }
+
+  async isManagedByUser(
+    projectkey: string,
+    username: string
+  ): Promise<boolean> {
+    const result = await this.prisma.project.count({
+      where: {
+        id: projectkey,
+        manager: {
+          userkey: username
+        }
+      }
+    });
+
+    return result > 0;
+  }
+
+  async hasMemberUser(
+    projectkey: string,
+    username: string
+  ): Promise<boolean> {
+    const result = await this.prisma.project.count({
+      where: {
+        id: projectkey,
+        members: {
+          some: {
+            user: {
+              userkey: username
+            }
+          }
+        }
       }
     });
 

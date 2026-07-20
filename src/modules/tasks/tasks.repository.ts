@@ -17,25 +17,11 @@ export class TasksRepository {
   ) { }
 
   private toTaskDTO(task: any): TaskDTO {
-    if (!task) {
-      return task;
-    }
-
-    const { due_date, ...rest } = task;
-
-    return {
-      ...rest,
-      deadline: due_date,
-    };
+    return task;
   }
 
   private toTaskWhere(queries: TaskQueryDTO) {
-    const { deadline, ...rest } = queries;
-
-    return {
-      ...rest,
-      due_date: deadline,
-    };
+    return queries;
   }
 
   private generateCode(): string {
@@ -54,7 +40,7 @@ export class TasksRepository {
         projectkey: data.project,
         ownerkey: data.owner,
         priority: data.priority,
-        due_date: data.deadline
+        deadline: data.deadline
       }
     });
 
@@ -97,7 +83,7 @@ export class TasksRepository {
         description: update.description,
         priority: update.priority,
         stage: update.stage,
-        due_date: update.deadline,
+        deadline: update.deadline,
       },
       where: {
         code: code

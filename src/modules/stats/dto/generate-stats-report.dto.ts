@@ -1,4 +1,4 @@
-import { IsDateString, IsEnum, IsOptional, IsUrl } from "class-validator";
+import { IsDateString, IsEnum, IsOptional } from "class-validator";
 import { StatsPeriodType } from "generated/prisma";
 
 export class GenerateStatsReportDTO {
@@ -9,8 +9,4 @@ export class GenerateStatsReportDTO {
   @IsOptional()
   @IsDateString()
   readonly cutoffAt?: string;
-
-  @IsOptional()
-  @IsUrl()
-  readonly fileUrl?: string;
 }

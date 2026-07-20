@@ -4,7 +4,7 @@ import { ProjectStatsPeriodTasksRepository } from "./repositories/project-stats-
 import { ProjectStatsQueryRepository } from "./repositories/project-stats-query.repository";
 import { ProjectStatsReportsRepository } from "./repositories/project-stats-reports.repository";
 import { TaskWorkLogsRepository } from "./repositories/task-work-logs.repository";
-import { StatsController } from "./stats.controller";
+import { ProjectStatsReportDocument } from "./project-stats-report.document";
 import { StatsService } from "./stats.service";
 
 const repositories = [
@@ -16,11 +16,9 @@ const repositories = [
 ];
 
 @Module({
-  controllers: [
-    StatsController,
-  ],
   providers: [
     ...repositories,
+    ProjectStatsReportDocument,
     StatsService,
   ],
   exports: [

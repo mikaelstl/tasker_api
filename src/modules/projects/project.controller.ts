@@ -1,5 +1,5 @@
 import { ApiResponse } from "src/common/interfaces/ApiResponse";
-import { Body, Controller, Delete, Get, Header, Headers, HttpStatus, Param, Post, Put, Query, Res, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, Get, HttpStatus, Param, Post, Put, Query, Res, UseGuards } from "@nestjs/common";
 import { MembersRepository } from "../members/member.repository";
 import { JwtAuthGuard } from "../../security/auth.guard";
 import { ProjectService } from "@modules/projects/project.service";
@@ -149,6 +149,7 @@ export class ProjectController {
   }
 
   @Get('/:id/stats')
+  @Resource(Resources.PROJECT_STATS)
   @Action(BaseActions.SEEK)
   @UseGuards(PermissionGuard)
   async getProjectStats(
@@ -173,6 +174,7 @@ export class ProjectController {
   }
 
   @Post("/:id/stats/report")
+  @Resource(Resources.PROJECT_STATS)
   @Action(BaseActions.CREATE)
   @UseGuards(PermissionGuard)
   async generateReport(
@@ -185,20 +187,22 @@ export class ProjectController {
       periodType: data.periodType ?? StatsPeriodType.WEEK,
       cutoffAt: data.cutoffAt
         ? new Date(data.cutoffAt)
-        : new Date(),
-      fileUrl: data.fileUrl
+        : new Date()
     });
 
-    return this.respond(
-      response,
-      HttpStatus.CREATED,
-      result,
-      `/project/${id}/stats/report`,
-      "Relatório de desempenho gerado com sucesso."
-    );
+    response.set({
+      "Content-Type": "application/pdf",
+      "Content-Disposition": `attachment; filename="${result.filename}"`,
+      "Content-Length": result.document.length,
+      "Cache-Control": "private, no-store",
+      "X-Content-Type-Options": "nosniff"
+    });
+
+    return response.status(HttpStatus.OK).send(result.document);
   }
 
   @Get("/:id/stats/reports")
+  @Resource(Resources.PROJECT_STATS)
   @Action(BaseActions.SEEK)
   @UseGuards(PermissionGuard)
   async listReports(
@@ -216,6 +220,7 @@ export class ProjectController {
   }
 
   @Get("/:id/stats/reports/:reportkey")
+  @Resource(Resources.PROJECT_STATS)
   @Action(BaseActions.SEEK)
   @UseGuards(PermissionGuard)
   async getReport(

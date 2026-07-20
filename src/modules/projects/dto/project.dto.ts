@@ -1,13 +1,7 @@
 import { MemberDTO } from "@modules/members/dto/member.dto";
+import { ProjectStage } from "generated/prisma";
 
-export enum ProjectStage {
-  STARTED = "STARTED",
-  PENDING = "PENDING",
-  IN_PROGRESS = "IN_PROGRESS",
-  PAUSED = "PAUSED",
-  COMPLETED = "COMPLETED",
-  DELAYED = "DELAYED",
-}
+export { ProjectStage };
 
 export interface ProjectDTO {
   readonly id: string;
@@ -17,5 +11,5 @@ export interface ProjectDTO {
   readonly deadline?: Date;
   readonly stage?: ProjectStage;
 
-  readonly members?: MemberDTO;
+  readonly members?: MemberDTO[];
 }

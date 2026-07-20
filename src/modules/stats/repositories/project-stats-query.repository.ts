@@ -13,6 +13,17 @@ export class ProjectStatsQueryRepository {
         id: projectkey
       },
       include: {
+        owner: true,
+        manager: {
+          include: {
+            user: true
+          }
+        },
+        events: {
+          orderBy: {
+            date: "asc"
+          }
+        },
         tasks: {
           orderBy: {
             created_at: "asc"

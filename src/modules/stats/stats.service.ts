@@ -14,7 +14,9 @@ import { ProjectStatsPeriodTasksRepository } from "./repositories/project-stats-
 import { ProjectStatsQueryRepository } from "./repositories/project-stats-query.repository";
 import { ProjectStatsReportsRepository } from "./repositories/project-stats-reports.repository";
 import { TaskWorkLogsRepository } from "./repositories/task-work-logs.repository";
+import { ProjectStatsReportDocument } from "./project-stats-report.document";
 import {
+  GeneratedProjectReport,
   GenerateReportInput,
   GenerateSnapshotInput,
   MemberStats,
@@ -40,7 +42,8 @@ export class StatsService {
     private readonly workLogs: TaskWorkLogsRepository,
     private readonly snapshots: ProjectStatsPeriodSnapshotsRepository,
     private readonly periodTasks: ProjectStatsPeriodTasksRepository,
-    private readonly reports: ProjectStatsReportsRepository
+    private readonly reports: ProjectStatsReportsRepository,
+    private readonly reportDocument: ProjectStatsReportDocument
   ) { }
 
   async getProjectStats(
@@ -137,6 +140,8 @@ export class StatsService {
         startedAt: project.started_at,
         doneAt: project.done_at,
         deadline: project.deadline,
+        organization: project.owner.name,
+        manager: project.manager?.user.name ?? null,
         delayed: (
           project.done_at === null
           && project.deadline.getTime() < cutoffAt.getTime()
@@ -170,7 +175,13 @@ export class StatsService {
           member.completedTasks / Math.max(member.delayedTasks, 1)
         )
       })),
-      members
+      members,
+      events: project.events.map((event) => ({
+        id: event.id,
+        title: event.title,
+        date: event.date,
+        category: event.category
+      }))
     };
   }
 
@@ -342,7 +353,9 @@ export class StatsService {
     );
   }
 
-  async generateReport(input: GenerateReportInput) {
+  async generateReport(
+    input: GenerateReportInput
+  ): Promise<GeneratedProjectReport> {
     const cutoffAt = input.cutoffAt ?? new Date();
     const snapshot = await this.generateSnapshot({
       projectkey: input.projectkey,
@@ -370,14 +383,31 @@ export class StatsService {
       historicalSnapshots: previousSnapshots
     };
 
-    return this.reports.create({
+    const report = await this.reports.create({
       projectkey: input.projectkey,
       cutoff_at: cutoffAt,
       period_type: input.periodType,
       snapshotkey: snapshot.id,
-      file_url: input.fileUrl,
       payload_json: this.toJson(payload)
     });
+    let document: Buffer;
+
+    try {
+      document = await this.reportDocument.generate({
+        reportId: report.id,
+        periodType: input.periodType,
+        stats,
+        historicalSnapshots: previousSnapshots
+      });
+    } catch (error) {
+      await this.reports.delete(report.id);
+      throw error;
+    }
+
+    return {
+      filename: this.reportFilename(stats.project.title, cutoffAt),
+      document
+    };
   }
 
   async getReport(reportkey: string, projectkey?: string) {
@@ -433,6 +463,7 @@ export class StatsService {
         spentMinutes: loggedMinutes > 0
           ? loggedMinutes
           : lifecycleMinutes,
+        deadline: task.deadline,
         startedAt: task.started_at,
         doneAt: task.done_at
       };
@@ -465,33 +496,58 @@ export class StatsService {
     const memberLogs = logs.filter((log) =>
       log.memberkey === member.memberId
     );
-    const weeks = new Map<string, number>();
+    const months = new Map<string, {
+      minutes: number;
+      weeks: number;
+    }>();
 
-    for (const week of this.listWeeks(period.start, period.end)) {
-      weeks.set(this.isoWeekKey(week), 0);
+    for (const month of this.listMonths(period.start, period.end)) {
+      const monthEnd = new Date(
+        Date.UTC(month.getUTCFullYear(), month.getUTCMonth() + 1, 1) - 1
+      );
+      const effectiveStart = new Date(Math.max(
+        month.getTime(),
+        period.start.getTime()
+      ));
+      const effectiveEnd = new Date(Math.min(
+        monthEnd.getTime(),
+        period.end.getTime()
+      ));
+
+      months.set(this.monthKey(month), {
+        minutes: 0,
+        weeks: Math.max(
+          this.listWeeks(effectiveStart, effectiveEnd).length,
+          1
+        )
+      });
     }
 
     for (const log of memberLogs) {
-      const key = this.isoWeekKey(log.logged_at);
-      weeks.set(key, (weeks.get(key) ?? 0) + log.minutes);
+      const key = this.monthKey(log.logged_at);
+      const value = months.get(key);
+
+      if (value) {
+        value.minutes += log.minutes;
+      }
     }
 
-    const series = Array.from(weeks.entries()).map(([week, minutes]) => ({
-      week,
-      hours: this.round(minutes / 60)
+    const series = Array.from(months.entries()).map(([month, value]) => ({
+      month,
+      averageHours: this.round(value.minutes / 60 / value.weeks)
     }));
-    const totalHours = series.reduce(
-      (total, item) => total + item.hours,
+    const totalAverageHours = series.reduce(
+      (total, item) => total + item.averageHours,
       0
     );
 
     return {
       memberId: member.memberId,
       user: member.user,
-      weeks: series,
-      averageHoursPerWeek: series.length === 0
+      months: series,
+      averageHoursPerMonth: series.length === 0
         ? 0
-        : this.round(totalHours / series.length)
+        : this.round(totalAverageHours / series.length)
     };
   }
 
@@ -711,6 +767,32 @@ export class StatsService {
     return weeks;
   }
 
+  private listMonths(start: Date, end: Date): Date[] {
+    const months: Date[] = [];
+    let cursor = new Date(Date.UTC(
+      start.getUTCFullYear(),
+      start.getUTCMonth(),
+      1
+    ));
+
+    while (cursor.getTime() <= end.getTime()) {
+      months.push(cursor);
+      cursor = new Date(Date.UTC(
+        cursor.getUTCFullYear(),
+        cursor.getUTCMonth() + 1,
+        1
+      ));
+    }
+
+    return months;
+  }
+
+  private monthKey(date: Date): string {
+    return `${date.getUTCFullYear()}-${String(
+      date.getUTCMonth() + 1
+    ).padStart(2, "0")}`;
+  }
+
   private startOfIsoWeek(date: Date): Date {
     const start = new Date(Date.UTC(
       date.getUTCFullYear(),
@@ -777,5 +859,18 @@ export class StatsService {
 
   private clamp(value: number, minimum: number, maximum: number): number {
     return Math.min(Math.max(value, minimum), maximum);
+  }
+
+  private reportFilename(title: string, cutoffAt: Date): string {
+    const slug = title
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "")
+      .slice(0, 60) || "projeto";
+    const date = cutoffAt.toISOString().slice(0, 10);
+
+    return `relatorio-desempenho-${slug}-${date}.pdf`;
   }
 }
