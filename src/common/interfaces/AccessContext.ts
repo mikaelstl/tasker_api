@@ -15,7 +15,7 @@ type AccessSubject = {
 interface AccessContext {
   readonly action: BaseActions | EnhancedActions;
   readonly resource: Resources;
-  readonly role: OrgRole;
+  readonly roles: OrgRole[];
   readonly subject: AccessSubject;   // Aqui deve receber informações do objeto que a ação está relacionada (Project, Task, Organization) junto a role do usuário
   // readonly environment: any;
 }

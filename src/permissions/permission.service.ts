@@ -25,11 +25,11 @@ export class PermissionService {
     // policy: () => boolean
   ): Promise<boolean> {
     // EXTRAIR role, action, resource DE ctx
-    const { action, resource, subject, role } = ctx;
+    const { action, resource, subject, roles } = ctx;
 
     const userRole = (await this.getRole(subject.userkey, subject.orgkey)).role;
 
-    if (role && role !== userRole) {
+    if (roles?.length && !roles.includes(userRole)) {
       return false;
     }
 
@@ -47,7 +47,7 @@ export class PermissionService {
   }
 
   public async getRole(userkey: string, orgkey:string) {
-    return await this.affiliations.findByUserOrgkey(
+    return await this.affiliations.findByUserAndOrgkey(
       userkey,
       orgkey
     );

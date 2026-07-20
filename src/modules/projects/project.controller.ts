@@ -149,6 +149,7 @@ export class ProjectController {
   }
 
   @Get('/:id/stats')
+  @Role(OrgRole.OWNER, OrgRole.MANAGER)
   @Resource(Resources.PROJECT_STATS)
   @Action(BaseActions.SEEK)
   @UseGuards(PermissionGuard)
@@ -174,6 +175,7 @@ export class ProjectController {
   }
 
   @Post("/:id/stats/report")
+  @Role(OrgRole.OWNER, OrgRole.MANAGER)
   @Resource(Resources.PROJECT_STATS)
   @Action(BaseActions.CREATE)
   @UseGuards(PermissionGuard)
@@ -202,6 +204,7 @@ export class ProjectController {
   }
 
   @Get("/:id/stats/reports")
+  @Role(OrgRole.OWNER, OrgRole.MANAGER)
   @Resource(Resources.PROJECT_STATS)
   @Action(BaseActions.SEEK)
   @UseGuards(PermissionGuard)
@@ -220,6 +223,7 @@ export class ProjectController {
   }
 
   @Get("/:id/stats/reports/:reportkey")
+  @Role(OrgRole.OWNER, OrgRole.MANAGER)
   @Resource(Resources.PROJECT_STATS)
   @Action(BaseActions.SEEK)
   @UseGuards(PermissionGuard)

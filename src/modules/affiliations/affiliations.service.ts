@@ -97,15 +97,15 @@ export class AffiliationService implements AccessValidator {
     }
   }
 
-  async findByUserOrgkey(
+  async findByUserAndOrgkey(
     userkey: string,
     orgkey: string
-  ) {
+  ): Promise<AffiliationDTO> {
     try {
-      const result = await this.repository.findWithQueries({
+      const result = await this.repository.findByUserAndOrgkey(
         userkey,
         orgkey
-      });
+      );
 
       this.logger.log(result);
 

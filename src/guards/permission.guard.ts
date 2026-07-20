@@ -19,7 +19,7 @@ export class PermissionGuard implements CanActivate {
   ) {}
 
   async canActivate(ctx:ExecutionContext): Promise<boolean> {
-    const role = this.reflector.getAllAndOverride<OrgRole>(ROLES_KEY, [ctx.getHandler(), ctx.getClass()]);
+    const roles = this.reflector.getAllAndOverride<OrgRole[]>(ROLES_KEY, [ctx.getHandler(), ctx.getClass()]);
     const action = this.reflector.getAllAndOverride<BaseActions | EnhancedActions>(ACTION_KEY, [ctx.getHandler(), ctx.getClass()])
     const resource = this.reflector.getAllAndOverride<Resources>(RESOURCE_KEY, [ctx.getHandler(), ctx.getClass()])
     const req = ctx.switchToHttp().getRequest();
@@ -27,7 +27,7 @@ export class PermissionGuard implements CanActivate {
 
     const orgkey = headers.get(ORG_KEY) as string;
 
-    if (!role && !action) {
+    if (!roles && !action) {
       return true;
     }
 
@@ -46,7 +46,7 @@ export class PermissionGuard implements CanActivate {
     const payload = {
       action,
       resource,
-      role,
+      roles,
       subject: {
         userkey: user.username,
         orgkey: orgkey,

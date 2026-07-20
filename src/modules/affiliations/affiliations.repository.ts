@@ -67,9 +67,20 @@ export class AffiliationRepository {
     return value;
   }
 
-  async findWithQueries(queries: AffiliationQuery): Promise<AffiliationDTO> {
-    const value = await this.prisma.affiliation.findFirst({
+  async findWithQueries(queries: AffiliationQuery): Promise<AffiliationDTO[]> {
+    const value = await this.prisma.affiliation.findMany({
       where: queries
+    });
+
+    return value;
+  }
+
+  async findByUserAndOrgkey(userkey: string, orgkey: string): Promise<AffiliationDTO> {
+    const value = await this.prisma.affiliation.findFirst({
+      where: {
+        userkey,
+        orgkey
+      }
     });
 
     return value;
