@@ -143,6 +143,8 @@ export class StatsService {
         organization: project.owner.name,
         manager: project.manager?.user.name ?? null,
         delayed: (
+          project.delayed
+        ) || (
           project.done_at === null
           && project.deadline.getTime() < cutoffAt.getTime()
         ) || (
@@ -733,7 +735,7 @@ export class StatsService {
   }
 
   private isTaskDelayed(task: StatsTaskRecord, cutoffAt: Date): boolean {
-    return task.stage === TaskStage.DELAYED
+    return task.delayed
       || (
         task.stage !== TaskStage.DONE
         && task.deadline.getTime() < cutoffAt.getTime()

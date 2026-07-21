@@ -10,6 +10,7 @@ describe("StatsService member performance", () => {
         stage: ProjectStage.IN_PROGRESS,
         started_at: new Date("2026-05-01T00:00:00.000Z"),
         done_at: null,
+        delayed: false,
         deadline: new Date("2026-09-01T00:00:00.000Z"),
         owner: {
           name: "Horizon Systems"

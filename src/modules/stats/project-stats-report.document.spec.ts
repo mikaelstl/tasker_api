@@ -6,6 +6,19 @@ import {
 import { ProjectStatsReportDocument } from "./project-stats-report.document";
 
 describe("ProjectStatsReportDocument", () => {
+  it("describes delayed tasks according to their workflow stage", () => {
+    const report = new ProjectStatsReportDocument() as any;
+
+    expect(report.taskStatus(TaskStage.DONE, true))
+      .toBe("CONCLUÍDA EM ATRASO");
+    expect(report.taskDelayNotice("TSK-DONE", TaskStage.DONE))
+      .toBe("Tarefa com código TSK-DONE foi concluída em atraso.");
+    expect(report.taskStatus(TaskStage.PENDING, true))
+      .toBe("PENDENTE EM ATRASO");
+    expect(report.taskDelayNotice("TSK-PENDING", TaskStage.PENDING))
+      .toBe("Tarefa com código TSK-PENDING está pendente em atraso.");
+  });
+
   it("generates a downloadable PDF using the project statistics", async () => {
     const cutoffAt = new Date("2026-07-20T13:00:00.000Z");
     const stats: any = {

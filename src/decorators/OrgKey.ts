@@ -6,9 +6,6 @@ export const OrgKey = createParamDecorator(
     const req = ctx.switchToHttp().getRequest();
     const orgkey = req.headers[ORG_KEY];
 
-    console.log(orgkey);
-    
-
     return orgkey;
   }
 );

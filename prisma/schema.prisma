@@ -108,6 +108,7 @@ model Project {
   deadline    DateTime @map("due_date")
   started_at  DateTime?
   done_at     DateTime?
+  delayed     Boolean  @default(false)
 
   stage ProjectStage @default(STARTED) @map("progress")
 
@@ -128,6 +129,7 @@ model Project {
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
+  @@index([delayed, deadline, stage])
   @@map("projects")
 }
 
@@ -159,6 +161,7 @@ model Task {
   deadline    DateTime @map("due_date")
   started_at  DateTime?
   done_at     DateTime?
+  delayed     Boolean  @default(false)
 
   stage    TaskStage    @default(PENDING)
   priority TaskPriority
@@ -175,6 +178,7 @@ model Task {
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
+  @@index([delayed, deadline, stage])
   @@map("tasks")
 }
 
@@ -338,7 +342,6 @@ enum ProjectStage {
   IN_PROGRESS
   PAUSED
   COMPLETED
-  DELAYED
 }
 
 enum EventCategory {
@@ -362,7 +365,6 @@ enum TaskStage {
   IN_PROGRESS
   REVIEW
   DONE
-  DELAYED
 }
 
 enum TaskPriority {

@@ -10,6 +10,7 @@ export interface ProjectDTO {
   readonly ownerkey?: string;
   readonly deadline?: Date;
   readonly stage?: ProjectStage;
+  readonly delayed: boolean;
 
   readonly members?: MemberDTO[];
 }

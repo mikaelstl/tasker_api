@@ -350,7 +350,10 @@ export class ProjectStatsReportDocument {
     let y = 128;
 
     for (const member of stats.members) {
-      const requiredHeight = 44 + (Math.max(member.tasks.length, 1) * 26);
+      const delayedTasks = member.tasks.filter((task) => task.delayed);
+      const requiredHeight = 59
+        + (Math.max(member.tasks.length, 1) * 26)
+        + (delayedTasks.length * 15);
 
       if (y + requiredHeight > 750) {
         this.sectionPage(
@@ -375,7 +378,7 @@ export class ProjectStatsReportDocument {
         ? member.tasks.map((task) => [
           task.code,
           task.name,
-          task.delayed ? "ATRASADA" : this.taskStage(task.stage),
+          this.taskStatus(task.stage, task.delayed),
           this.duration(task.spentMinutes),
           this.date(task.deadline)
         ])
@@ -387,7 +390,23 @@ export class ProjectStatsReportDocument {
         { label: "Tempo", width: 74, align: "right" },
         { label: "Prazo", width: 57, align: "right" }
       ], rows, 26, 7);
-      y += 26 + (rows.length * 26) + 15;
+      y += 26 + (rows.length * 26) + 6;
+
+      for (const task of delayedTasks) {
+        document
+          .font("Poppins-SemiBold")
+          .fontSize(7)
+          .fillColor(COLORS.red)
+          .text(
+            this.taskDelayNotice(task.code, task.stage),
+            MARGIN + 8,
+            y,
+            { width: CONTENT_WIDTH - 16 }
+          );
+        y += 15;
+      }
+
+      y += 9;
     }
 
     if (y < 730) {
@@ -959,9 +978,25 @@ export class ProjectStatsReportDocument {
       [TaskStage.PENDING]: "PENDENTE",
       [TaskStage.IN_PROGRESS]: "EM ANDAMENTO",
       [TaskStage.REVIEW]: "REVISÃO",
-      [TaskStage.DONE]: "CONCLUÍDA",
-      [TaskStage.DELAYED]: "ATRASADA"
+      [TaskStage.DONE]: "CONCLUÍDA"
     }[stage];
+  }
+
+  private taskStatus(stage: TaskStage, delayed: boolean): string {
+    const stageLabel = this.taskStage(stage);
+    return delayed ? `${stageLabel} EM ATRASO` : stageLabel;
+  }
+
+  private taskDelayNotice(code: string, stage: TaskStage): string {
+    if (stage === TaskStage.DONE) {
+      return `Tarefa com código ${code} foi concluída em atraso.`;
+    }
+
+    if (stage === TaskStage.PENDING) {
+      return `Tarefa com código ${code} está pendente em atraso.`;
+    }
+
+    return `Tarefa com código ${code} está no estágio ${this.taskStage(stage).toLowerCase()} e em atraso.`;
   }
 
   private projectStage(stage: string): string {

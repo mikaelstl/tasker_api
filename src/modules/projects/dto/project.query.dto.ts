@@ -8,4 +8,5 @@ export interface ProjectQueryDTO {
   readonly managerkey?: string;
   readonly deadline?: Date;
   readonly stage?: ProjectStage;
+  readonly delayed?: boolean;
 }

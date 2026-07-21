@@ -36,7 +36,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
         { secret: SECRET }
       )
 
-      request['user'] = {
+      request.user = {
         id: payload.sub,
         username: payload.username,
         email: payload.email

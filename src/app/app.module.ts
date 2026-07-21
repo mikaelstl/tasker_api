@@ -12,9 +12,12 @@ import { PermissionModule } from '@permissions/permission.modules';
 import { AffiliationModule } from '@modules/affiliations/affiliations.module';
 import { AccessControlModule } from 'src/authorization/access-control/access-control.module';
 import { PoliciesModule } from '@authorization/policies/policies.module';
+import { ScheduleModule } from '@nestjs/schedule';
+import { DeadlinesModule } from '@modules/deadlines/deadlines.module';
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     PrismaModule,
     PermissionModule,
     AccessControlModule,
@@ -26,6 +29,7 @@ import { PoliciesModule } from '@authorization/policies/policies.module';
     OrganizationModule,
     ProjectsModule,
     AffiliationModule,
+    DeadlinesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

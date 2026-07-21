@@ -129,6 +129,7 @@ export type StatsTaskRecord = {
   code: string;
   name: string;
   stage: TaskStage;
+  delayed: boolean;
   deadline: Date;
   ownerkey: string;
   started_at: Date | null;

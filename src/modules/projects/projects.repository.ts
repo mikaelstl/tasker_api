@@ -3,7 +3,7 @@ import { Injectable, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "src/database/prisma.service";
 import { EditProjectDTO } from "@modules/projects/dto/edit.dto";
 import { CreateProjectDTO } from "@modules/projects/dto/project.create.dto";
-import { ProjectDTO } from "@modules/projects/dto/project.dto";
+import { ProjectDTO, ProjectStage } from "@modules/projects/dto/project.dto";
 import { ProjectQueryDTO } from "@modules/projects/dto/project.query.dto";
 
 @Injectable()
@@ -67,7 +67,8 @@ export class ProjectRepository {
         id: true,
         title: true,
         stage: true,
-        deadline: true
+        deadline: true,
+        delayed: true
       }
     });
 
@@ -101,7 +102,8 @@ export class ProjectRepository {
         id: true,
         title: true,
         stage: true,
-        deadline: true
+        deadline: true,
+        delayed: true
       }
     });
 
@@ -127,7 +129,25 @@ export class ProjectRepository {
   };
 
   async edit(key: string, update: EditProjectDTO): Promise<ProjectDTO> {
-    await this.projectExists(key);
+    const current = await this.prisma.project.findUnique({
+      where: { id: key }
+    });
+
+    if (!current) {
+      throw new NotFoundException("Projeto não encontrado.");
+    }
+
+    const deadline = update.deadline ?? current.deadline;
+    const stage = update.stage ?? current.stage;
+    const becameDelayed = deadline.getTime() < Date.now()
+      && (
+        stage !== ProjectStage.COMPLETED
+        || current.stage !== ProjectStage.COMPLETED
+        || (
+          current.done_at !== null
+          && current.done_at.getTime() > deadline.getTime()
+        )
+      );
 
     const result = await this.prisma.project.update({
       where: {
@@ -138,6 +158,7 @@ export class ProjectRepository {
         description: update.description,
         deadline: update.deadline,
         stage: update.stage,
+        delayed: current.delayed || becameDelayed
       },
     });
 

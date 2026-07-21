@@ -8,4 +8,5 @@ export interface TaskQueryDTO {
   readonly stage?: $Enums.TaskStage;
   readonly priority?: $Enums.TaskPriority;
   readonly deadline?: Date;
+  readonly delayed?: boolean;
 }

@@ -4,6 +4,7 @@ import { PrismaService } from "src/database/prisma.service";
 import { TaskCreateDTO } from "@modules/tasks/dto/task.create.dto";
 import { TaskDTO } from "@modules/tasks/dto/task.dto";
 import { TaskQueryDTO } from "@modules/tasks/dto/task.query.dto";
+import { TaskStage } from "generated/prisma";
 
 @Injectable()
 export class TasksRepository {
@@ -77,6 +78,28 @@ export class TasksRepository {
   }
 
   async edit(code: string, update: any): Promise<TaskDTO> {
+    const current = await this.prisma.task.findUnique({
+      where: { code }
+    });
+
+    if (!current) {
+      throw new NotFoundException("Tarefa não encontrada.");
+    }
+
+    const deadline = update.deadline
+      ? new Date(update.deadline)
+      : current.deadline;
+    const stage = update.stage ?? current.stage;
+    const becameDelayed = deadline.getTime() < Date.now()
+      && (
+        stage !== TaskStage.DONE
+        || current.stage !== TaskStage.DONE
+        || (
+          current.done_at !== null
+          && current.done_at.getTime() > deadline.getTime()
+        )
+      );
+
     const response = await this.prisma.task.update({
       data: {
         name: update.name,
@@ -84,6 +107,7 @@ export class TasksRepository {
         priority: update.priority,
         stage: update.stage,
         deadline: update.deadline,
+        delayed: current.delayed || becameDelayed
       },
       where: {
         code: code
