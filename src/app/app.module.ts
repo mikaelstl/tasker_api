@@ -14,6 +14,7 @@ import { AccessControlModule } from 'src/authorization/access-control/access-con
 import { PoliciesModule } from '@authorization/policies/policies.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { DeadlinesModule } from '@modules/deadlines/deadlines.module';
+import { AuditLogModule } from '@modules/audit-log/audit-log.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { DeadlinesModule } from '@modules/deadlines/deadlines.module';
     ProjectsModule,
     AffiliationModule,
     DeadlinesModule,
+    AuditLogModule,
   ],
   controllers: [AppController],
   providers: [AppService],

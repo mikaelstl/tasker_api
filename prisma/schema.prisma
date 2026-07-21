@@ -41,6 +41,7 @@ model User {
   comments        Comment[]
   notifications   Notification[]
   participates_in Affiliation[]
+  audit_logs      AuditLog[]
 
   organization Organization? @relation("OrgOwner")
 
@@ -59,6 +60,7 @@ model Organization {
 
   projects Project[]
   members  Affiliation[]
+  audit_logs AuditLog[]
 
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
@@ -336,6 +338,30 @@ model Notification {
   @@map("notifications")
 }
 
+model AuditLog {
+  id String @id @default(cuid())
+
+  orgkey String
+  org    Organization @relation(fields: [orgkey], references: [id], onDelete: Cascade)
+
+  actorkey String?
+  actor    User?   @relation(fields: [actorkey], references: [username], onDelete: SetNull)
+
+  actorType AuditActorType
+  action    AuditAction
+  resource  AuditResource
+
+  resourcekey String?
+  message     String
+
+  created_at DateTime @default(now())
+
+  @@index([orgkey, created_at])
+  @@index([actorkey])
+  @@index([resource, resourcekey])
+  @@map("audit_logs")
+}
+
 enum ProjectStage {
   STARTED
   PENDING
@@ -384,4 +410,31 @@ enum ProjectHealthStatus {
   SAFE
   WARNING
   CRITICAL
+}
+
+enum AuditActorType {
+  USER
+  SYSTEM
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  ADD
+  REMOVE
+  COMMENT
+  STATUS_CHANGE
+  SYSTEM_UPDATE
+}
+
+enum AuditResource {
+  ORGS
+  AFFILIATIONS
+  PROJECTS
+  MEMBERS
+  TASKS
+  COMMENTS
+  EVENTS
+  PROJECT_STATS
 }
