@@ -145,6 +145,20 @@ export class AffiliationService implements AccessValidator {
     }
   }
 
+  async participates(userkey: string, orgkey: string): Promise<boolean> {
+    try {
+      const affiliation = await this.repository.findByUserAndOrgkey(
+        userkey,
+        orgkey
+      );
+
+      return !!affiliation;
+    } catch (err: any) {
+      this.logger.warn('[ERRO] ao verificar participação do usuário na organização.', err);
+      return false;
+    }
+  }
+
   async belongs(subjectkey: string, targetkey: string): Promise<boolean> {
     return false;
   }

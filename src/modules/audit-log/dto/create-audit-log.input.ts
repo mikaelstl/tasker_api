@@ -11,5 +11,21 @@ export type CreateAuditLogInput = {
   action: AuditAction;
   resource: AuditResource;
   resourcekey?: string | null;
-  message: string;
+  changes?: AuditLogChanges;
 };
+
+export type AuditLogChanges = Record<
+  string,
+  {
+    oldValue: AuditLogChangeValue;
+    newValue: AuditLogChangeValue;
+  }
+>;
+
+type AuditLogChangeValue =
+  | string
+  | number
+  | boolean
+  | null
+  | AuditLogChangeValue[]
+  | { [key: string]: AuditLogChangeValue };

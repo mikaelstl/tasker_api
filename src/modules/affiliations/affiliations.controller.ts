@@ -61,6 +61,27 @@ export class AffiliationController {
     return response.status(resp.status).json(resp);
   }
 
+  @Get('/participates/:orgkey')
+  async participates(
+    @Param('orgkey') orgkey: string,
+    @CurrentAccount() account: CurrentAccountDTO,
+    @Res() response
+  ) {
+    const result = await this.service.participates(account.username, orgkey);
+
+    const resp: ApiResponse = {
+      status: HttpStatus.OK,
+      data: result,
+      message: result
+        ? 'O usuário participa da organização.'
+        : 'O usuário não participa da organização.',
+      timestamp: new Date().toISOString(),
+      path: `/affiliations/participates/${orgkey}`
+    };
+
+    return response.status(resp.status).json(resp);
+  }
+
   @Delete('/remove/:id')
   @Role(OrgRole.OWNER)
   @Action(BaseActions.DEL)

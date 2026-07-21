@@ -26,7 +26,9 @@ describe('AuditLogService', () => {
         action: AuditAction.CREATE,
         resource: AuditResource.PROJECTS,
         resourcekey: 'project-id',
-        message: 'Criou um projeto',
+        changes: {
+          title: { oldValue: null, newValue: 'Novo projeto' },
+        },
       }),
     ).resolves.toEqual({ id: 'audit-log-id' });
 
@@ -38,7 +40,9 @@ describe('AuditLogService', () => {
         action: AuditAction.CREATE,
         resource: AuditResource.PROJECTS,
         resourcekey: 'project-id',
-        message: 'Criou um projeto',
+        changes: {
+          title: { oldValue: null, newValue: 'Novo projeto' },
+        },
       },
     });
   });
@@ -51,7 +55,6 @@ describe('AuditLogService', () => {
       actorType: AuditActorType.SYSTEM,
       action: AuditAction.SYSTEM_UPDATE,
       resource: AuditResource.TASKS,
-      message: 'Sistema atualizou tarefas atrasadas',
     });
 
     expect(create).toHaveBeenCalledWith({
@@ -62,7 +65,7 @@ describe('AuditLogService', () => {
         action: AuditAction.SYSTEM_UPDATE,
         resource: AuditResource.TASKS,
         resourcekey: null,
-        message: 'Sistema atualizou tarefas atrasadas',
+        changes: {},
       },
     });
   });
@@ -74,7 +77,6 @@ describe('AuditLogService', () => {
         actorType: AuditActorType.USER,
         action: AuditAction.UPDATE,
         resource: AuditResource.TASKS,
-        message: 'Atualizou uma tarefa',
       }),
     ).rejects.toThrow('O ator deve ser informado');
 
@@ -89,9 +91,25 @@ describe('AuditLogService', () => {
         actorType: AuditActorType.SYSTEM,
         action: AuditAction.SYSTEM_UPDATE,
         resource: AuditResource.TASKS,
-        message: 'Sistema atualizou uma tarefa',
       }),
     ).rejects.toThrow('não devem possuir ator');
+
+    expect(create).not.toHaveBeenCalled();
+  });
+
+  it('rejects changes without oldValue and newValue', async () => {
+    await expect(
+      service.log({
+        orgkey: 'org-id',
+        actorkey: 'username',
+        actorType: AuditActorType.USER,
+        action: AuditAction.UPDATE,
+        resource: AuditResource.TASKS,
+        changes: {
+          stage: { oldValue: 'PENDING' } as any,
+        },
+      }),
+    ).rejects.toThrow('oldValue e newValue');
 
     expect(create).not.toHaveBeenCalled();
   });

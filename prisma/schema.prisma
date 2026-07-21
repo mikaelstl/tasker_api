@@ -352,7 +352,7 @@ model AuditLog {
   resource  AuditResource
 
   resourcekey String?
-  message     String
+  changes     Json    @default("{}") @db.JsonB
 
   created_at DateTime @default(now())
 
