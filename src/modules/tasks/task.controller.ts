@@ -9,10 +9,13 @@ import { Action } from "@decorators/Action";
 import { BaseActions } from "@enums/Actions.enum";
 import { Resource } from "@decorators/Resource";
 import { Resources } from "@enums/Resources.enum";
+import { Role } from "@decorators/Role";
+import { OrgRole } from "generated/prisma";
 
 @Controller('tasks')
 @Resource(Resources.TASKS)
-@UseGuards(JwtAuthGuard)
+@Role(OrgRole.OWNER, OrgRole.MANAGER, OrgRole.MEMBER)
+@UseGuards(JwtAuthGuard, PermissionGuard)
 export class TasksController {
   constructor (
     private readonly repository: TasksRepository
@@ -20,7 +23,6 @@ export class TasksController {
 
   @Post()
   @Action(BaseActions.CREATE)
-  @UseGuards(PermissionGuard)
   async create(
     @Body()  data: TaskCreateDTO,
     @Res() response
@@ -40,7 +42,6 @@ export class TasksController {
 
   @Get('/:projectkey')
   @Action(BaseActions.SEEK)
-  @UseGuards(PermissionGuard)
   async list(
     @Query() queries: TaskQueryDTO,
     @Param('projectkey') projectkey,
@@ -65,7 +66,6 @@ export class TasksController {
 
   @Get('/:projectkey/:code')
   @Action(BaseActions.SEEK)
-  @UseGuards(PermissionGuard)
   async find(
     @Param('projectkey') projectkey: string,
     @Param('code') code: string
@@ -75,7 +75,6 @@ export class TasksController {
 
   @Put('/:projectkey/:code')
   @Action(BaseActions.EDIT)
-  @UseGuards(PermissionGuard)
   async update(
     @Param('projectkey') projectkey: string,
     @Param('code') code: string,
@@ -86,7 +85,6 @@ export class TasksController {
 
   @Delete('/del/:id')
   @Action(BaseActions.DEL)
-  @UseGuards(PermissionGuard)
   async delete(
     @Param('id') id: string,
   ) {

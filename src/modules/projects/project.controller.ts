@@ -68,7 +68,7 @@ export class ProjectController {
     @Res() response,
     @CurrentAccount() account: CurrentAccountDTO,
   ) {
-    const result = await this.repository.list({ ...queries, orgkey });
+    const result = await this.service.list(account, orgkey, queries);
 
     const resp: ApiResponse = {
       status: HttpStatus.OK,
@@ -88,10 +88,11 @@ export class ProjectController {
   @UseGuards(PermissionGuard)
   async find(
     @Param('id') id: string,
+    @OrgKey() orgkey: string,
     @Res() response,
     @CurrentAccount() account: CurrentAccountDTO,
   ) {
-    const result = await this.repository.find(id);
+    const result = await this.service.find(id, account, orgkey);
 
     const resp: ApiResponse = {
       status: HttpStatus.OK,

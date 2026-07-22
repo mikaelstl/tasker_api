@@ -10,6 +10,8 @@ import { TasksModule } from "@modules/tasks/tasks.module";
 import { ProjectsModule } from "@modules/projects/projects.module";
 import { OrganizationModule } from "@modules/organization/organization.module";
 import { CommentsModule } from "@modules/comments/comments.module";
+import { ManagerProjectVisibilityPolicy } from "./manager-project-visibility.policy";
+import { MemberProjectVisibilityPolicy } from "./member-project-visibility.policy";
 
 @Global()
 @Module({
@@ -27,6 +29,8 @@ import { CommentsModule } from "@modules/comments/comments.module";
     ProjectMembershipPolicy,
     OrganizationOwnershipPolicy,
     OrganizationMembershipPolicy,
+    ManagerProjectVisibilityPolicy,
+    MemberProjectVisibilityPolicy,
   ],
   exports: [
     TasksOwnershipPolicy,
@@ -36,6 +40,8 @@ import { CommentsModule } from "@modules/comments/comments.module";
     ProjectMembershipPolicy,
     OrganizationOwnershipPolicy,
     OrganizationMembershipPolicy,
+    ManagerProjectVisibilityPolicy,
+    MemberProjectVisibilityPolicy,
   ]
 })
 export class PoliciesModule {}

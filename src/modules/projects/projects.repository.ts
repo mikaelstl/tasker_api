@@ -55,56 +55,59 @@ export class ProjectRepository {
     return projects.map((project) => this.toProjectDTO(project));
   };
 
-  async listByMember(key: string): Promise<ProjectDTO[]> {
+  async listByMember(
+    affiliationkey: string,
+    orgkey: string,
+    queries: ProjectQueryDTO = {},
+  ): Promise<ProjectDTO[]> {
     const projects = await this.prisma.project.findMany({
       where: {
+        ...this.toProjectWhere(queries),
+        orgkey,
         members: {
           some: {
-            userkey: key
+            userkey: affiliationkey
           }
         },
-      },
-      select: {
-        id: true,
-        title: true,
-        stage: true,
-        deadline: true,
-        delayed: true
       }
     });
 
     return projects.map((project) => this.toProjectDTO(project));
   };
 
-  async listByOrganizer(key: string): Promise<ProjectDTO[]> {
+  async listByOrganizer(
+    orgkey: string,
+    queries: ProjectQueryDTO = {},
+  ): Promise<ProjectDTO[]> {
     const projects = await this.prisma.project.findMany({
       where: {
-        org: {
-          ownerkey: {
-            equals: key
-          }
-        },
+        ...this.toProjectWhere(queries),
+        orgkey,
       },
     });
 
     return projects.map((project) => this.toProjectDTO(project));
   };
 
-  async listByManager(key: string): Promise<ProjectDTO[]> {
+  async listByManager(
+    affiliationkey: string,
+    orgkey: string,
+    queries: ProjectQueryDTO = {},
+  ): Promise<ProjectDTO[]> {
     const projects = await this.prisma.project.findMany({
       where: {
-        members: {
-          some: {
-            userkey: key
+        ...this.toProjectWhere(queries),
+        orgkey,
+        OR: [
+          { managerkey: affiliationkey },
+          {
+            members: {
+              some: {
+                userkey: affiliationkey
+              }
+            }
           }
-        },
-      },
-      select: {
-        id: true,
-        title: true,
-        stage: true,
-        deadline: true,
-        delayed: true
+        ],
       }
     });
 
@@ -218,6 +221,20 @@ export class ProjectRepository {
         org: {
           ownerkey: username
         }
+      }
+    });
+
+    return result > 0;
+  }
+
+  async belongsToOrganization(
+    projectkey: string,
+    orgkey: string,
+  ): Promise<boolean> {
+    const result = await this.prisma.project.count({
+      where: {
+        id: projectkey,
+        orgkey,
       }
     });
 

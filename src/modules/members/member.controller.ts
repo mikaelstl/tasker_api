@@ -10,6 +10,8 @@ import { Resource } from "@decorators/Resource";
 import { Resources } from "@enums/Resources.enum";
 import { Action } from "@decorators/Action";
 import { BaseActions } from "@enums/Actions.enum";
+import { OrgRole } from "generated/prisma";
+import { Role } from "@decorators/Role";
 
 @Controller('members')
 @Resource(Resources.MEMBERS)
@@ -20,6 +22,7 @@ export class MemberController {
   ) {}
 
   @Post()
+  @Role(OrgRole.OWNER, OrgRole.MANAGER)
   @Action(BaseActions.CREATE)
   async create(
     @CurrentAccount() account: CurrentAccountDTO,
@@ -41,6 +44,7 @@ export class MemberController {
   }
 
   @Get(':projectkey')
+  @Role(OrgRole.OWNER, OrgRole.MANAGER, OrgRole.MEMBER)
   @Action(BaseActions.SEEK)
   async list(
     @Param()  projectkey: string,
@@ -62,6 +66,7 @@ export class MemberController {
   }
 
   @Delete('/remove/:id')
+  @Role(OrgRole.OWNER, OrgRole.MANAGER)
   @Action(BaseActions.DEL)
   async delete(
     @Param('id') id: string,

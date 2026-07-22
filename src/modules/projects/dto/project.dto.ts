@@ -8,6 +8,7 @@ export interface ProjectDTO {
   readonly title: string;
   readonly description?: string;
   readonly orgkey?: string;
+  readonly managerkey?: string | null;
   readonly deadline?: Date;
   readonly stage?: ProjectStage;
   readonly priority?: ProjectPriority;

@@ -9,9 +9,12 @@ import { BaseActions } from "@enums/Actions.enum";
 import { Action } from "@decorators/Action";
 import { Resource } from "@decorators/Resource";
 import { Resources } from "@enums/Resources.enum";
+import { Role } from "@decorators/Role";
+import { OrgRole } from "generated/prisma";
 
 @Controller('comments')
 @Resource(Resources.COMMENTS)
+@Role(OrgRole.OWNER, OrgRole.MANAGER, OrgRole.MEMBER)
 @UseGuards(JwtAuthGuard,PermissionGuard)
 export class CommentsController {
   constructor (

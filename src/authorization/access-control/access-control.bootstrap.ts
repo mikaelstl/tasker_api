@@ -1,8 +1,5 @@
 import { ResourcePolicyHandler } from "@interfaces/ResourcePolicyHandler";
 import { Injectable, Logger, OnModuleInit, Type } from "@nestjs/common";
-import { OwnerResourceAccessKeys } from "../keys/owner.keys";
-import { ManagerResourceAccessKeys } from "../keys/manager.keys";
-import { MemberResourceAccessKeys } from "../keys/member.keys";
 import { OrganizationMembershipPolicy } from "@authorization/policies/organization-membership.policy";
 import { ProjectMembershipPolicy } from "@authorization/policies/project-membership.policy";
 import { TasksOwnershipPolicy } from "@authorization/policies/task-ownership.policy";
@@ -12,6 +9,8 @@ import { ProjectManagementPolicy } from "@authorization/policies/project-managem
 import { OrganizationOwnershipPolicy } from "@authorization/policies/organization-ownership.policy";
 import { ProjectOwnershipPolicy } from "@authorization/policies/project-ownership.policy";
 import { ModuleRef } from "@nestjs/core";
+import { ManagerProjectVisibilityPolicy } from "@authorization/policies/manager-project-visibility.policy";
+import { MemberProjectVisibilityPolicy } from "@authorization/policies/member-project-visibility.policy";
 
 type ResourcePolicies = {
   key: ResourcePoliciesKeys;
@@ -29,7 +28,7 @@ const MemberAccessHandlers: Array<ResourcePolicies> = [
   },
   {
     key: "MEMBER:PROJECTS:SEEK",
-    handler: ProjectMembershipPolicy
+    handler: MemberProjectVisibilityPolicy
   },
   {
     key: "MEMBER:MEMBERS:SEEK",
@@ -84,7 +83,7 @@ const ManagerAccessHandlers: Array<ResourcePolicies> = [
   },
   {
     key: "MANAGER:PROJECTS:SEEK",
-    handler: ProjectManagementPolicy
+    handler: ManagerProjectVisibilityPolicy
   },
   {
     key: "MANAGER:PROJECT_STATS:SEEK",

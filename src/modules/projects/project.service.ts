@@ -1,39 +1,84 @@
 import { Injectable } from '@nestjs/common';
-import { MembersRepository } from "@modules/members/member.repository";
 import { ProjectRepository } from "@modules/projects/projects.repository";
-import { $Enums, OrgRole } from "generated/prisma";
-import { DefineMemberDTO } from "@modules/members/dto/member.create.dto";
+import { OrgRole } from "generated/prisma";
 import { CreateProjectDTO } from "@modules/projects/dto/project.create.dto";
 import { CurrentAccountDTO } from "@modules/users/dto/current-account.dto";
 import { ProjectDTO } from "@modules/projects/dto/project.dto";
 import { AccessValidator } from "src/common/interfaces/AccessValidator";
 import { InternalException } from 'src/common/errors/internal.exception';
+import { AffiliationService } from "@modules/affiliations/affiliations.service";
+import { ProjectQueryDTO } from "@modules/projects/dto/project.query.dto";
+import { AccessDeniedException } from "src/common/errors/access-denied.exception";
 
 type ListMethodCommand = {
-  [K in OrgRole]: (key: string) => Promise<ProjectDTO[]>
+  [K in OrgRole]: () => Promise<ProjectDTO[]>
 }
 
 @Injectable()
 export class ProjectService implements AccessValidator {
   constructor(
     private readonly repository: ProjectRepository,
+    private readonly affiliations: AffiliationService,
   ) { }
 
   async create(data: CreateProjectDTO) {
     return this.repository.create(data);
   }
 
-  /* async list(data: CurrentAccountDTO) {
+  async list(
+    data: CurrentAccountDTO,
+    orgkey: string,
+    queries: ProjectQueryDTO = {},
+  ): Promise<ProjectDTO[]> {
+    const affiliation = await this.affiliations.findByUserAndOrgkey(
+      data.username,
+      orgkey,
+    );
+
     const methods: ListMethodCommand = {
-      'OWNER': this.repository.listByOrganizer,
-      'MANAGER': this.repository.listByManager,
-      'MEMBER': this.repository.listByMember,
+      OWNER: () => this.repository.listByOrganizer(orgkey, queries),
+      MANAGER: () => this.repository.listByManager(
+        affiliation.id,
+        orgkey,
+        queries,
+      ),
+      MEMBER: () => this.repository.listByMember(
+        affiliation.id,
+        orgkey,
+        queries,
+      ),
     };
 
-    const result: ProjectDTO[] = await methods[data.role](data.username)
-  
-    return result;
-  } */
+    return methods[affiliation.role]();
+  }
+
+  async find(
+    key: string,
+    data: CurrentAccountDTO,
+    orgkey: string,
+  ): Promise<ProjectDTO> {
+    const affiliation = await this.affiliations.findByUserAndOrgkey(
+      data.username,
+      orgkey,
+    );
+
+    const project = await this.repository.find(key, { orgkey });
+    
+    const isMember = project.members?.some(
+      (member) => member.userkey === affiliation.id,
+    ) ?? false;
+    
+    const canView = affiliation.role === OrgRole.OWNER
+      || (affiliation.role === OrgRole.MANAGER
+        && (project.managerkey === affiliation.id || isMember))
+      || (affiliation.role === OrgRole.MEMBER && isMember);
+
+    if (!canView) {
+      throw new AccessDeniedException();
+    }
+
+    return project;
+  }
 
   public async belongs(subjectkey: string, targetkey: string): Promise<boolean> {
     try {
@@ -56,6 +101,17 @@ export class ProjectService implements AccessValidator {
       return await this.repository.hasMemberUser(targetkey, subjectkey);
     } catch (err: any) {
       throw new InternalException('Falha ao verificar a participação no projeto.', err);
+    }
+  }
+
+  public async belongsToOrganization(
+    projectkey: string,
+    orgkey: string,
+  ): Promise<boolean> {
+    try {
+      return await this.repository.belongsToOrganization(projectkey, orgkey);
+    } catch (err: any) {
+      throw new InternalException('Falha ao verificar a organização do projeto.', err);
     }
   }
 }

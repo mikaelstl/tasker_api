@@ -2,7 +2,7 @@ import { ApiResponse } from "src/common/interfaces/ApiResponse";
 import { Body, Controller, Delete, Get, HttpStatus, Param, Patch, Post, Res, UseGuards } from "@nestjs/common";
 import { JwtAuthGuard } from "@security/auth.guard";
 import { PermissionGuard } from "@guards/permission.guard";
-import { CurrentAccount } from "src/decorators/CurrentAccount.decorator";
+import { CurrentAccount } from "@decorators/CurrentAccount.decorator";
 import { CurrentAccountDTO } from "@modules/users/dto/current-account.dto";
 import { DefineAffiliationDTO } from "@modules/affiliations/dto/define.dto";
 import { AffiliationService } from "./affiliations.service";
@@ -44,6 +44,8 @@ export class AffiliationController {
   }
 
   @Get()
+  @Role(OrgRole.OWNER, OrgRole.MANAGER, OrgRole.MEMBER)
+  @Action(BaseActions.SEEK)
   async list(
     @CurrentAccount() account: CurrentAccountDTO,
     @Res() response
@@ -62,6 +64,8 @@ export class AffiliationController {
   }
 
   @Get('/participates/:orgkey')
+  @Role(OrgRole.OWNER, OrgRole.MANAGER, OrgRole.MEMBER)
+  @Action(BaseActions.SEEK)
   async participates(
     @Param('orgkey') orgkey: string,
     @CurrentAccount() account: CurrentAccountDTO,

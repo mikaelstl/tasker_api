@@ -9,16 +9,19 @@ import { BaseActions } from "@enums/Actions.enum";
 import { PermissionGuard } from "@guards/permission.guard";
 import { Resources } from "@enums/Resources.enum";
 import { Resource } from "@decorators/Resource";
+import { Role } from "@decorators/Role";
+import { OrgRole } from "generated/prisma";
 
 @Controller('events')
 @Resource(Resources.EVENTS)
-@UseGuards(JwtAuthGuard,PermissionGuard)
+@UseGuards(JwtAuthGuard, PermissionGuard)
 export class EventsController {
   constructor (
     private readonly repository: EventsRepository
   ) {}
 
   @Post()
+  @Role(OrgRole.OWNER, OrgRole.MANAGER)
   @Action(BaseActions.CREATE)
   async create(
     @Body()  data: EventCreateDTO,
@@ -40,6 +43,7 @@ export class EventsController {
 
   @Get()
   @Action(BaseActions.SEEK)
+  @Role(OrgRole.OWNER, OrgRole.MANAGER, OrgRole.MEMBER)
   async list(
     @Query() queries: EventQueryDTO,
     @Res() response
@@ -68,6 +72,7 @@ export class EventsController {
 
   @Put('/:code')
   @Action(BaseActions.EDIT)
+  @Role(OrgRole.OWNER, OrgRole.MANAGER)
   async update(
     @Param('code') code: string,
     @Body()        update: any
@@ -77,6 +82,7 @@ export class EventsController {
 
   @Delete('/:id')
   @Action(BaseActions.DEL)
+  @Role(OrgRole.OWNER, OrgRole.MANAGER)
   async delete(
     @Param('id') id: string,
   ) {
