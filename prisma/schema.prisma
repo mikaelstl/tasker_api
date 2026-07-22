@@ -114,8 +114,8 @@ model Project {
 
   stage ProjectStage @default(STARTED) @map("progress")
 
-  ownerkey String
-  owner    Organization @relation(fields: [ownerkey], references: [id])
+  orgkey String
+  org    Organization @relation(fields: [orgkey], references: [id])
 
   managerkey String?
   manager    Affiliation? @relation(fields: [managerkey], references: [id])
