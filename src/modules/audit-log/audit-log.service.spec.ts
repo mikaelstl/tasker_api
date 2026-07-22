@@ -113,4 +113,45 @@ describe('AuditLogService', () => {
 
     expect(create).not.toHaveBeenCalled();
   });
+
+  it('logs only changed fields and serializes dates', async () => {
+    create.mockResolvedValue({ id: 'audit-log-id' });
+
+    await service.logUserMutation({
+      orgkey: 'org-id',
+      actorkey: 'username',
+      action: AuditAction.UPDATE,
+      resource: AuditResource.PROJECTS,
+      resourcekey: 'project-id',
+      before: {
+        title: 'Projeto',
+        deadline: new Date('2026-07-22T10:00:00.000Z'),
+      },
+      after: {
+        title: 'Projeto',
+        deadline: new Date('2026-07-23T10:00:00.000Z'),
+      },
+    });
+
+    expect(create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        changes: {
+          deadline: {
+            oldValue: '2026-07-22T10:00:00.000Z',
+            newValue: '2026-07-23T10:00:00.000Z',
+          },
+        },
+      }),
+    });
+  });
+
+  it('does not include secrets in automatically detected changes', () => {
+    expect(service.buildChanges(null, {
+      name: 'Usuário',
+      password: 'secret',
+      token: 'secret-token',
+    })).toEqual({
+      name: { oldValue: null, newValue: 'Usuário' },
+    });
+  });
 });

@@ -1,8 +1,37 @@
 import { Injectable } from '@nestjs/common';
-import { CreateAuditLogInput } from './dto/create-audit-log.input';
-import { AuditActorType } from 'generated/prisma';
+import {
+  AuditLogChangeValue,
+  AuditLogChanges,
+  CreateAuditLogInput,
+} from './dto/create-audit-log.input';
+import {
+  AuditAction,
+  AuditActorType,
+  AuditResource,
+} from 'generated/prisma';
 import { PrismaService } from 'src/database/prisma.service';
 import { ValidationException } from 'src/common/errors/validation.exception';
+import { AuditContext } from 'src/common/interfaces/AuditContext';
+
+type AuditedRecord = Record<string, unknown>;
+
+export type UserMutationAuditInput = AuditContext & {
+  action: AuditAction;
+  resource: AuditResource;
+  resourcekey: string;
+  before?: AuditedRecord | null;
+  after?: AuditedRecord | null;
+  fields?: string[];
+};
+
+const INTERNAL_FIELDS = new Set([
+  'id',
+  'created_at',
+  'updated_at',
+  'password',
+  'token',
+  'tokenHash',
+]);
 
 @Injectable()
 export class AuditLogService {
@@ -20,6 +49,42 @@ export class AuditLogService {
         changes: data.changes ?? {},
       },
     });
+  }
+
+  async logUserMutation(data: UserMutationAuditInput) {
+    return this.log({
+      orgkey: data.orgkey,
+      actorkey: data.actorkey,
+      actorType: AuditActorType.USER,
+      action: data.action,
+      resource: data.resource,
+      resourcekey: data.resourcekey,
+      changes: this.buildChanges(data.before, data.after, data.fields),
+    });
+  }
+
+  buildChanges(
+    before: AuditedRecord | null = null,
+    after: AuditedRecord | null = null,
+    fields?: string[],
+  ): AuditLogChanges {
+    const selectedFields = (fields ?? Array.from(
+      new Set([
+        ...Object.keys(before ?? {}),
+        ...Object.keys(after ?? {}),
+      ]),
+    )).filter((field) => !INTERNAL_FIELDS.has(field));
+
+    return selectedFields.reduce<AuditLogChanges>((changes, field) => {
+      const oldValue = this.toJsonValue(before?.[field]);
+      const newValue = this.toJsonValue(after?.[field]);
+
+      if (JSON.stringify(oldValue) !== JSON.stringify(newValue)) {
+        changes[field] = { oldValue, newValue };
+      }
+
+      return changes;
+    }, {});
   }
 
   private validateActor(data: CreateAuditLogInput): void {
@@ -72,5 +137,25 @@ export class AuditLogService {
       !Array.isArray(value) &&
       Object.getPrototypeOf(value) === Object.prototype
     );
+  }
+
+  private toJsonValue(value: unknown): AuditLogChangeValue {
+    if (value === undefined) return null;
+    if (value === null || ['string', 'number', 'boolean'].includes(typeof value)) {
+      return value as string | number | boolean | null;
+    }
+    if (value instanceof Date) return value.toISOString();
+    if (Array.isArray(value)) {
+      return value.map((item) => this.toJsonValue(item));
+    }
+    if (typeof value === 'object') {
+      return Object.fromEntries(
+        Object.entries(value as Record<string, unknown>)
+          .filter(([field]) => !INTERNAL_FIELDS.has(field))
+          .map(([field, item]) => [field, this.toJsonValue(item)]),
+      );
+    }
+
+    return String(value);
   }
 }

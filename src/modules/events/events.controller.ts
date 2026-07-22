@@ -1,4 +1,4 @@
-import { ApiResponse } from "src/common/interfaces/ApiResponse";
+import { ApiResponse as ApiResponse } from "src/common/interfaces/ApiResponse";
 import { Body, Controller, Delete, Get, HttpStatus, Param, Post, Put, Query, Res, UseGuards } from "@nestjs/common";
 import { EventsRepository } from "./events.repository";
 import { JwtAuthGuard } from "../../security/auth.guard";
@@ -11,13 +11,18 @@ import { Resources } from "@enums/Resources.enum";
 import { Resource } from "@decorators/Resource";
 import { Role } from "@decorators/Role";
 import { OrgRole } from "generated/prisma";
+import { EventsService } from './events.service';
+import { CurrentAccount } from '@decorators/CurrentAccount.decorator';
+import { CurrentAccountDTO } from '@modules/users/dto/current-account.dto';
+import { OrgKey } from '@decorators/OrgKey';
 
 @Controller('events')
 @Resource(Resources.EVENTS)
 @UseGuards(JwtAuthGuard, PermissionGuard)
 export class EventsController {
   constructor (
-    private readonly repository: EventsRepository
+    private readonly repository: EventsRepository,
+    private readonly service: EventsService,
   ) {}
 
   @Post()
@@ -25,11 +30,16 @@ export class EventsController {
   @Action(BaseActions.CREATE)
   async create(
     @Body()  data: EventCreateDTO,
-    @Res() response
+    @CurrentAccount() account: CurrentAccountDTO,
+    @OrgKey() orgkey: string,
+    @Res() res
   ) {
-    const result = await this.repository.create(data); 
+    const result = await this.service.create(data, {
+      orgkey,
+      actorkey: account.username,
+    });
     
-    const resp: ApiResponse = {
+    const response: ApiResponse = {
       status: HttpStatus.CREATED,
       data: result,
       message: 'Novo evento adicionado ao projeto.',
@@ -38,7 +48,7 @@ export class EventsController {
       path: '/events'
     };
 
-    return response.status(resp.status).json(resp);
+    return res.status(res.status).json(response);
   }
 
   @Get()
@@ -46,11 +56,11 @@ export class EventsController {
   @Role(OrgRole.OWNER, OrgRole.MANAGER, OrgRole.MEMBER)
   async list(
     @Query() queries: EventQueryDTO,
-    @Res() response
+    @Res() res
   ) {
     const result = await this.repository.list(queries);
 
-    const resp: ApiResponse = {
+    const response: ApiResponse = {
       status: HttpStatus.OK,
       data: result,
       message: '',
@@ -59,15 +69,26 @@ export class EventsController {
       path: '/events'
     };
     
-    return response.status(resp.status).json(resp);
+    return res.status(res.status).json(response);
   }
 
   @Get('/:code')
   @Action(BaseActions.SEEK)
   async find(
-    @Param('code') code: string
+    @Param('code') code: string,
+    @Res() res
   ) {
-    return await this.repository.find(code);
+    const result = await this.repository.find(code);
+
+    const response: ApiResponse = {
+      status: HttpStatus.OK,
+      data: result,
+      message: '',
+      timestamp: new Date().toISOString(),
+      path: `/events/${code}`
+    };
+
+    return res.status(res.status).json(response);
   }
 
   @Put('/:code')
@@ -75,9 +96,25 @@ export class EventsController {
   @Role(OrgRole.OWNER, OrgRole.MANAGER)
   async update(
     @Param('code') code: string,
-    @Body()        update: any
+    @CurrentAccount() account: CurrentAccountDTO,
+    @OrgKey() orgkey: string,
+    @Body() update: any,
+    @Res() res
   ) {
-    return await this.repository.edit(code, update);
+    const result = await this.service.edit(code, update, {
+      orgkey,
+      actorkey: account.username,
+    });
+
+    const response: ApiResponse = {
+      status: HttpStatus.OK,
+      data: result,
+      message: 'Evento atualizado com sucesso.',
+      timestamp: new Date().toISOString(),
+      path: `/events/${code}`
+    };
+
+    return res.status(res.status).json(response);
   }
 
   @Delete('/:id')
@@ -85,7 +122,23 @@ export class EventsController {
   @Role(OrgRole.OWNER, OrgRole.MANAGER)
   async delete(
     @Param('id') id: string,
+    @CurrentAccount() account: CurrentAccountDTO,
+    @OrgKey() orgkey: string,
+    @Res() res
   ) {
-    return await this.repository.delete(id);
+    const result = await this.service.delete(id, {
+      orgkey,
+      actorkey: account.username,
+    });
+
+    const response: ApiResponse = {
+      status: HttpStatus.OK,
+      data: result,
+      message: 'Evento excluído com sucesso.',
+      timestamp: new Date().toISOString(),
+      path: `/events/${id}`
+    };
+
+    return res.status(res.status).json(response);
   }
 }

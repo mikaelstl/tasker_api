@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Optional } from '@nestjs/common';
 import { ProjectRepository } from "@modules/projects/projects.repository";
-import { OrgRole } from "generated/prisma";
+import { AuditAction, AuditResource, OrgRole } from "generated/prisma";
 import { CreateProjectDTO } from "@modules/projects/dto/project.create.dto";
 import { CurrentAccountDTO } from "@modules/users/dto/current-account.dto";
 import { ProjectDTO } from "@modules/projects/dto/project.dto";
@@ -9,6 +9,9 @@ import { InternalException } from 'src/common/errors/internal.exception';
 import { AffiliationService } from "@modules/affiliations/affiliations.service";
 import { ProjectQueryDTO } from "@modules/projects/dto/project.query.dto";
 import { AccessDeniedException } from "src/common/errors/access-denied.exception";
+import { AuditLogService } from '@modules/audit-log/audit-log.service';
+import { AuditContext } from '@interfaces/AuditContext';
+import { EditProjectDTO } from './dto/edit.dto';
 
 type ListMethodCommand = {
   [K in OrgRole]: () => Promise<ProjectDTO[]>
@@ -19,10 +22,52 @@ export class ProjectService implements AccessValidator {
   constructor(
     private readonly repository: ProjectRepository,
     private readonly affiliations: AffiliationService,
+    @Optional() private readonly audit?: AuditLogService,
   ) { }
 
-  async create(data: CreateProjectDTO) {
-    return this.repository.create(data);
+  async create(data: CreateProjectDTO, actorkey: string) {
+    const project = await this.repository.create(data);
+    await this.audit?.logUserMutation({
+      orgkey: project.orgkey,
+      actorkey,
+      action: AuditAction.CREATE,
+      resource: AuditResource.PROJECTS,
+      resourcekey: project.id,
+      after: project as unknown as Record<string, unknown>,
+      fields: ['title', 'description', 'deadline', 'stage', 'priority', 'managerkey'],
+    });
+    return project;
+  }
+
+  async edit(key: string, update: EditProjectDTO, context: AuditContext) {
+    const before = await this.repository.find(key, { orgkey: context.orgkey });
+    const project = await this.repository.edit(key, update);
+    const action = before.stage !== project.stage
+      ? AuditAction.STATUS_CHANGE
+      : AuditAction.UPDATE;
+    await this.audit?.logUserMutation({
+      ...context,
+      action,
+      resource: AuditResource.PROJECTS,
+      resourcekey: project.id,
+      before: before as unknown as Record<string, unknown>,
+      after: project as unknown as Record<string, unknown>,
+      fields: ['title', 'description', 'deadline', 'stage', 'priority', 'managerkey', 'delayed'],
+    });
+    return project;
+  }
+
+  async delete(key: string, context: AuditContext) {
+    const project = await this.repository.delete(key);
+    await this.audit?.logUserMutation({
+      ...context,
+      action: AuditAction.DELETE,
+      resource: AuditResource.PROJECTS,
+      resourcekey: project.id,
+      before: project as unknown as Record<string, unknown>,
+      fields: ['title', 'description', 'deadline', 'stage', 'priority', 'managerkey'],
+    });
+    return project;
   }
 
   async list(

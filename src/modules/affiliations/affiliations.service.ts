@@ -4,13 +4,15 @@ import {
   AffiliationNotFoundException,
   UserOrganizationAffiliationNotFoundException,
 } from 'src/common/errors/resource-not-found.exceptions';
-import { OrgRole } from "generated/prisma";
+import { AuditAction, AuditResource, OrgRole } from "generated/prisma";
 import { AffiliationRepository } from "./affiliations.repository";
 import { DefineAffiliationDTO } from "./dto/define.dto";
 import { AffiliationDTO } from "./dto/affiliation.dto";
 import { APIMessage } from "@interfaces/ApiMessage";
 import { AccessValidator } from "@interfaces/AccessValidator";
 import { UserOrganizationSummaryDTO } from "./dto/summary.dto";
+import { AuditLogService } from '@modules/audit-log/audit-log.service';
+import { AuditContext } from '@interfaces/AuditContext';
 
 // type ListMethodCommand = {
 //   [key: string]: (key: string) => Promise<ProjectDTO[]>
@@ -24,17 +26,39 @@ type AffiliationRoleTrasistion = {
 export class AffiliationService implements AccessValidator {
   constructor(
     private readonly repository: AffiliationRepository,
+    private readonly audit: AuditLogService,
   ) { }
 
-  async create(data: DefineAffiliationDTO) {
-    return this.repository.create(data);
+  async create(data: DefineAffiliationDTO, actorkey?: string) {
+    const affiliation = await this.repository.create(data);
+    if (actorkey) {
+      await this.audit.logUserMutation({
+        orgkey: affiliation.orgkey,
+        actorkey,
+        action: AuditAction.ADD,
+        resource: AuditResource.AFFILIATIONS,
+        resourcekey: affiliation.id,
+        after: affiliation as unknown as Record<string, unknown>,
+        fields: ['userkey', 'role'],
+      });
+    }
+    return affiliation;
   }
 
-  async delete(key: string) {
-    return this.repository.delete(key);
+  async delete(key: string, context: AuditContext) {
+    const affiliation = await this.repository.delete(key);
+    await this.audit.logUserMutation({
+      ...context,
+      action: AuditAction.REMOVE,
+      resource: AuditResource.AFFILIATIONS,
+      resourcekey: affiliation.id,
+      before: affiliation as unknown as Record<string, unknown>,
+      fields: ['userkey', 'role'],
+    });
+    return affiliation;
   }
 
-  async promote(key: string): Promise<AffiliationDTO | APIMessage> {
+  async promote(key: string, context: AuditContext): Promise<AffiliationDTO | APIMessage> {
     const RolePromotes: AffiliationRoleTrasistion = {
       'MEMBER': (affiliation: AffiliationDTO) => {
                     affiliation.role = OrgRole.MANAGER
@@ -60,12 +84,23 @@ export class AffiliationService implements AccessValidator {
       } as APIMessage;
     }
 
+    const previousRole = value.role;
     const data = RolePromotes[value.role](value);
 
-    return this.repository.update(key, data);
+    const affiliation = await this.repository.update(key, data);
+    await this.audit.logUserMutation({
+      ...context,
+      action: AuditAction.UPDATE,
+      resource: AuditResource.AFFILIATIONS,
+      resourcekey: affiliation.id,
+      before: { role: previousRole },
+      after: affiliation as unknown as Record<string, unknown>,
+      fields: ['role'],
+    });
+    return affiliation;
   }
 
-  async demote(key: string): Promise<AffiliationDTO | APIMessage> {
+  async demote(key: string, context: AuditContext): Promise<AffiliationDTO | APIMessage> {
     const RolePromotes: AffiliationRoleTrasistion = {
       'MEMBER': (affiliation: AffiliationDTO) => { return null },
       'MANAGER': (affiliation: AffiliationDTO) => { 
@@ -91,9 +126,20 @@ export class AffiliationService implements AccessValidator {
       } as APIMessage;
     }
 
+    const previousRole = value.role;
     const data = RolePromotes[value.role](value);
 
-    return this.repository.update(key, data);
+    const affiliation = await this.repository.update(key, data);
+    await this.audit.logUserMutation({
+      ...context,
+      action: AuditAction.UPDATE,
+      resource: AuditResource.AFFILIATIONS,
+      resourcekey: affiliation.id,
+      before: { role: previousRole },
+      after: affiliation as unknown as Record<string, unknown>,
+      fields: ['role'],
+    });
+    return affiliation;
   }
 
   async findByUserAndOrgkey(

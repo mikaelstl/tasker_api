@@ -5,7 +5,7 @@ import { UserDTO } from "@modules/users/dto/user.dto";
 import { UserRepository } from "@modules/users/user.repository";
 import { AuthService } from "src/security/auth.service";
 import { JwtAuthGuard } from "src/security/auth.guard";
-import { ApiResponse } from "src/common/interfaces/ApiResponse";
+import { ApiResponse as ApiResponse } from "src/common/interfaces/ApiResponse";
 import { UserQueryDTO } from "./dto/user-query.dto";
 
 @Controller('users')
@@ -18,7 +18,7 @@ export class UserController {
   @Post()
   async create(
     @Body() data: CreateUserDTO,
-    @Res() resp
+    @Res() res
   ) {
     const result: UserDTO = await this.repository.create(data);
 
@@ -31,13 +31,13 @@ export class UserController {
       path: '/users'
     };
 
-    return resp.status(response.status).json(response);
+    return res.status(res.status).json(response);
   }
 
   @Get()
   @UseGuards(JwtAuthGuard)
   async list(
-    @Res() resp
+    @Res() res
   ) {
     const result: UserDTO[] = await this.repository.list();
 
@@ -50,14 +50,14 @@ export class UserController {
       path: '/users'
     };
 
-    return resp.status(response.status).json(response);
+    return res.status(res.status).json(response);
   }
 
   @Get()
   @UseGuards(JwtAuthGuard)
   async find(
     @Query()  queries: UserQueryDTO,
-    @Res() resp
+    @Res() res
     
   ) {
     const result: UserDTO = await this.repository.find(queries);
@@ -71,14 +71,14 @@ export class UserController {
       path: '/users'
     };
 
-    return resp.status(response.status).json(response);
+    return res.status(res.status).json(response);
   }
 
   @Delete('del/:username')
   @UseGuards(JwtAuthGuard)
   async delete(
     @Param('username') username: string,
-    @Res() resp
+    @Res() res
   ) {
     const result: UserDTO = await this.repository.delete(username);
     
@@ -91,6 +91,6 @@ export class UserController {
       path: '/users/del'
     };
 
-    return resp.status(response.status).json(response);
+    return res.status(res.status).json(response);
   }
 }

@@ -1,6 +1,5 @@
 import { Body, Controller, Delete, HttpStatus, Param, Post, Req, Res, UseGuards, } from "@nestjs/common";
-import { OrganizationRepository } from "./organization.repository";
-import { ApiResponse } from "src/common/interfaces/ApiResponse";
+import { ApiResponse as ApiResponse } from "src/common/interfaces/ApiResponse";
 import { OrganizationService } from "./organization.service";
 import { OrganizationDTO } from "@modules/organization/dto/organization.dto";
 import { OrganizationCreateDTO } from "@modules/organization/dto/create.dto";
@@ -20,7 +19,6 @@ import { OrgRole } from "generated/prisma";
 @UseGuards(JwtAuthGuard)
 export class OrganizationController {
   constructor(
-    private readonly repository: OrganizationRepository,
     private readonly service: OrganizationService,
   ) { }
 
@@ -28,7 +26,7 @@ export class OrganizationController {
   async create(
     @CurrentAccount() account: CurrentAccountDTO,
     @Body() data: OrganizationCreateDTO,
-    @Res() resp
+    @Res() res
   ) {
     const result: OrganizationDTO = await this.service.create({
       name: data.name,
@@ -44,7 +42,7 @@ export class OrganizationController {
       path: '/org'
     };
 
-    return resp.status(response.status).json(response);
+    return res.status(res.status).json(response);
   }
 
   @Delete('/del/:id')
@@ -53,9 +51,13 @@ export class OrganizationController {
   @UseGuards(PermissionGuard)
   async delete(
     @Param('id') id: string,
-    @Res() resp
+    @CurrentAccount() account: CurrentAccountDTO,
+    @Res() res
   ) {
-    const result: OrganizationDTO = await this.repository.delete(id);
+    const result: OrganizationDTO = await this.service.delete(id, {
+      orgkey: id,
+      actorkey: account.username,
+    });
 
     const response: ApiResponse = {
       status: HttpStatus.CREATED,
@@ -66,6 +68,6 @@ export class OrganizationController {
       path: '/org/del'
     };
 
-    return resp.status(response.status).json(response);
+    return res.status(res.status).json(response);
   }
 }

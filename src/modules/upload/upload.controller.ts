@@ -1,4 +1,4 @@
-import { ApiResponse } from "src/common/interfaces/ApiResponse";
+import { ApiResponse as ApiResponse } from "src/common/interfaces/ApiResponse";
 import { Headers, HttpStatus, Post, Res, UploadedFile, UseGuards, UseInterceptors, Controller } from '@nestjs/common';
 import { FileInterceptor } from "@nestjs/platform-express";
 import { JwtAuthGuard } from "../../security/auth.guard";
@@ -30,11 +30,11 @@ export class UploadController {
   async upload(
     @UploadedFile() image: Express.Multer.File,
     @Headers('User') user: string,
-    @Res() response
+    @Res() res
   ) {
     const result = await this.service.upload(image, user); 
     
-    const resp: ApiResponse = {
+    const response: ApiResponse = {
       status: HttpStatus.CREATED,
       data: result,
       message: 'Imagem adicionada com sucesso.',
@@ -43,17 +43,17 @@ export class UploadController {
       path: '/upload/image'
     };
 
-    return response.status(resp.status).json(resp);
+    return res.status(res.status).json(response);
   }
 
   /* @Get()
   async list(
     @Query() queries: CommentQueryDTO,
-    @Res() response
+    @Res() res
   ) {
     const result = await this.service.list(queries);
 
-    const resp: ApiResponse = {
+    const response: ApiResponse = {
       status: HttpStatus.OK,
       data: result,
       message: '',
@@ -62,6 +62,6 @@ export class UploadController {
       path: '/comments'
     };
     
-    return response.status(resp.status).json(resp);
+    return res.status(res.status).json(response);
   } */
 }

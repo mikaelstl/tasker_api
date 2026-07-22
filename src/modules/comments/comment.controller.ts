@@ -1,4 +1,4 @@
-import { ApiResponse } from "src/common/interfaces/ApiResponse";
+import { ApiResponse as ApiResponse } from "src/common/interfaces/ApiResponse";
 import { Body, Controller, Delete, Get, HttpStatus, Param, Post, Put, Query, Res, UseGuards } from "@nestjs/common";
 import { CommentsRepository } from "./comments.repository";
 import { JwtAuthGuard } from "../../security/auth.guard";
@@ -11,6 +11,10 @@ import { Resource } from "@decorators/Resource";
 import { Resources } from "@enums/Resources.enum";
 import { Role } from "@decorators/Role";
 import { OrgRole } from "generated/prisma";
+import { CommentsService } from './comments.service';
+import { CurrentAccount } from '@decorators/CurrentAccount.decorator';
+import { CurrentAccountDTO } from '@modules/users/dto/current-account.dto';
+import { OrgKey } from '@decorators/OrgKey';
 
 @Controller('comments')
 @Resource(Resources.COMMENTS)
@@ -18,18 +22,24 @@ import { OrgRole } from "generated/prisma";
 @UseGuards(JwtAuthGuard,PermissionGuard)
 export class CommentsController {
   constructor (
-    private readonly repository: CommentsRepository
+    private readonly repository: CommentsRepository,
+    private readonly service: CommentsService,
   ) {}
 
   @Post()
   @Action(BaseActions.CREATE)
   async create(
     @Body() data: CreateCommentDTO,
-    @Res() response
+    @CurrentAccount() account: CurrentAccountDTO,
+    @OrgKey() orgkey: string,
+    @Res() res
   ) {
-    const result = await this.repository.create(data); 
+    const result = await this.service.create(data, {
+      orgkey,
+      actorkey: account.username,
+    });
     
-    const resp: ApiResponse = {
+    const response: ApiResponse = {
       status: HttpStatus.CREATED,
       data: result,
       message: 'Novo comentário adicionado ao projeto.',
@@ -38,18 +48,18 @@ export class CommentsController {
       path: '/comments'
     };
 
-    return response.status(resp.status).json(resp);
+    return res.status(res.status).json(response);
   }
 
   @Get()
   @Action(BaseActions.SEEK)
   async list(
     @Query() queries: CommentQueryDTO,
-    @Res() response
+    @Res() res
   ) {
     const result = await this.repository.list(queries);
 
-    const resp: ApiResponse = {
+    const response: ApiResponse = {
       status: HttpStatus.OK,
       data: result,
       message: '',
@@ -58,18 +68,18 @@ export class CommentsController {
       path: '/comments'
     };
     
-    return response.status(resp.status).json(resp);
+    return res.status(res.status).json(response);
   }
 
   @Get('/:id')
   @Action(BaseActions.SEEK)
   async find(
     @Param('id') id: string,
-    @Res() response
+    @Res() res
   ) {
     const result = await this.repository.find(id);
 
-    const resp: ApiResponse = {
+    const response: ApiResponse = {
       status: HttpStatus.OK,
       data: result,
       message: '',
@@ -78,18 +88,23 @@ export class CommentsController {
       path: '/comments'
     };
     
-    return response.status(resp.status).json(resp);
+    return res.status(res.status).json(response);
   }
 
   @Delete('/del/:id')
   @Action(BaseActions.DEL)
   async delete(
     @Param('id') id: string,
-    @Res() response
+    @CurrentAccount() account: CurrentAccountDTO,
+    @OrgKey() orgkey: string,
+    @Res() res
   ) {
-    const result = await this.repository.delete(id);
+    const result = await this.service.delete(id, {
+      orgkey,
+      actorkey: account.username,
+    });
 
-    const resp: ApiResponse = {
+    const response: ApiResponse = {
       status: HttpStatus.OK,
       data: result,
       message: 'Comentário excluído com sucesso.',
@@ -98,6 +113,6 @@ export class CommentsController {
       path: '/comments'
     };
     
-    return response.status(resp.status).json(resp);
+    return res.status(res.status).json(response);
   }
 }

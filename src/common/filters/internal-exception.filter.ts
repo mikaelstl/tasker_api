@@ -15,7 +15,7 @@ import { InternalException } from 'src/common/errors/internal.exception';
 export class InternalExceptionFilter implements ExceptionFilter {
   private readonly logger = new Logger(InternalExceptionFilter.name);
 
-  catch(exception: unknown, host: ArgumentsHost): void {
+  catch(exception: unknown, host: ArgumentsHost): Response {
     const context = host.switchToHttp();
     const response = context.getResponse<Response>();
     const request = context.getRequest<Request>();
@@ -32,7 +32,7 @@ export class InternalExceptionFilter implements ExceptionFilter {
       stack,
     );
 
-    const body: ApiError = {
+    const error: ApiError = {
       status: HttpStatus.INTERNAL_SERVER_ERROR,
       errors: [{
         level: 'critical',
@@ -43,6 +43,6 @@ export class InternalExceptionFilter implements ExceptionFilter {
       path: request.originalUrl ?? request.url,
     };
 
-    response.status(body.status).json(body);
+    return response.status(error.status).json(error);
   }
 }

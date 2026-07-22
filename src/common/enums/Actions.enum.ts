@@ -6,13 +6,10 @@ enum BaseActions {
 }
 
 enum EnhancedActions {
-  // MANAGE = `MANAGE`,
-  
-  PROMOTE = `PROMOTE`,
-  DEMOTE = `DEMOTE`,
+  PROMOTE = 'PROMOTE',
+  DEMOTE = 'DEMOTE',
+  GENERATE_INVITE = 'GENERATE_INVITE',
+  ACCEPT_INVITE = 'ACCEPT_INVITE',
 }
 
-export {
-  BaseActions,
-  EnhancedActions
-}
+export { BaseActions, EnhancedActions };

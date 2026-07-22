@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, HttpStatus, Param, Post, Res, UseGuards, } from "@nestjs/common";
 import { AccountRepository } from "./account.repository";
 import { AccountDTO } from "@modules/accounts/dto/account.dto";
-import { ApiResponse } from "src/common/interfaces/ApiResponse";
+import { ApiResponse as ApiResponse } from "src/common/interfaces/ApiResponse";
 import { AccountService } from "./account.service";
 import { JwtAuthGuard } from "@security/auth.guard";
 import { CreateAccountDTO } from "./dto/create.dto";
@@ -16,7 +16,7 @@ export class AccountController {
   @Post('register/')
   async register(
     @Body() data: CreateAccountDTO,
-    @Res() resp
+    @Res() res
   ) {
     const result: AccountDTO = await this.service.createAccount(data);
 
@@ -28,14 +28,14 @@ export class AccountController {
       path: '/accounts/register/'
     };
 
-    return resp.status(response.status).json(response);
+    return res.status(res.status).json(response);
   }
 
   @Delete('del/:id')
   @UseGuards(JwtAuthGuard)
   async delete(
     @Param() id: string,
-    @Res() resp
+    @Res() res
   ) {
     const result: AccountDTO = await this.repository.delete(id);
 
@@ -47,6 +47,6 @@ export class AccountController {
       path: '/accounts/del'
     };
 
-    return resp.status(response.status).json(response);
+    return res.status(res.status).json(response);
   }
 }

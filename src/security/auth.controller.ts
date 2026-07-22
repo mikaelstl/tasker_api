@@ -1,4 +1,4 @@
-import { ApiResponse } from "src/common/interfaces/ApiResponse";
+import { ApiResponse as ApiResponse } from "src/common/interfaces/ApiResponse";
 import { Body, Controller, Get, Headers, HttpCode, HttpStatus, Post, Res } from "@nestjs/common";
 import { AuthService } from "src/security/auth.service";
 import { AuthDTO } from "src/security/dto/auth.dto";
@@ -14,15 +14,23 @@ export class AuthController {
 
   @Get()
   async status(
-    @Res() response
+    @Res() res
   ) {
-    return response.status(HttpStatus.OK).json('Autenticação disponível.');
+    const response: ApiResponse = {
+      status: HttpStatus.OK,
+      data: null,
+      message: 'Autenticação disponível.',
+      timestamp: new Date().toISOString(),
+      path: '/auth'
+    };
+
+    return res.status(res.status).json(response);
   }
 
   @Post('login')
   async login(
     @Body() data: LoginDTO,
-    @Res() resp
+    @Res() res
   ) {
     const result: AuthDTO = await this.service.login(data);
 
@@ -35,13 +43,13 @@ export class AuthController {
       path: '/auth/login'
     };
 
-    return resp.status(response.status).json(response);
+    return res.status(res.status).json(response);
   }
 
   // @Post('register')
   // async register(
   //   @Body() data: CreateUserDTO,
-  //   @Res() resp
+  //   @Res() res
   // ) {
   //   const result: AccountDTO = await this.service.register(data);
 
@@ -54,12 +62,12 @@ export class AuthController {
   //     path: '/auth/register'
   //   };
 
-  //   return resp.status(response.status).json(response);
+  //   return res.status(res.status).json(response);
   // }
 
   @Get('validate')
   async validate(
-    @Res() resp,
+    @Res() res,
     @Headers('Authorization') auth: string
   ) {
     // const token = auth.split(' ')[1];
@@ -77,6 +85,6 @@ export class AuthController {
       path: '/auth/validate'
     };
 
-    return resp.status(response.status).json(response);
+    return res.status(res.status).json(response);
   }
 }

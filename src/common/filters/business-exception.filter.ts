@@ -10,12 +10,13 @@ import { ApiError } from 'src/common/interfaces/Error';
 /** Trata somente falhas publicas e esperadas da aplicacao. */
 @Catch(BusinessException)
 export class BusinessExceptionFilter implements ExceptionFilter {
-  catch(exception: BusinessException, host: ArgumentsHost): void {
+  catch(exception: BusinessException, host: ArgumentsHost): Response {
     const context = host.switchToHttp();
     const response = context.getResponse<Response>();
     const request = context.getRequest<Request>();
     const status = exception.getStatus();
-    const body: ApiError = {
+    
+    const error: ApiError = {
       status,
       errors: [{
         level: 'warning',
@@ -26,7 +27,7 @@ export class BusinessExceptionFilter implements ExceptionFilter {
       path: request.originalUrl ?? request.url,
     };
 
-    response.status(status).json(body);
+    return response.status(error.status).json(error);
   }
 
   private getPublicMessage(exception: BusinessException): string {

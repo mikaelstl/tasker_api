@@ -1,4 +1,4 @@
-import { ApiResponse } from "src/common/interfaces/ApiResponse";
+import { ApiResponse as ApiResponse } from "src/common/interfaces/ApiResponse";
 import { Body, Controller, Delete, Get, HttpStatus, Param, Patch, Post, Res, UseGuards } from "@nestjs/common";
 import { JwtAuthGuard } from "@security/auth.guard";
 import { PermissionGuard } from "@guards/permission.guard";
@@ -12,6 +12,7 @@ import { Role } from "@decorators/Role";
 import { OrgRole } from "generated/prisma";
 import { Resource } from "@decorators/Resource";
 import { Resources } from "@enums/Resources.enum";
+import { OrgKey } from '@decorators/OrgKey';
 
 @Controller('affiliations')
 @Resource(Resources.AFFILIATIONS)
@@ -26,12 +27,16 @@ export class AffiliationController {
   @Action(BaseActions.CREATE)
   async create(
     @CurrentAccount() account: CurrentAccountDTO,
+    @OrgKey() orgkey: string,
     @Body() data: DefineAffiliationDTO,
-    @Res() response
+    @Res() res
   ) {
-    const result = await this.service.create(data); 
+    const result = await this.service.create({
+      ...data,
+      orgkey,
+    }, account.username);
     
-    const resp: ApiResponse = {
+    const response: ApiResponse = {
       status: HttpStatus.CREATED,
       data: result,
       message: 'Afiliação adicionada com sucesso.',
@@ -40,7 +45,7 @@ export class AffiliationController {
       path: '/affiliations'
     };
 
-    return response.status(resp.status).json(resp);
+    return res.status(res.status).json(response);
   }
 
   @Get()
@@ -48,11 +53,11 @@ export class AffiliationController {
   @Action(BaseActions.SEEK)
   async list(
     @CurrentAccount() account: CurrentAccountDTO,
-    @Res() response
+    @Res() res
   ) {
     const result = await this.service.getUserOrganizations(account.username);
 
-    const resp: ApiResponse = {
+    const response: ApiResponse = {
       status: HttpStatus.OK,
       data: result,
       message: 'Organizações do usuário encontradas.',
@@ -60,7 +65,7 @@ export class AffiliationController {
       path: '/affiliations'
     };
 
-    return response.status(resp.status).json(resp);
+    return res.status(res.status).json(response);
   }
 
   @Get('/participates/:orgkey')
@@ -69,11 +74,11 @@ export class AffiliationController {
   async participates(
     @Param('orgkey') orgkey: string,
     @CurrentAccount() account: CurrentAccountDTO,
-    @Res() response
+    @Res() res
   ) {
     const result = await this.service.participates(account.username, orgkey);
 
-    const resp: ApiResponse = {
+    const response: ApiResponse = {
       status: HttpStatus.OK,
       data: result,
       message: result
@@ -83,7 +88,7 @@ export class AffiliationController {
       path: `/affiliations/participates/${orgkey}`
     };
 
-    return response.status(resp.status).json(resp);
+    return res.status(res.status).json(response);
   }
 
   @Delete('/remove/:id')
@@ -91,13 +96,17 @@ export class AffiliationController {
   @Action(BaseActions.DEL)
   async delete(
     @Param('id') id: string,
-    @Res() response,
+    @OrgKey() orgkey: string,
+    @Res() res,
     @CurrentAccount() account: CurrentAccountDTO,
   ){
-    const result = await this.service.delete(id);
+    const result = await this.service.delete(id, {
+      orgkey,
+      actorkey: account.username,
+    });
     
-    const resp: ApiResponse = {
-      status: HttpStatus.NO_CONTENT,
+    const response: ApiResponse = {
+      status: HttpStatus.OK,
       data: null,
       message: `Afiliação removida com sucesso.`,
       
@@ -105,7 +114,7 @@ export class AffiliationController {
       path: '/affiliations/del'
     };
 
-    return response.status(resp.status).json(resp);
+    return res.status(res.status).json(response);
   }
 
   @Patch('/promote/:id')
@@ -113,12 +122,16 @@ export class AffiliationController {
   @Action(EnhancedActions.PROMOTE)
   async promote(
     @Param('id') id: string,
-    @Res() response,
+    @OrgKey() orgkey: string,
+    @Res() res,
     @CurrentAccount() account: CurrentAccountDTO,
   ) {
-    const result = await this.service.promote(id);
+    const result = await this.service.promote(id, {
+      orgkey,
+      actorkey: account.username,
+    });
 
-    const resp: ApiResponse = {
+    const response: ApiResponse = {
       status: HttpStatus.OK,
       data: result,
       message: '',
@@ -127,7 +140,7 @@ export class AffiliationController {
       path: '/affiliations/promote'
     };
 
-    return response.status(resp.status).json(resp);
+    return res.status(res.status).json(response);
   }
 
   @Patch('/demote/:id')
@@ -135,12 +148,16 @@ export class AffiliationController {
   @Action(EnhancedActions.DEMOTE)
   async demote(
     @Param('id') id: string,
-    @Res() response,
+    @OrgKey() orgkey: string,
+    @Res() res,
     @CurrentAccount() account: CurrentAccountDTO,
   ) {
-    const result = await this.service.demote(id);
+    const result = await this.service.demote(id, {
+      orgkey,
+      actorkey: account.username,
+    });
 
-    const resp: ApiResponse = {
+    const response: ApiResponse = {
       status: HttpStatus.OK,
       data: result,
       message: '',
@@ -149,6 +166,6 @@ export class AffiliationController {
       path: '/affiliations/demote'
     };
 
-    return response.status(resp.status).json(resp);
+    return res.status(res.status).json(response);
   }
 }

@@ -11,6 +11,7 @@ import { ProjectOwnershipPolicy } from "@authorization/policies/project-ownershi
 import { ModuleRef } from "@nestjs/core";
 import { ManagerProjectVisibilityPolicy } from "@authorization/policies/manager-project-visibility.policy";
 import { MemberProjectVisibilityPolicy } from "@authorization/policies/member-project-visibility.policy";
+import { EnhancedActions } from '@enums/Actions.enum';
 
 type ResourcePolicies = {
   key: ResourcePoliciesKeys;
@@ -178,6 +179,10 @@ const OwnerAccessHandlers: Array<ResourcePolicies> = [
   },
   {
     key: "OWNER:AFFILIATIONS:CREATE",
+    handler: OrganizationOwnershipPolicy
+  },
+  {
+    key: `OWNER:AFFILIATIONS:${EnhancedActions.GENERATE_INVITE}`,
     handler: OrganizationOwnershipPolicy
   },
   {

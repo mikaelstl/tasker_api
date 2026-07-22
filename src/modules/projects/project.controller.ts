@@ -1,11 +1,10 @@
-import { ApiResponse } from "src/common/interfaces/ApiResponse";
+import { ApiResponse as ApiResponse } from "src/common/interfaces/ApiResponse";
 import { Body, Controller, Delete, Get, HttpStatus, Param, Post, Put, Query, Res, UseGuards } from "@nestjs/common";
 import { MembersRepository } from "../members/member.repository";
 import { JwtAuthGuard } from "../../security/auth.guard";
 import { ProjectService } from "@modules/projects/project.service";
 import { CreateProjectDTO } from "@modules/projects/dto/project.create.dto";
 import { ProjectQueryDTO } from "@modules/projects/dto/project.query.dto";
-import { ProjectRepository } from "@modules/projects/projects.repository";
 import { PermissionGuard } from "@guards/permission.guard";
 import { OrgRole, StatsPeriodType } from "generated/prisma";
 import { CurrentAccount } from "src/decorators/CurrentAccount.decorator";
@@ -26,7 +25,6 @@ import { StatsService } from "@modules/stats/stats.service";
 @Resource(Resources.PROJECTS)
 export class ProjectController {
   constructor(
-    private readonly repository: ProjectRepository,
     private readonly service: ProjectService,
     private readonly stats: StatsService
   ) { }
@@ -39,14 +37,14 @@ export class ProjectController {
     @CurrentAccount() account: CurrentAccountDTO,
     @OrgKey() orgkey: string,
     @Body() data: CreateProjectDTO,
-    @Res() response
+    @Res() res
   ) {
     const result = await this.service.create({
       ...data,
       orgkey
-    });
+    }, account.username);
 
-    const resp: ApiResponse = {
+    const response: ApiResponse = {
       status: HttpStatus.CREATED,
       data: result,
       message: 'Novo projeto criado com sucesso.',
@@ -55,7 +53,7 @@ export class ProjectController {
       path: '/project'
     };
 
-    return response.status(resp.status).json(resp);
+    return res.status(res.status).json(response);
   }
 
   @Get('/list')
@@ -65,12 +63,12 @@ export class ProjectController {
   async list(
     @Query() queries: ProjectQueryDTO,
     @OrgKey() orgkey: string,
-    @Res() response,
+    @Res() res,
     @CurrentAccount() account: CurrentAccountDTO,
   ) {
     const result = await this.service.list(account, orgkey, queries);
 
-    const resp: ApiResponse = {
+    const response: ApiResponse = {
       status: HttpStatus.OK,
       data: result,
       message: '',
@@ -79,7 +77,7 @@ export class ProjectController {
       path: '/project/list'
     };
 
-    return response.status(resp.status).json(resp);
+    return res.status(res.status).json(response);
   }
 
   @Get('/:id')
@@ -89,12 +87,12 @@ export class ProjectController {
   async find(
     @Param('id') id: string,
     @OrgKey() orgkey: string,
-    @Res() response,
+    @Res() res,
     @CurrentAccount() account: CurrentAccountDTO,
   ) {
     const result = await this.service.find(id, account, orgkey);
 
-    const resp: ApiResponse = {
+    const response: ApiResponse = {
       status: HttpStatus.OK,
       data: result,
       message: '',
@@ -102,7 +100,7 @@ export class ProjectController {
       path: '/project'
     };
 
-    return response.status(resp.status).json(resp);
+    return res.status(res.status).json(response);
   }
 
   @Put('/:id')
@@ -112,12 +110,16 @@ export class ProjectController {
   async edit(
     @Param('id') id: string,
     @Body() data: EditProjectDTO,
-    @Res() response,
+    @OrgKey() orgkey: string,
+    @Res() res,
     @CurrentAccount() account: CurrentAccountDTO,
   ) {
-    const result = await this.repository.edit(id, data);
+    const result = await this.service.edit(id, data, {
+      orgkey,
+      actorkey: account.username,
+    });
 
-    const resp: ApiResponse = {
+    const response: ApiResponse = {
       status: HttpStatus.OK,
       data: result,
       message: 'Projeto atualizado com sucesso.',
@@ -125,7 +127,7 @@ export class ProjectController {
       path: '/project'
     };
 
-    return response.status(resp.status).json(resp);
+    return res.status(res.status).json(response);
   }
 
   @Delete('/del/:id')
@@ -134,12 +136,16 @@ export class ProjectController {
   @UseGuards(PermissionGuard)
   async delete(
     @Param('id') id: string,
-    @Res() response,
+    @OrgKey() orgkey: string,
+    @Res() res,
     @CurrentAccount() account: CurrentAccountDTO,
   ) {
-    const result = await this.repository.delete(id);
+    const result = await this.service.delete(id, {
+      orgkey,
+      actorkey: account.username,
+    });
 
-    const resp: ApiResponse = {
+    const response: ApiResponse = {
       status: HttpStatus.OK,
       data: result,
       message: `Projeto excluído com sucesso.`,
@@ -148,7 +154,7 @@ export class ProjectController {
       path: '/project/del'
     };
 
-    return response.status(resp.status).json(resp);
+    return res.status(res.status).json(response);
   }
 
   @Get('/:id/stats')
@@ -159,7 +165,7 @@ export class ProjectController {
   async getProjectStats(
     @Param("id") id: string,
     @Query() query: ProjectStatsQueryDTO,
-    @Res() response
+    @Res() res
   ) {
     const cutoffAt = query.cutoffAt
       ? new Date(query.cutoffAt)
@@ -169,12 +175,15 @@ export class ProjectController {
       cutoffAt
     );
 
-    return this.respond(
-      response,
-      HttpStatus.OK,
-      result,
-      `/project/${id}/stats`
-    );
+    const response: ApiResponse = {
+      status: HttpStatus.OK,
+      data: result,
+      message: '',
+      timestamp: new Date().toISOString(),
+      path: `/project/${id}/stats`
+    };
+
+    return res.status(res.status).json(response);
   }
 
   @Get('/:id/stats/members/performance')
@@ -185,7 +194,7 @@ export class ProjectController {
   async getProjectMemberPerformance(
     @Param('id') id: string,
     @Query() query: ProjectStatsQueryDTO,
-    @Res() response
+    @Res() res
   ) {
     const cutoffAt = query.cutoffAt
       ? new Date(query.cutoffAt)
@@ -195,12 +204,15 @@ export class ProjectController {
       cutoffAt
     );
 
-    return this.respond(
-      response,
-      HttpStatus.OK,
-      result,
-      `/project/${id}/stats/members/performance`
-    );
+    const response: ApiResponse = {
+      status: HttpStatus.OK,
+      data: result,
+      message: '',
+      timestamp: new Date().toISOString(),
+      path: `/project/${id}/stats/members/performance`
+    };
+
+    return res.status(res.status).json(response);
   }
 
   @Post("/:id/stats/report")
@@ -211,7 +223,9 @@ export class ProjectController {
   async generateReport(
     @Param("id") id: string,
     @Body() data: GenerateStatsReportDTO,
-    @Res() response
+    @CurrentAccount() account: CurrentAccountDTO,
+    @OrgKey() orgkey: string,
+    @Res() res
   ) {
     const result = await this.stats.generateReport({
       projectkey: id,
@@ -219,9 +233,12 @@ export class ProjectController {
       cutoffAt: data.cutoffAt
         ? new Date(data.cutoffAt)
         : new Date()
+    }, {
+      orgkey,
+      actorkey: account.username,
     });
 
-    response.set({
+    res.set({
       "Content-Type": "application/pdf",
       "Content-Disposition": `attachment; filename="${result.filename}"`,
       "Content-Length": result.document.length,
@@ -229,7 +246,7 @@ export class ProjectController {
       "X-Content-Type-Options": "nosniff"
     });
 
-    return response.status(HttpStatus.OK).send(result.document);
+    return res.status(HttpStatus.OK).send(result.document);
   }
 
   @Get("/:id/stats/reports")
@@ -239,16 +256,19 @@ export class ProjectController {
   @UseGuards(PermissionGuard)
   async listReports(
     @Param("id") id: string,
-    @Res() response
+    @Res() res
   ) {
     const result = await this.stats.listReports(id);
 
-    return this.respond(
-      response,
-      HttpStatus.OK,
-      result,
-      `/project/${id}/stats/reports`
-    );
+    const response: ApiResponse = {
+      status: HttpStatus.OK,
+      data: result,
+      message: '',
+      timestamp: new Date().toISOString(),
+      path: `/project/${id}/stats/reports`
+    };
+
+    return res.status(res.status).json(response);
   }
 
   @Get("/:id/stats/reports/:reportkey")
@@ -259,36 +279,21 @@ export class ProjectController {
   async getReport(
     @Param("id") id: string,
     @Param("reportkey") reportkey: string,
-    @Res() response
+    @Res() res
   ) {
     const result = await this.stats.getReport(
       reportkey,
       id
     );
 
-    return this.respond(
-      response,
-      HttpStatus.OK,
-      result,
-      `/project/${id}/stats/reports/${reportkey}`
-    );
-  }
-
-  private respond(
-    response: any,
-    status: HttpStatus,
-    data: unknown,
-    path: string,
-    message = ""
-  ) {
-    const payload: ApiResponse = {
-      status,
-      data,
-      message,
+    const response: ApiResponse = {
+      status: HttpStatus.OK,
+      data: result,
+      message: '',
       timestamp: new Date().toISOString(),
-      path
+      path: `/project/${id}/stats/reports/${reportkey}`
     };
 
-    return response.status(status).json(payload);
+    return res.status(res.status).json(response);
   }
 }

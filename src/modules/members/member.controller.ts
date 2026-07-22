@@ -1,4 +1,4 @@
-import { ApiResponse } from "src/common/interfaces/ApiResponse";
+import { ApiResponse as ApiResponse } from "src/common/interfaces/ApiResponse";
 import { Body, Controller, Delete, Get, HttpStatus, Param, Post, Res, UseGuards } from "@nestjs/common";
 import { MembersRepository } from "./member.repository";
 import { JwtAuthGuard } from "../../security/auth.guard";
@@ -12,6 +12,8 @@ import { Action } from "@decorators/Action";
 import { BaseActions } from "@enums/Actions.enum";
 import { OrgRole } from "generated/prisma";
 import { Role } from "@decorators/Role";
+import { MembersService } from './members.service';
+import { OrgKey } from '@decorators/OrgKey';
 
 @Controller('members')
 @Resource(Resources.MEMBERS)
@@ -19,6 +21,7 @@ import { Role } from "@decorators/Role";
 export class MemberController {
   constructor(
     private readonly repository: MembersRepository,
+    private readonly service: MembersService,
   ) {}
 
   @Post()
@@ -26,12 +29,16 @@ export class MemberController {
   @Action(BaseActions.CREATE)
   async create(
     @CurrentAccount() account: CurrentAccountDTO,
+    @OrgKey() orgkey: string,
     @Body() data: DefineMemberDTO,
-    @Res() response
+    @Res() res
   ) {
-    const result = await this.repository.create(data); 
+    const result = await this.service.create(data, {
+      orgkey,
+      actorkey: account.username,
+    });
     
-    const resp: ApiResponse = {
+    const response: ApiResponse = {
       status: HttpStatus.CREATED,
       data: result,
       message: 'Membro adicionado com sucesso.',
@@ -40,20 +47,20 @@ export class MemberController {
       path: '/members'
     };
 
-    return response.status(resp.status).json(resp);
+    return res.status(res.status).json(response);
   }
 
   @Get(':projectkey')
   @Role(OrgRole.OWNER, OrgRole.MANAGER, OrgRole.MEMBER)
   @Action(BaseActions.SEEK)
   async list(
-    @Param()  projectkey: string,
-    @Res()    response,
+    @Param('projectkey') projectkey: string,
+    @Res() res,
     @CurrentAccount() account: CurrentAccountDTO,
   ) {
     const result = await this.repository.list(projectkey);
     
-    const resp: ApiResponse = {
+    const response: ApiResponse = {
       status: HttpStatus.OK,
       data: result,
       message: '',
@@ -62,7 +69,7 @@ export class MemberController {
       path: '/members'
     };
 
-    return response.status(resp.status).json(resp);
+    return res.status(res.status).json(response);
   }
 
   @Delete('/remove/:id')
@@ -70,12 +77,16 @@ export class MemberController {
   @Action(BaseActions.DEL)
   async delete(
     @Param('id') id: string,
-    @Res() response,
+    @OrgKey() orgkey: string,
+    @Res() res,
     @CurrentAccount() account: CurrentAccountDTO,
   ){
-    const result = await this.repository.delete(id);
+    const result = await this.service.delete(id, {
+      orgkey,
+      actorkey: account.username,
+    });
     
-    const resp: ApiResponse = {
+    const response: ApiResponse = {
       status: HttpStatus.OK,
       data: result,
       message: `Membro removido com sucesso.`,
@@ -84,6 +95,6 @@ export class MemberController {
       path: '/members/del'
     };
 
-    return response.status(resp.status).json(resp);
+    return res.status(res.status).json(response);
   }
 }

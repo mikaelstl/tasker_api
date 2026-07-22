@@ -1,6 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Optional } from '@nestjs/common';
 import {
   Prisma,
+  AuditAction,
+  AuditResource,
   ProjectHealthStatus,
   StatsPeriodType,
   TaskStage
@@ -38,6 +40,8 @@ import {
   TaskNotStartedException,
   TaskWorkLogOwnerMismatchException,
 } from 'src/common/errors/task-business.exceptions';
+import { AuditLogService } from '@modules/audit-log/audit-log.service';
+import { AuditContext } from '@interfaces/AuditContext';
 
 const DAY_IN_MS = 24 * 60 * 60 * 1000;
 const MINUTE_IN_MS = 60 * 1000;
@@ -55,7 +59,8 @@ export class StatsService {
     private readonly snapshots: ProjectStatsPeriodSnapshotsRepository,
     private readonly periodTasks: ProjectStatsPeriodTasksRepository,
     private readonly reports: ProjectStatsReportsRepository,
-    private readonly reportDocument: ProjectStatsReportDocument
+    private readonly reportDocument: ProjectStatsReportDocument,
+    @Optional() private readonly audit?: AuditLogService,
   ) { }
 
   async getProjectStats(
@@ -410,7 +415,8 @@ export class StatsService {
   }
 
   async generateReport(
-    input: GenerateReportInput
+    input: GenerateReportInput,
+    context?: AuditContext,
   ): Promise<GeneratedProjectReport> {
     const cutoffAt = input.cutoffAt ?? new Date();
     const snapshot = await this.generateSnapshot({
@@ -458,6 +464,17 @@ export class StatsService {
     } catch (error) {
       await this.reports.delete(report.id);
       throw new InternalException('Falha ao gerar o relatório de estatísticas.', error);
+    }
+
+    if (context) {
+      await this.audit?.logUserMutation({
+        ...context,
+        action: AuditAction.CREATE,
+        resource: AuditResource.PROJECT_STATS,
+        resourcekey: report.id,
+        after: report as unknown as Record<string, unknown>,
+        fields: ['projectkey', 'period_type', 'cutoff_at'],
+      });
     }
 
     return {

@@ -5,9 +5,9 @@ import { ApiError } from 'src/common/interfaces/Error';
 
 @Catch(ValidationException)
 export class ValidationExceptionFilter implements ExceptionFilter {
-  catch(exception: ValidationException, host: ArgumentsHost): void {
+  catch(exception: ValidationException, host: ArgumentsHost): Response {
     const context = host.switchToHttp();
-    const response = context.getResponse<Response>();
+    const res = context.getResponse<Response>();
     const request = context.getRequest<Request>();
     const exceptionResponse = exception.getResponse();
     const rawMessages = typeof exceptionResponse === 'object'
@@ -21,7 +21,7 @@ export class ValidationExceptionFilter implements ExceptionFilter {
       ? normalizedMessages
       : ['Os dados informados são inválidos.'];
 
-    const body: ApiError = {
+    const error: ApiError = {
       status: HttpStatus.BAD_REQUEST,
       errors: messages.map((message) => ({
         level: 'validation',
@@ -32,7 +32,7 @@ export class ValidationExceptionFilter implements ExceptionFilter {
       path: request.originalUrl ?? request.url,
     };
 
-    response.status(body.status).json(body);
+    return res.status(error.status).json(error);
   }
 
   private normalizeMessage(message: unknown): string {

@@ -22,7 +22,7 @@ export type AuditLogChanges = Record<
   }
 >;
 
-type AuditLogChangeValue =
+export type AuditLogChangeValue =
   | string
   | number
   | boolean
