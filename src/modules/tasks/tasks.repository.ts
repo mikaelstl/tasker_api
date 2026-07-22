@@ -1,10 +1,12 @@
-import { ConflictException, Injectable, NotFoundException } from "@nestjs/common";
+import { HttpStatus, Injectable } from '@nestjs/common';
 import { customAlphabet } from "nanoid";
 import { PrismaService } from "src/database/prisma.service";
 import { TaskCreateDTO } from "@modules/tasks/dto/task.create.dto";
 import { TaskDTO } from "@modules/tasks/dto/task.dto";
 import { TaskQueryDTO } from "@modules/tasks/dto/task.query.dto";
 import { Prisma, TaskStage } from "generated/prisma";
+import { BusinessException } from 'src/common/errors/business.exception';
+import { InternalException } from 'src/common/errors/internal.exception';
 
 @Injectable()
 export class TasksRepository {
@@ -55,13 +57,14 @@ export class TasksRepository {
           && error.code === 'P2002';
 
         if (!codeCollision) {
-          throw error;
+          throw new InternalException('Falha ao criar a tarefa.', error);
         }
       }
     }
 
-    throw new ConflictException(
-      'Não foi possível gerar um código único para a tarefa.'
+    throw new BusinessException(
+      'Não foi possível gerar um código único para a tarefa.',
+      HttpStatus.CONFLICT,
     );
   }
 
@@ -90,7 +93,7 @@ export class TasksRepository {
     });
 
     if (!task) {
-      throw new NotFoundException('Tarefa não encontrada.');
+      throw new BusinessException('Tarefa não encontrada.', HttpStatus.NOT_FOUND);
     }
 
     return this.toTaskDTO(task);
@@ -107,7 +110,7 @@ export class TasksRepository {
     });
 
     if (!current) {
-      throw new NotFoundException("Tarefa não encontrada.");
+      throw new BusinessException('Tarefa não encontrada.', HttpStatus.NOT_FOUND);
     }
 
     const deadline = update.deadline
@@ -152,7 +155,7 @@ export class TasksRepository {
     });
 
     if (!result) {
-      throw new NotFoundException('Tarefa não encontrada.');
+      throw new BusinessException('Tarefa não encontrada.', HttpStatus.NOT_FOUND);
     }
 
     return result;

@@ -1,15 +1,19 @@
-interface Error {
+export interface ApiErrorItem {
   readonly level: ErrorLevel;
   readonly message: string;
   readonly details?: string;
-  readonly error?: string;
+  readonly error?: ApiErrorCode;
 }
 
-type ErrorLevel =  'info' | 'warning' | 'error' | 'critical' | 'validation';
+export type ErrorLevel = 'info' | 'warning' | 'error' | 'critical' | 'validation';
+export type ApiErrorCode =
+  | 'VALIDATION_ERROR'
+  | 'BUSINESS_ERROR'
+  | 'INTERNAL_ERROR';
 
 export interface ApiError {
-  readonly status: number,
-  readonly errors: Error[],
-  readonly timestamp: string,
-  readonly path: string
+  readonly status: number;
+  readonly errors: ApiErrorItem[];
+  readonly timestamp: string;
+  readonly path: string;
 }

@@ -1,11 +1,10 @@
-import { BadRequestException, HttpException, HttpStatus, Injectable, Logger, NotFoundException } from "@nestjs/common";
+import { Injectable } from '@nestjs/common';
 import { EventsRepository } from "./events.repository";
 import { AccessValidator } from "src/common/interfaces/AccessValidator";
+import { InternalException } from 'src/common/errors/internal.exception';
 
 @Injectable()
 export class EventsService implements AccessValidator {
-  private readonly logger: Logger = new Logger('EventsService');
-
   constructor(
     private readonly repository: EventsRepository
   ) { }
@@ -22,8 +21,7 @@ export class EventsService implements AccessValidator {
 
       return result;
     } catch (err) {
-      this.logger.warn("[ERROR] to verify project ownership.", err);
-      return false;
+      throw new InternalException('Falha ao verificar o vínculo do evento.', err);
     }
   }
 }

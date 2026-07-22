@@ -1,7 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { CreateAuditLogInput } from './dto/create-audit-log.input';
 import { AuditActorType } from 'generated/prisma';
 import { PrismaService } from 'src/database/prisma.service';
+import { ValidationException } from 'src/common/errors/validation.exception';
 
 @Injectable()
 export class AuditLogService {
@@ -23,13 +24,13 @@ export class AuditLogService {
 
   private validateActor(data: CreateAuditLogInput): void {
     if (data.actorType === AuditActorType.USER && !data.actorkey) {
-      throw new BadRequestException(
+      throw new ValidationException(
         'O ator deve ser informado para logs gerados por usuário.',
       );
     }
 
     if (data.actorType === AuditActorType.SYSTEM && data.actorkey) {
-      throw new BadRequestException(
+      throw new ValidationException(
         'Logs gerados pelo sistema não devem possuir ator.',
       );
     }
@@ -39,14 +40,14 @@ export class AuditLogService {
     if (changes === undefined) return;
 
     if (!this.isPlainObject(changes)) {
-      throw new BadRequestException(
+      throw new ValidationException(
         'As alterações do audit log devem ser um objeto JSON.',
       );
     }
 
     for (const [field, change] of Object.entries(changes)) {
       if (!field || !this.isPlainObject(change)) {
-        throw new BadRequestException(
+        throw new ValidationException(
           'Cada campo alterado deve possuir oldValue e newValue.',
         );
       }
@@ -57,7 +58,7 @@ export class AuditLogService {
         !Object.prototype.hasOwnProperty.call(change, 'newValue') ||
         keys.some((key) => key !== 'oldValue' && key !== 'newValue')
       ) {
-        throw new BadRequestException(
+        throw new ValidationException(
           'Cada campo alterado deve possuir somente oldValue e newValue.',
         );
       }

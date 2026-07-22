@@ -1,7 +1,8 @@
-import { UnauthorizedException } from "@nestjs/common";
+import { HttpStatus } from '@nestjs/common';
+import { BusinessException } from './business.exception';
 
-export class WrongPasswordException extends UnauthorizedException {
+export class WrongPasswordException extends BusinessException {
   constructor() {
-    super('Senha incorreta.')
+    super('Senha incorreta.', HttpStatus.UNAUTHORIZED);
   }
 }

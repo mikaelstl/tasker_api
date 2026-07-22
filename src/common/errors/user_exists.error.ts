@@ -1,7 +1,8 @@
-import { HttpException } from "@nestjs/common";
+import { HttpStatus } from '@nestjs/common';
+import { BusinessException } from './business.exception';
 
-export class AlreadyExistsException extends HttpException {
-  constructor(private readonly menssage: string) {
-    super(menssage, 400)
+export class AlreadyExistsException extends BusinessException {
+  constructor(message: string) {
+    super(message, HttpStatus.CONFLICT);
   }
 }

@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable, NotFoundException } from "@nestjs/common";
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from "src/database/prisma.service";
 import { DefineAffiliationDTO } from "./dto/define.dto";
 import { AffiliationDTO } from "./dto/affiliation.dto";
@@ -13,37 +13,21 @@ export class AffiliationRepository {
   ) { }
 
   async create(data: DefineAffiliationDTO): Promise<AffiliationDTO> {
-    try {
-      const result = await this.prisma.affiliation.create({
-        data: {
-          userkey: data.userkey,
-          orgkey: data.orgkey,
-          role: data.role
-        }
-      });
-
-      return result;
-    } catch (err: any) {
-      throw new HttpException('Não foi possível criar a afiliação.', HttpStatus.BAD_REQUEST);
-    }
+    return this.prisma.affiliation.create({
+      data: {
+        userkey: data.userkey,
+        orgkey: data.orgkey,
+        role: data.role,
+      },
+    });
   }
 
   async delete(id: string): Promise<AffiliationDTO> {
-    try {
-      const result = await this.prisma.affiliation.delete({
-        where: {
-          id: id
-        }
-      });
-
-      if (!result) {
-        throw new NotFoundException('Afiliação não encontrada.');
-      }
-
-      return result;
-    } catch (err: any) {
-      throw new HttpException('Não foi possível excluir a afiliação.', HttpStatus.BAD_REQUEST);
-    }
+    return this.prisma.affiliation.delete({
+      where: {
+        id,
+      },
+    });
   }
 
   async update(key: string, update: AffiliationEditDTO): Promise<AffiliationDTO> {

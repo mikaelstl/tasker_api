@@ -1,11 +1,9 @@
-import { BadRequestException, HttpException, HttpStatus, Injectable, Logger, NotFoundException } from "@nestjs/common";
+import { Injectable } from '@nestjs/common';
 import { AccessValidator } from "src/common/interfaces/AccessValidator";
 import { MembersRepository } from "./member.repository";
 
 @Injectable()
 export class MembersService implements AccessValidator {
-  private readonly logger: Logger = new Logger('MembersService');
-
   constructor(
     private readonly repository: MembersRepository
   ) { }

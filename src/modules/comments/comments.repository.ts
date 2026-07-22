@@ -1,4 +1,5 @@
-import { HttpException, HttpStatus, Injectable, NotFoundException } from "@nestjs/common";
+import { HttpStatus, Injectable } from '@nestjs/common';
+import { BusinessException } from 'src/common/errors/business.exception';
 import { PrismaService } from "src/database/prisma.service";
 import { CreateCommentDTO } from "@modules/comments/dto/comment.create.dto";
 import { CommentDTO } from "@modules/comments/dto/comment.dto";
@@ -39,7 +40,7 @@ export class CommentsRepository {
     });
 
     if (!comment) {
-      throw new NotFoundException('Comentário não encontrado.');
+      throw new BusinessException('Comentário não encontrado.', HttpStatus.NOT_FOUND);
     }
 
     return comment;
@@ -64,7 +65,7 @@ export class CommentsRepository {
     });
 
     if (!result) {
-      throw new NotFoundException('Comentário não encontrado.');
+      throw new BusinessException('Comentário não encontrado.', HttpStatus.NOT_FOUND);
     }
 
     return result;

@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable, NotFoundException } from "@nestjs/common";
+import { Injectable } from '@nestjs/common';
 import { $Enums } from "generated/prisma";
 import { PrismaService } from "src/database/prisma.service";
 import { DefineMemberDTO } from "@modules/members/dto/member.create.dto";
@@ -10,52 +10,31 @@ export class MembersRepository {
   ) { }
 
   async create(data: DefineMemberDTO) {
-    try {
-      const result = await this.prisma.member.create({
-        data: {
-          userkey: data.user,
-          projectkey: data.project,
-        }
-      });
-
-      return result;
-    } catch (err: any) {
-      throw new HttpException('Não foi possível adicionar o membro.', HttpStatus.BAD_REQUEST);
-    }
+    return this.prisma.member.create({
+      data: {
+        userkey: data.user,
+        projectkey: data.project,
+      },
+    });
   }
 
   async list(projectkey: string) {
-    try {
-      const projects = await this.prisma.member.findMany({
-        where: {
-          projectkey: projectkey
-        },
-        include: {
-          tasks: true
-        }
-      });
-      return projects;
-    } catch (err: any) {
-      throw new HttpException('Não foi possível listar os membros.', HttpStatus.BAD_REQUEST);
-    }
+    return this.prisma.member.findMany({
+      where: {
+        projectkey,
+      },
+      include: {
+        tasks: true,
+      },
+    });
   }
 
   async delete(id: string) {
-    try {
-      const result = await this.prisma.member.delete({
-        where: {
-          id: id
-        }
-      });
-
-      if (!result) {
-        throw new NotFoundException('Membro não encontrado.');
-      }
-
-      return result;
-    } catch (err: any) {
-      throw new HttpException('Não foi possível remover o membro.', HttpStatus.BAD_REQUEST);
-    }
+    return this.prisma.member.delete({
+      where: {
+        id,
+      },
+    });
   }
 
   async participates(projectkey: string, userkey: string) {

@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable, Logger } from "@nestjs/common";
+import { Injectable, Logger } from '@nestjs/common';
 import { AccountRepository } from "./account.repository";
 import { CreateAccountDTO } from "@modules/accounts/dto/create.dto";
 import { AccountDTO } from "@modules/accounts/dto/account.dto";
@@ -13,16 +13,12 @@ export class AccountService {
   ) { }
 
   async dataWithEncryptedPass(data: CreateAccountDTO): Promise<CreateAccountDTO> {
-    try {
-      const hashed = await hash(data.password, 8);
+    const hashed = await hash(data.password, 8);
 
-      return {
-        email: data.email,
-        password: hashed
-      };
-    } catch (err: any) {
-      throw new HttpException('Não foi possível processar a senha.', HttpStatus.BAD_REQUEST);
-    }
+    return {
+      email: data.email,
+      password: hashed,
+    };
   }
 
   async createAccount(data: CreateAccountDTO): Promise<AccountDTO> {

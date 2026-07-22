@@ -1,4 +1,4 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { Injectable } from '@nestjs/common';
 import { MembersRepository } from "@modules/members/member.repository";
 import { ProjectRepository } from "@modules/projects/projects.repository";
 import { $Enums, OrgRole } from "generated/prisma";
@@ -7,6 +7,7 @@ import { CreateProjectDTO } from "@modules/projects/dto/project.create.dto";
 import { CurrentAccountDTO } from "@modules/users/dto/current-account.dto";
 import { ProjectDTO } from "@modules/projects/dto/project.dto";
 import { AccessValidator } from "src/common/interfaces/AccessValidator";
+import { InternalException } from 'src/common/errors/internal.exception';
 
 type ListMethodCommand = {
   [K in OrgRole]: (key: string) => Promise<ProjectDTO[]>
@@ -14,8 +15,6 @@ type ListMethodCommand = {
 
 @Injectable()
 export class ProjectService implements AccessValidator {
-  private readonly logger: Logger = new Logger('ProjectService');
-
   constructor(
     private readonly repository: ProjectRepository,
   ) { }
@@ -40,26 +39,23 @@ export class ProjectService implements AccessValidator {
     try {
       return await this.repository.isOwnedByUser(targetkey, subjectkey);
     } catch (err) {
-      this.logger.warn("[ERROR] to verify project ownership.", err);
-      return false;
+      throw new InternalException('Falha ao verificar a propriedade do projeto.', err);
     }
   }
 
   public async manage(subjectkey: string, targetkey: string): Promise<boolean> {
     try {
-      return this.repository.isManagedByUser(targetkey, subjectkey);
+      return await this.repository.isManagedByUser(targetkey, subjectkey);
     } catch (err) {
-      this.logger.warn("[ERROR] to check the project manager.", err);
-      return false;
+      throw new InternalException('Falha ao verificar o gerenciamento do projeto.', err);
     }
   }
 
   public async participates(subjectkey: string, targetkey: string): Promise<boolean> {
     try {
-      return this.repository.hasMemberUser(targetkey, subjectkey);
+      return await this.repository.hasMemberUser(targetkey, subjectkey);
     } catch (err: any) {
-      this.logger.warn("[ERROR] to verify project membership.", err);
-      return false;
+      throw new InternalException('Falha ao verificar a participação no projeto.', err);
     }
   }
 }

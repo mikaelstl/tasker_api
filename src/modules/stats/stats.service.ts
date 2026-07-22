@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException
-} from "@nestjs/common";
+import { HttpStatus, Injectable } from '@nestjs/common';
 import {
   Prisma,
   ProjectHealthStatus,
@@ -27,6 +23,9 @@ import {
   StatsTaskRecord,
   StatsUser
 } from "./stats.types";
+import { BusinessException } from 'src/common/errors/business.exception';
+import { InternalException } from 'src/common/errors/internal.exception';
+import { ValidationException } from 'src/common/errors/validation.exception';
 
 const DAY_IN_MS = 24 * 60 * 60 * 1000;
 const MINUTE_IN_MS = 60 * 1000;
@@ -57,7 +56,7 @@ export class StatsService {
     const project = await this.queries.findProject(projectkey);
 
     if (!project) {
-      throw new NotFoundException("Projeto não encontrado.");
+      throw new BusinessException('Projeto não encontrado.', HttpStatus.NOT_FOUND);
     }
 
     const effectivePeriod = period
@@ -245,27 +244,27 @@ export class StatsService {
     ]);
 
     if (!task) {
-      throw new NotFoundException("Tarefa não encontrada.");
+      throw new BusinessException('Tarefa não encontrada.', HttpStatus.NOT_FOUND);
     }
 
     if (!member) {
-      throw new NotFoundException("Membro não encontrado.");
+      throw new BusinessException('Membro não encontrado.', HttpStatus.NOT_FOUND);
     }
 
     if (task.projectkey !== member.projectkey) {
-      throw new BadRequestException(
+      throw new BusinessException(
         "A tarefa e o membro devem pertencer ao mesmo projeto."
       );
     }
 
     if (task.ownerkey !== member.id) {
-      throw new BadRequestException(
+      throw new BusinessException(
         "O membro do registro de trabalho deve ser o responsável pela tarefa."
       );
     }
 
     if (!task.started_at) {
-      throw new BadRequestException(
+      throw new BusinessException(
         "A tarefa deve possuir started_at antes que seu tempo de trabalho possa ser registrado."
       );
     }
@@ -291,7 +290,7 @@ export class StatsService {
     );
 
     if (minutes <= 0) {
-      throw new BadRequestException(
+      throw new BusinessException(
         "Não há tempo de trabalho da tarefa pendente de registro."
       );
     }
@@ -363,7 +362,7 @@ export class StatsService {
       }
     } catch (error) {
       await this.snapshots.delete(snapshot.id);
-      throw error;
+      throw new InternalException('Falha ao gerar o snapshot de estatísticas.', error);
     }
 
     return {
@@ -376,7 +375,7 @@ export class StatsService {
     const snapshot = await this.snapshots.findById(snapshotkey);
 
     if (!snapshot) {
-      throw new NotFoundException("Snapshot de estatísticas não encontrado.");
+      throw new BusinessException('Snapshot de estatísticas não encontrado.', HttpStatus.NOT_FOUND);
     }
 
     const tasks = await this.periodTasks.list(
@@ -454,7 +453,7 @@ export class StatsService {
       });
     } catch (error) {
       await this.reports.delete(report.id);
-      throw error;
+      throw new InternalException('Falha ao gerar o relatório de estatísticas.', error);
     }
 
     return {
@@ -470,7 +469,7 @@ export class StatsService {
       projectkey !== undefined
       && report.projectkey !== projectkey
     )) {
-      throw new NotFoundException("Relatório de estatísticas não encontrado.");
+      throw new BusinessException('Relatório de estatísticas não encontrado.', HttpStatus.NOT_FOUND);
     }
 
     return report;
@@ -718,7 +717,7 @@ export class StatsService {
     }
 
     if (periodType !== StatsPeriodType.WEEK) {
-      throw new BadRequestException("Tipo de período estatístico não suportado.");
+      throw new ValidationException('Tipo de período estatístico não suportado.');
     }
 
     const start = this.startOfIsoWeek(reference);
@@ -737,13 +736,13 @@ export class StatsService {
     this.assertValidDate(period.end, "period.end");
 
     if (period.start.getTime() > period.end.getTime()) {
-      throw new BadRequestException(
+      throw new ValidationException(
         "O início do período deve ser anterior ao fim do período."
       );
     }
 
     if (cutoffAt.getTime() < period.start.getTime()) {
-      throw new BadRequestException(
+      throw new ValidationException(
         "A data de corte deve estar dentro ou depois do período solicitado."
       );
     }
@@ -891,7 +890,7 @@ export class StatsService {
 
   private assertValidDate(value: Date, field: string): void {
     if (!(value instanceof Date) || Number.isNaN(value.getTime())) {
-      throw new BadRequestException(`${field} deve ser uma data válida.`);
+      throw new ValidationException(`${field} deve ser uma data válida.`);
     }
   }
 

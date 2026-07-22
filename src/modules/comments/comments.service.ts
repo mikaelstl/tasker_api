@@ -1,10 +1,9 @@
-import { BadRequestException, HttpException, HttpStatus, Injectable, Logger, NotFoundException } from "@nestjs/common";
+import { Injectable } from '@nestjs/common';
 import { CommentsRepository } from "./comments.repository";
+import { InternalException } from 'src/common/errors/internal.exception';
 
 @Injectable()
 export class CommentsService {
-  private readonly logger: Logger = new Logger('CommentsService');
-  
   constructor (
     private readonly repository: CommentsRepository
   ) {}
@@ -21,8 +20,7 @@ export class CommentsService {
 
       return result;
     } catch (err) {
-      this.logger.warn("[ERROR] to verify comment ownership.", err);
-      return false;
+      throw new InternalException('Falha ao verificar a propriedade do comentário.', err);
     }
   }
 }

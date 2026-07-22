@@ -1,5 +1,6 @@
 import { ProjectNotExistsException } from "src/common/errors/project_not_exists.exception";
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { HttpStatus, Injectable } from '@nestjs/common';
+import { BusinessException } from 'src/common/errors/business.exception';
 import { PrismaService } from "src/database/prisma.service";
 import { EditProjectDTO } from "@modules/projects/dto/edit.dto";
 import { CreateProjectDTO } from "@modules/projects/dto/project.create.dto";
@@ -28,7 +29,7 @@ export class ProjectRepository {
     });
 
     if (!exists) {
-      throw new NotFoundException("Projeto não encontrado.")
+      throw new BusinessException('Projeto não encontrado.', HttpStatus.NOT_FOUND);
     }
 
     return;
@@ -135,7 +136,7 @@ export class ProjectRepository {
     });
 
     if (!current) {
-      throw new NotFoundException("Projeto não encontrado.");
+      throw new BusinessException('Projeto não encontrado.', HttpStatus.NOT_FOUND);
     }
 
     const deadline = update.deadline ?? current.deadline;
@@ -175,7 +176,7 @@ export class ProjectRepository {
     });
 
     if (!response) {
-      throw new NotFoundException('Projeto não encontrado.');
+      throw new BusinessException('Projeto não encontrado.', HttpStatus.NOT_FOUND);
     }
 
     return response;

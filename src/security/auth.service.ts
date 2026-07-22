@@ -1,14 +1,15 @@
-import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { SECRET } from '@config/env.config';
 import { AuthDTO } from '@security/dto/auth.dto';
-import { WrongPasswordException } from 'src/common/errors/wrong_password.exception';
-import { compare, compareSync, hash } from 'bcrypt'
+import { compare } from 'bcrypt';
 import { LoginDTO } from '@security/dto/login.dto';
 import { JwtPayload } from 'jsonwebtoken';
 import { AccountRepository } from '@modules/accounts/account.repository';
 import { JWTPayload } from 'src/common/interfaces/JWTPayload';
 import { UserRepository } from '@modules/users/user.repository';
+import { BusinessException } from 'src/common/errors/business.exception';
+import { InternalException } from 'src/common/errors/internal.exception';
 
 @Injectable()
 export class AuthService {
@@ -18,22 +19,30 @@ export class AuthService {
     private readonly jwt: JwtService,
   ) { }
 
-  async validate(token: string): Promise<boolean | null> {
+  async validate(header: string): Promise<boolean | null> {
+    const token = this.extractTokenFromHeader(header);
+
+    let decoded: JwtPayload;
+
     try {
-      const decoded = this.jwt.verify<JwtPayload>(token, {
+      decoded = this.jwt.verify<JwtPayload>(token, {
         secret: SECRET,
       });
+    } catch (error) {
+      throw new BusinessException('Você não tem autorização para realizar esta ação. Entre na sua conta ou crie uma nova.', HttpStatus.UNAUTHORIZED);
+    }
 
-      const exists = await this.accounts.find(decoded.email);
-
-      if (!exists) {
-        throw new UnauthorizedException("Você não tem autorização para realizar esta ação. Entre na sua conta ou crie uma nova.");
+    try {
+      await this.accounts.find(decoded.email);
+    } catch (error) {
+      if (error instanceof BusinessException) {
+        throw new BusinessException('Você não tem autorização para realizar esta ação. Entre na sua conta ou crie uma nova.', HttpStatus.UNAUTHORIZED);
       }
 
-      return true;
-    } catch (err: any) {
-      throw new UnauthorizedException("Você não tem autorização para realizar esta ação. Entre na sua conta ou crie uma nova.");
+      throw new InternalException('Falha ao validar a conta autenticada.', error);
     }
+
+    return true;
   }
 
   async login(data: LoginDTO): Promise<AuthDTO> {
@@ -41,15 +50,15 @@ export class AuthService {
     const user = await this.users.find({
       accountkey: account.id
     })
-    
+
     const match: boolean = await compare(data.password, account.password);
 
     if (!account || !user) {
-      throw new NotFoundException('Nenhum usuário ou conta foi encontrado com os dados informados.')
+      throw new BusinessException('Nenhum usuário ou conta foi encontrado com os dados informados.', HttpStatus.NOT_FOUND);
     }
 
     if (account && !match) {
-      throw new UnauthorizedException('Senha incorreta. Informe a senha correta ou altere sua senha.');
+      throw new BusinessException('Senha incorreta. Informe a senha correta ou altere sua senha.', HttpStatus.UNAUTHORIZED);
     }
 
     const payload: JWTPayload = { sub: account.id!, username: user.username, email: account.email };
@@ -63,7 +72,15 @@ export class AuthService {
       access_token: token
     };
 
-    
+
     return acc;
+  }
+
+  private extractTokenFromHeader(header: String) {
+    if (!header) return undefined;
+
+    const [type, token] = header?.split(' ') ?? [];
+
+    return type === 'Bearer' ? token : undefined;
   }
 }

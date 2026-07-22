@@ -1,4 +1,6 @@
-import { BadRequestException, HttpException, HttpStatus, Injectable, Logger, NotFoundException } from "@nestjs/common";
+import { HttpStatus, Injectable } from '@nestjs/common';
+import { BusinessException } from 'src/common/errors/business.exception';
+import { InternalException } from 'src/common/errors/internal.exception';
 import { OrgRole } from "generated/prisma";
 import { AffiliationRepository } from "./affiliations.repository";
 import { DefineAffiliationDTO } from "./dto/define.dto";
@@ -17,8 +19,6 @@ type AffiliationRoleTrasistion = {
 
 @Injectable()
 export class AffiliationService implements AccessValidator {
-  private logger: Logger = new Logger('AffiliationService');
-
   constructor(
     private readonly repository: AffiliationRepository,
   ) { }
@@ -44,24 +44,22 @@ export class AffiliationService implements AccessValidator {
       'OWNER': (affiliation: AffiliationDTO) => { return null }
     }
 
-    try {
-      const value = await this.repository.findById(key);
+    const value = await this.repository.findById(key);
 
-      if (value.role === OrgRole.OWNER) {
-        return {
-          message: `O usuário já possui a função máxima: OWNER. Não é possível promovê-lo.`,
-          timestamp: new Date().toISOString()
-        } as APIMessage;
-      }
-
-      const data = RolePromotes[value.role](value);
-
-      const result = await this.repository.update(key, data);
-
-      return result;
-    } catch (err: any) {
-      throw new HttpException('Não foi possível promover a afiliação.', HttpStatus.BAD_REQUEST);
+    if (!value) {
+      throw new BusinessException('Afiliação não encontrada.', HttpStatus.NOT_FOUND);
     }
+
+    if (value.role === OrgRole.OWNER) {
+      return {
+        message: `O usuário já possui a função máxima: OWNER. Não é possível promovê-lo.`,
+        timestamp: new Date().toISOString()
+      } as APIMessage;
+    }
+
+    const data = RolePromotes[value.role](value);
+
+    return this.repository.update(key, data);
   }
 
   async demote(key: string): Promise<AffiliationDTO | APIMessage> {
@@ -77,72 +75,52 @@ export class AffiliationService implements AccessValidator {
                   }
     }
 
-    try {
-      const value = await this.repository.findById(key);
+    const value = await this.repository.findById(key);
 
-      if (value.role === OrgRole.OWNER) {
-        return {
-          message: `O usuário possui a função OWNER. Não é possível rebaixá-lo por esta operação.`,
-          timestamp: new Date().toISOString()
-        } as APIMessage;
-      }
-
-      const data = RolePromotes[value.role](value);
-
-      const result = await this.repository.update(key, data);
-      
-      return result;
-    } catch (err: any) {
-      throw new HttpException('Não foi possível rebaixar a afiliação.', HttpStatus.BAD_REQUEST);
+    if (!value) {
+      throw new BusinessException('Afiliação não encontrada.', HttpStatus.NOT_FOUND);
     }
+
+    if (value.role === OrgRole.OWNER) {
+      return {
+        message: `O usuário possui a função OWNER. Não é possível rebaixá-lo por esta operação.`,
+        timestamp: new Date().toISOString()
+      } as APIMessage;
+    }
+
+    const data = RolePromotes[value.role](value);
+
+    return this.repository.update(key, data);
   }
 
   async findByUserAndOrgkey(
     userkey: string,
     orgkey: string
   ): Promise<AffiliationDTO> {
-    try {
-      const result = await this.repository.findByUserAndOrgkey(
-        userkey,
-        orgkey
-      );
+    const result = await this.repository.findByUserAndOrgkey(
+      userkey,
+      orgkey
+    );
 
-      this.logger.log(result);
-
-      if (!result) {
-        throw new NotFoundException("Este membro não pertence à organização.")
-      }
-
-      return result;
-    } catch (err: any) {
-      throw new BadRequestException('Não foi possível localizar o membro na organização.')
+    if (!result) {
+      throw new BusinessException('Este membro não pertence à organização.', HttpStatus.NOT_FOUND);
     }
+
+    return result;
   }
 
   async getUserOrganizations(
     userkey: string
   ): Promise<UserOrganizationSummaryDTO[]> {
-    try {
-      return await this.repository.findOrganizationsByUser(userkey);
-    } catch (err: any) {
-      throw new BadRequestException('Não foi possível listar as organizações do usuário.')
-    }
+    return this.repository.findOrganizationsByUser(userkey);
   }
 
   async getOrganizationsByUser(
     userkey: string,
   ) {
-    try {
-      const result = await this.repository.findOrganizationsByUser(userkey);
+    const result = await this.repository.findOrganizationsByUser(userkey);
 
-      if (!result) {
-        return [];
-      }
-
-      return result;
-    } catch (err: any) {
-      throw new BadRequestException('Não foi possível listar as organizações do usuário.')
-    }
+    return result ?? [];
   }
 
   async participates(userkey: string, orgkey: string): Promise<boolean> {
@@ -154,8 +132,7 @@ export class AffiliationService implements AccessValidator {
 
       return !!affiliation;
     } catch (err: any) {
-      this.logger.warn('[ERRO] ao verificar participação do usuário na organização.', err);
-      return false;
+      throw new InternalException('Falha ao verificar a participação do usuário na organização.', err);
     }
   }
 

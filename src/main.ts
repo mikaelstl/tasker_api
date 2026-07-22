@@ -1,10 +1,18 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app/app.module';
 import { API_PORT } from './config/env.config';
-import { ValidationPipe } from '@nestjs/common';
-import { HttpExceptionFilter } from './common/filters/exception.filter';
-import { ResponseInterceptor } from './common/filters/response.filter';
+import { ValidationError, ValidationPipe } from '@nestjs/common';
+import { BusinessExceptionFilter } from './common/filters/business-exception.filter';
 import { ValidationExceptionFilter } from 'src/common/filters/validation.filter';
+import { InternalExceptionFilter } from './common/filters/internal-exception.filter';
+import { ValidationException } from './common/errors/validation.exception';
+
+function validationMessages(errors: ValidationError[]): string[] {
+  return errors.flatMap((error) => [
+    ...Object.values(error.constraints ?? {}),
+    ...validationMessages(error.children ?? []),
+  ]);
+}
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -21,11 +29,14 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe({
     whitelist: true,
     forbidNonWhitelisted: true,
-    transform: true
+    transform: true,
+    exceptionFactory: (errors) => new ValidationException(validationMessages(errors)),
   }));
   
+  // O Nest avalia os filters globais na ordem inversa do registro.
   app.useGlobalFilters(
-    new HttpExceptionFilter(),
+    new InternalExceptionFilter(),
+    new BusinessExceptionFilter(),
     new ValidationExceptionFilter(),
   );
   

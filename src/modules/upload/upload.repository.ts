@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from "src/database/prisma.service";
 import { CreateImageDTO } from "@modules/upload/dto/image.create.dto";
 
@@ -9,28 +9,16 @@ export class UploadRepository {
   ) {}
 
   async create(data: CreateImageDTO) {
-    try {
-      const image = this.prisma.image.create({
-        data: data
-      })
-
-      return image
-    } catch (err: any) {
-      throw new HttpException('Não foi possível salvar a imagem.', HttpStatus.BAD_REQUEST);
-    }
+    return this.prisma.image.create({
+      data,
+    });
   }
 
   async delete(id: string) {
-    try {
-      const image = this.prisma.image.delete({
-        where: {
-          id
-        }
-      })
-
-      return image
-    } catch (err: any) {
-      throw new HttpException('Não foi possível excluir a imagem.', HttpStatus.BAD_REQUEST);
-    }
+    return this.prisma.image.delete({
+      where: {
+        id,
+      },
+    });
   }
 }

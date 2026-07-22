@@ -1,10 +1,11 @@
 import { ApiResponse } from "src/common/interfaces/ApiResponse";
-import { Body, Controller, Delete, Get, Headers, HttpException, HttpStatus, Param, Post, Put, Query, Res, UploadedFile, UseGuards, UseInterceptors } from "@nestjs/common";
+import { Headers, HttpStatus, Post, Res, UploadedFile, UseGuards, UseInterceptors, Controller } from '@nestjs/common';
 import { FileInterceptor } from "@nestjs/platform-express";
 import { JwtAuthGuard } from "../../security/auth.guard";
 import { UploadService } from "@modules/upload/upload.service";
 import { CreateCommentDTO } from "@modules/comments/dto/comment.create.dto";
 import { CommentQueryDTO } from "@modules/comments/dto/comment.query.dto";
+import { ValidationException } from 'src/common/errors/validation.exception';
 
 @Controller('upload')
 @UseGuards(JwtAuthGuard)
@@ -18,7 +19,7 @@ export class UploadController {
     fileFilter: (_, file, callback) => {
       if (!file.mimetype.startsWith('image/')) {
         return callback(
-          new HttpException('Envie apenas arquivos de imagem.', HttpStatus.BAD_REQUEST),
+          new ValidationException('Envie apenas arquivos de imagem.'),
           false
         );
       }

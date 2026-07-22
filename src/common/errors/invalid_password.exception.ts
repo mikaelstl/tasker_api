@@ -1,7 +1,7 @@
-import { HttpException } from "@nestjs/common";
+import { ValidationException } from './validation.exception';
 
-export class InvalidPasswordException extends HttpException {
-  constructor(message: string, status: number) {
-    super(message, status)
+export class InvalidPasswordException extends ValidationException {
+  constructor(message: string) {
+    super(message);
   }
 }

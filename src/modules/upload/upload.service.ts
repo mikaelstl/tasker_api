@@ -1,8 +1,10 @@
 import { SUPABASE_BUCKET, SUPABASE_KEY, SUPABASE_URL } from "@config/env.config";
-import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
+import { Injectable } from '@nestjs/common';
 import { UploadRepository } from "@modules/upload/upload.repository";
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
 import { randomUUID } from "crypto";
+import { ValidationException } from 'src/common/errors/validation.exception';
+import { InternalException } from 'src/common/errors/internal.exception';
 
 @Injectable()
 export class UploadService {
@@ -18,8 +20,10 @@ export class UploadService {
   }
 
   async upload(file: Express.Multer.File, user: string) {
-    if (!file) throw new HttpException('Nenhum arquivo foi enviado.', HttpStatus.BAD_REQUEST);
-    if (!file.mimetype.startsWith('image/')) throw new HttpException('Envie apenas arquivos de imagem.', HttpStatus.BAD_REQUEST);
+    if (!file) throw new ValidationException('Nenhum arquivo foi enviado.');
+    if (!file.mimetype.startsWith('image/')) {
+      throw new ValidationException('Envie apenas arquivos de imagem.');
+    }
 
     const fileExt = file.originalname.split('.').pop();
     const filename = `${randomUUID()}.${fileExt}`;
@@ -32,7 +36,9 @@ export class UploadService {
                                     upsert: false
                                   });
 
-    if (error) throw new HttpException('Não foi possível enviar a imagem.', HttpStatus.BAD_REQUEST);
+    if (error) {
+      throw new InternalException('Falha na comunicação com o serviço de imagens.', error);
+    }
 
     const { data: publicUrl } = this.supabase.storage.from(SUPABASE_BUCKET).getPublicUrl(filename);
 

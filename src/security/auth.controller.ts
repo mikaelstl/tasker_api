@@ -62,9 +62,9 @@ export class AuthController {
     @Res() resp,
     @Headers('Authorization') auth: string
   ) {
-    const token = auth.split(' ')[1];
+    // const token = auth.split(' ')[1];
 
-    const result: boolean = await this.service.validate(token);
+    const result: boolean = await this.service.validate(auth);
 
     const response: ApiResponse = {
       status: HttpStatus.OK,

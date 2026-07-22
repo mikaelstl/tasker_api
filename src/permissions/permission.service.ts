@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable } from "@nestjs/common";
+import { Injectable } from '@nestjs/common';
 import { BaseActions } from "@enums/Actions.enum";
 import { Resources } from "@enums/Resources.enum";
 import { OrgRole } from "generated/prisma";

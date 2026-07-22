@@ -1,4 +1,4 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { Injectable } from '@nestjs/common';
 import { OrganizationRepository } from "./organization.repository";
 import { ProjectRepository } from "@modules/projects/projects.repository";
 import { UserRepository } from "@modules/users/user.repository";
@@ -8,11 +8,10 @@ import { AffiliationRepository } from "@modules/affiliations/affiliations.reposi
 import { OrgRole } from "generated/prisma";
 import { AccessValidator } from "src/common/interfaces/AccessValidator";
 import { Resources } from "src/common/enums/Resources.enum";
+import { InternalException } from 'src/common/errors/internal.exception';
 
 @Injectable()
 export class OrganizationService implements AccessValidator {
-  private readonly logger: Logger = new Logger('AcountService');
-
   constructor(
     private readonly repository: OrganizationRepository,
     // private readonly projects: ProjectRepository,
@@ -46,8 +45,7 @@ export class OrganizationService implements AccessValidator {
 
       return result;
     } catch (err) {
-      this.logger.warn("[ERROR] to verify organization ownership.", err)
-      return false;
+      throw new InternalException('Falha ao verificar a propriedade da organização.', err);
     }
   }
 
@@ -59,8 +57,7 @@ export class OrganizationService implements AccessValidator {
 
       return !!value;
     } catch (err) {
-      this.logger.warn("[ERROR] to verify organization membership.", err)
-      return false;
+      throw new InternalException('Falha ao verificar a participação na organização.', err);
     }
   }
 }

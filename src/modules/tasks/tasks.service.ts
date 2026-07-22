@@ -1,11 +1,10 @@
-import { BadRequestException, HttpException, HttpStatus, Injectable, Logger, NotFoundException } from "@nestjs/common";
+import { Injectable } from '@nestjs/common';
 import { TasksRepository } from "./tasks.repository";
 import { AccessValidator } from "src/common/interfaces/AccessValidator";
+import { InternalException } from 'src/common/errors/internal.exception';
 
 @Injectable()
 export class TasksService implements AccessValidator {
-  private logger: Logger = new Logger('TasksService');
-  
   constructor (
     private readonly repository: TasksRepository
   ) {}
@@ -21,8 +20,7 @@ export class TasksService implements AccessValidator {
 
       return result;
     } catch (err) {
-      this.logger.warn("[ERROR] to verify task ownership.", err);
-      return false;
+      throw new InternalException('Falha ao verificar a propriedade da tarefa.', err);
     }
   }
 }

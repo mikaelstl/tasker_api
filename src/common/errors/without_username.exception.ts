@@ -1,7 +1,7 @@
-import { HttpException } from "@nestjs/common";
+import { ValidationException } from './validation.exception';
 
-export class WithoutUsernameException extends HttpException {
+export class WithoutUsernameException extends ValidationException {
   constructor() {
-    super('O usuário deve ter um nome de usuário.', 400);
+    super('O usuário deve ter um nome de usuário.');
   }
 }

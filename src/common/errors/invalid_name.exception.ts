@@ -1,7 +1,7 @@
-import { HttpException } from "@nestjs/common";
+import { ValidationException } from './validation.exception';
 
-export class InvalidNameException extends HttpException {
+export class InvalidNameException extends ValidationException {
   constructor(message: string) {
-    super(message, 400);
+    super(message);
   }
 }

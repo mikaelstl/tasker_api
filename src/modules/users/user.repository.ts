@@ -1,4 +1,4 @@
-import { BadRequestException, HttpException, HttpStatus, Injectable, Logger } from "@nestjs/common";
+import { Injectable, Logger } from '@nestjs/common';
 import { UserDTO } from "@modules/users/dto/user.dto";
 import { AlreadyExistsException } from "src/common/errors/user_exists.error";
 import { UserNotExistsException } from "src/common/errors/user_not_exists.exception";
@@ -28,29 +28,17 @@ export class UserRepository {
 
   async create(data: CreateUserDTO): Promise<UserDTO> {
     await this.userExists(data.username);
-    try {
-      const result = await this.prisma.user.create({
-        data: {
-          name: data.name,
-          username: data.username,
-          accountkey: data.accountkey
-        }
-      });
-  
-      return result;
-    } catch (err: any) {
-      throw new HttpException('Não foi possível criar o usuário.', HttpStatus.BAD_REQUEST);
-    }
+    return this.prisma.user.create({
+      data: {
+        name: data.name,
+        username: data.username,
+        accountkey: data.accountkey,
+      },
+    });
   }
 
   async list(): Promise<UserDTO[]> {
-    try {
-      const response = await this.prisma.user.findMany();
-
-      return response;
-    } catch (err: any) {
-      throw new HttpException('Não foi possível listar os usuários.', HttpStatus.BAD_REQUEST);
-    }
+    return this.prisma.user.findMany();
   }
 
   async find(queries: UserQueryDTO): Promise<UserDTO> {
@@ -68,31 +56,19 @@ export class UserRepository {
   }
 
   async edit(username: string, update: any): Promise<UserDTO> {
-    try {
-      const result = await this.prisma.user.update({
-        data: update,
-        where: {
-          username: username
-        }
-      });
-      
-      return result;
-    } catch (err: any) {
-      throw new HttpException('Não foi possível atualizar o usuário.', HttpStatus.BAD_REQUEST);
-    }
+    return this.prisma.user.update({
+      data: update,
+      where: {
+        username,
+      },
+    });
   }
 
   async delete(key: string): Promise<UserDTO> {
-    try {
-      const result = await this.prisma.user.delete({
-        where: {
-          username: key
-        }
-      });
-      
-      return result;
-    } catch (err: any) {
-      throw new HttpException('Não foi possível excluir o usuário.', HttpStatus.BAD_REQUEST);
-    }
+    return this.prisma.user.delete({
+      where: {
+        username: key,
+      },
+    });
   }
 }
