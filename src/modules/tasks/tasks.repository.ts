@@ -1,13 +1,15 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { ConflictException, Injectable, NotFoundException } from "@nestjs/common";
 import { customAlphabet } from "nanoid";
 import { PrismaService } from "src/database/prisma.service";
 import { TaskCreateDTO } from "@modules/tasks/dto/task.create.dto";
 import { TaskDTO } from "@modules/tasks/dto/task.dto";
 import { TaskQueryDTO } from "@modules/tasks/dto/task.query.dto";
-import { TaskStage } from "generated/prisma";
+import { Prisma, TaskStage } from "generated/prisma";
 
 @Injectable()
 export class TasksRepository {
+  private readonly maxCodeGenerationAttempts = 5;
+
   private nanoid = customAlphabet(
     'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', 6
   );
@@ -33,19 +35,34 @@ export class TasksRepository {
   }
 
   async create(data: TaskCreateDTO): Promise<TaskDTO> {
-    const task = await this.prisma.task.create({
-      data: {
-        code: this.generateCode(),
-        name: data.name,
-        description: data.description,
-        projectkey: data.project,
-        ownerkey: data.owner,
-        priority: data.priority,
-        deadline: data.deadline
-      }
-    });
+    for (let attempt = 0; attempt < this.maxCodeGenerationAttempts; attempt += 1) {
+      try {
+        const task = await this.prisma.task.create({
+          data: {
+            code: this.generateCode(),
+            name: data.name,
+            description: data.description,
+            projectkey: data.project,
+            ownerkey: data.owner,
+            priority: data.priority,
+            deadline: data.deadline
+          }
+        });
 
-    return this.toTaskDTO(task);
+        return this.toTaskDTO(task);
+      } catch (error) {
+        const codeCollision = error instanceof Prisma.PrismaClientKnownRequestError
+          && error.code === 'P2002';
+
+        if (!codeCollision) {
+          throw error;
+        }
+      }
+    }
+
+    throw new ConflictException(
+      'Não foi possível gerar um código único para a tarefa.'
+    );
   }
 
   async list(queries: TaskQueryDTO): Promise<TaskDTO[]> {
@@ -59,11 +76,13 @@ export class TasksRepository {
     return tasks.map((task) => this.toTaskDTO(task));
   }
 
-  async find(key: string, query?: TaskQueryDTO): Promise<TaskDTO> {
+  async find(projectkey: string, code: string): Promise<TaskDTO> {
     const task = await this.prisma.task.findUnique({
       where: {
-        id: key,
-        ...this.toTaskWhere(query ?? {})
+        projectkey_code: {
+          projectkey,
+          code
+        }
       },
       include: {
         owner: true
@@ -77,9 +96,14 @@ export class TasksRepository {
     return this.toTaskDTO(task);
   }
 
-  async edit(code: string, update: any): Promise<TaskDTO> {
+  async edit(projectkey: string, code: string, update: any): Promise<TaskDTO> {
     const current = await this.prisma.task.findUnique({
-      where: { code }
+      where: {
+        projectkey_code: {
+          projectkey,
+          code
+        }
+      }
     });
 
     if (!current) {
@@ -110,7 +134,10 @@ export class TasksRepository {
         delayed: current.delayed || becameDelayed
       },
       where: {
-        code: code
+        projectkey_code: {
+          projectkey,
+          code
+        }
       },
     });
 

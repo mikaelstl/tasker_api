@@ -10,6 +10,7 @@
   },
   "scripts": {
     "prisma:generate": "npx prisma generate",
+    "prisma:seed": "npx prisma db seed",
     "migrate": "npx prisma migrate dev",
     "migrate:new": "npx prisma migrate dev --name",
     "migrate:reset": "npx prisma migrate reset",
@@ -26,6 +27,9 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json"
+  },
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
   },
   "dependencies": {
     "@nestjs/common": "^10.4.20",

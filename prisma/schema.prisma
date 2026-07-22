@@ -43,7 +43,7 @@ model User {
   participates_in Affiliation[]
   audit_logs      AuditLog[]
 
-  organization Organization? @relation("OrgOwner")
+  organizations Organization[] @relation("OrgOwner")
 
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
@@ -55,7 +55,7 @@ model Organization {
   id   String @id @default(cuid())
   name String
 
-  ownerkey String @unique
+  ownerkey String
   owner    User   @relation("OrgOwner", fields: [ownerkey], references: [username])
 
   projects Project[]
@@ -113,6 +113,7 @@ model Project {
   delayed     Boolean  @default(false)
 
   stage ProjectStage @default(STARTED) @map("progress")
+  priority ProjectPriority @default(MEDIUM)
 
   orgkey String
   org    Organization @relation(fields: [orgkey], references: [id])
@@ -156,7 +157,7 @@ model Member {
 
 model Task {
   id   String @id @unique @default(cuid())
-  code String @unique
+  code String
 
   name        String
   description String
@@ -180,6 +181,7 @@ model Task {
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
+  @@unique([projectkey, code])
   @@index([delayed, deadline, stage])
   @@map("tasks")
 }
@@ -368,6 +370,13 @@ enum ProjectStage {
   IN_PROGRESS
   PAUSED
   COMPLETED
+}
+
+enum ProjectPriority {
+  LOW
+  MEDIUM
+  HIGH
+  EXTREME
 }
 
 enum EventCategory {

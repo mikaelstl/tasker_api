@@ -31,6 +31,24 @@ SECRET = "sua_key"
 > [!IMPORTANT]
 > Remova as chaves ({}).
 
+### Dados de desenvolvimento
+
+Após aplicar as migrações, carregue os dados de desenvolvimento com:
+
+```bash
+npm run prisma:seed
+```
+
+A seed é idempotente e inclui dados para todos os modelos da aplicação. Todas as
+contas usam e-mails `@tasker.dev`; as senhas seguem `Senha@01`, `Senha@02` e assim
+por diante. O usuário proprietário das organizações é:
+
+```text
+username: mikaelst
+email: mikael.15@tasker.dev
+password: Senha@01
+```
+
 ### Principais Bibliotecas
 
 - [NestJs](https://nestjs.com/) - biblioteca para estruturação da API, controllers, services e injeção de dependências.
@@ -168,7 +186,7 @@ Para que o sistema identifique suas permissões e seu perfil (Role) é necessár
 |  `PATCH` | `/demote/:id`  |      -     | Rebaixa um membro                          |      Sim     |          -          |
 | `DELETE` | `/remove/:id`  |      -     | Remove um membro da organização            |      Sim     | Sim (Somente OWNER) |
 
-#### Projetos (`/projects`)
+#### Projetos (`/project`)
 
 |  Método  |  Endpoint  |    Query   |           Descrição            | Autenticação |     Autorização     |
 |   :---   |    :---    |    :---    |             :---               |     :---     |        :---         |
@@ -177,6 +195,8 @@ Para que o sistema identifique suas permissões e seu perfil (Role) é necessár
 |  `GET`   |   `/:id`   | Via params | Retorna um projeto por id      |      Sim     |          -          |
 |  `PUT `  |   `/:id`   | Via params | Edita um projeto através do ID |      Sim     |          -          |
 | `DELETE` | `/del/:id` | Via params | Remove um projeto pelo seu ID  |      Sim     | Sim (Somente OWNER) |
+|  `GET`   | `/:id/stats` | `cutoffAt` opcional | Retorna as estatísticas consolidadas do projeto | Sim | OWNER ou MANAGER |
+|  `GET`   | `/:id/stats/members/performance` | `cutoffAt` opcional | Retorna o desempenho dos membros do projeto | Sim | OWNER ou MANAGER |
 
 #### Tarefas (`/tasks`)
 
@@ -184,8 +204,8 @@ Para que o sistema identifique suas permissões e seu perfil (Role) é necessár
 |   :---   |    :---    |    :---    |                      :---                           |     :---     |     :---    |
 | `POST`   | `/`        |      -     | Cria uma nova tarefa                                |      Sim     |       -     |
 | `GET`    | `/`        | Sim        | Lista todos as tarefas via queries                  |      Sim     |       -     |
-| `GET`    | `/:code`   | Via params | Retorna uma tarefa pelo código de identificação     |      Sim     |       -     |
-| `PUT`    | `/:code`   | Via params | Edita uma tarefa através do código de identificação |      Sim     |       -     |
+| `GET`    | `/:projectkey/:code` | Via params | Retorna uma tarefa pelo projeto e código             |      Sim     |       -     |
+| `PUT`    | `/:projectkey/:code` | Via params | Edita uma tarefa pelo projeto e código               |      Sim     |       -     |
 | `DELETE` | `/del/:id` | Via params | Remove uma tarefa pelo seu ID                       |      Sim     |       -     |
 
 #### Comentários (`/comments`)

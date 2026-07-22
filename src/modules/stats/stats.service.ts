@@ -20,6 +20,7 @@ import {
   GenerateReportInput,
   GenerateSnapshotInput,
   MemberStats,
+  ProjectMemberPerformance,
   ProjectStats,
   RecordTaskWorkLogInput,
   StatsPeriod,
@@ -140,7 +141,7 @@ export class StatsService {
         startedAt: project.started_at,
         doneAt: project.done_at,
         deadline: project.deadline,
-        organization: project.owner.name,
+        organization: project.org.name,
         manager: project.manager?.user.name ?? null,
         delayed: (
           project.delayed
@@ -184,6 +185,56 @@ export class StatsService {
         date: event.date,
         category: event.category
       }))
+    };
+  }
+
+  async getProjectMemberPerformance(
+    projectkey: string,
+    cutoffAt: Date = new Date()
+  ): Promise<ProjectMemberPerformance> {
+    const stats = await this.getProjectStats(projectkey, cutoffAt);
+    const performanceByMember = new Map(
+      stats.performancePerMember.map((performance) => [
+        performance.memberId,
+        performance
+      ])
+    );
+
+    return {
+      generatedAt: stats.generatedAt,
+      cutoffAt: stats.cutoffAt,
+      project: {
+        id: stats.project.id,
+        title: stats.project.title
+      },
+      members: stats.members.map((member) => {
+        const performance = performanceByMember.get(member.memberId);
+        const totalTasks = member.tasks.length;
+        const spentMinutes = member.tasks.reduce(
+          (total, task) => total + task.spentMinutes,
+          0
+        );
+
+        return {
+          memberId: member.memberId,
+          user: member.user,
+          totalTasks,
+          completedTasks: member.completedTasks,
+          completionRate: totalTasks === 0
+            ? 0
+            : this.round((member.completedTasks / totalTasks) * 100),
+          delayedTasks: member.delayedTasks,
+          delayRate: totalTasks === 0
+            ? 0
+            : this.round((member.delayedTasks / totalTasks) * 100),
+          startedTasks: member.startedTasks,
+          reviewTasks: member.reviewTasks,
+          spentMinutes,
+          spentHours: this.round(spentMinutes / 60),
+          averageHoursPerMonth: performance?.averageHoursPerMonth ?? 0,
+          months: performance?.months ?? []
+        };
+      })
     };
   }
 

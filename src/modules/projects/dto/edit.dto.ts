@@ -1,8 +1,9 @@
-import { ProjectStage } from "@modules/projects/dto/project.dto";
+import { ProjectPriority, ProjectStage } from "@modules/projects/dto/project.dto";
 
 export type EditProjectDTO = {
   title?: string,
   description?: string,
   deadline?: Date,
-  stage?: ProjectStage
+  stage?: ProjectStage,
+  priority?: ProjectPriority
 }

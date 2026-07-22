@@ -1,4 +1,4 @@
-import { ProjectStage } from "generated/prisma";
+import { ProjectStage, TaskStage } from "generated/prisma";
 import { StatsService } from "./stats.service";
 
 describe("StatsService member performance", () => {
@@ -12,7 +12,7 @@ describe("StatsService member performance", () => {
         done_at: null,
         delayed: false,
         deadline: new Date("2026-09-01T00:00:00.000Z"),
-        owner: {
+        org: {
           name: "Horizon Systems"
         },
         manager: null,
@@ -77,5 +77,104 @@ describe("StatsService member performance", () => {
     });
     expect(stats.members[0].tasks).toEqual([]);
     expect(stats.project.stage).toBe(ProjectStage.IN_PROGRESS);
+  });
+
+  it("returns task delivery and worked-time metrics for every project member", async () => {
+    const queries = {
+      findProject: jest.fn().mockResolvedValue({
+        id: "project-1",
+        title: "Tasker",
+        stage: ProjectStage.IN_PROGRESS,
+        started_at: new Date("2026-07-01T00:00:00.000Z"),
+        done_at: null,
+        delayed: false,
+        deadline: new Date("2026-08-01T00:00:00.000Z"),
+        org: {
+          name: "Horizon Systems"
+        },
+        manager: null,
+        events: [],
+        tasks: [
+          {
+            id: "task-1",
+            code: "TSK-001",
+            name: "Concluída",
+            stage: TaskStage.DONE,
+            delayed: false,
+            deadline: new Date("2026-07-10T00:00:00.000Z"),
+            ownerkey: "member-1",
+            started_at: new Date("2026-07-01T00:00:00.000Z"),
+            done_at: new Date("2026-07-05T00:00:00.000Z")
+          },
+          {
+            id: "task-2",
+            code: "TSK-002",
+            name: "Atrasada",
+            stage: TaskStage.IN_PROGRESS,
+            delayed: false,
+            deadline: new Date("2026-07-10T00:00:00.000Z"),
+            ownerkey: "member-1",
+            started_at: new Date("2026-07-08T00:00:00.000Z"),
+            done_at: null
+          }
+        ],
+        members: [{
+          id: "member-1",
+          user: {
+            user: {
+              username: "mikaelst",
+              name: "Mikael",
+              photo: null
+            }
+          }
+        }]
+      })
+    };
+    const workLogs = {
+      list: jest.fn().mockResolvedValue([
+        {
+          taskkey: "task-1",
+          memberkey: "member-1",
+          minutes: 120,
+          logged_at: new Date("2026-07-05T00:00:00.000Z")
+        },
+        {
+          taskkey: "task-2",
+          memberkey: "member-1",
+          minutes: 60,
+          logged_at: new Date("2026-07-15T00:00:00.000Z")
+        }
+      ])
+    };
+    const service = new StatsService(
+      queries as any,
+      workLogs as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any
+    );
+
+    const performance = await service.getProjectMemberPerformance(
+      "project-1",
+      new Date("2026-07-20T23:59:59.000Z")
+    );
+
+    expect(performance.project).toEqual({
+      id: "project-1",
+      title: "Tasker"
+    });
+    expect(performance.members[0]).toMatchObject({
+      memberId: "member-1",
+      totalTasks: 2,
+      completedTasks: 1,
+      completionRate: 50,
+      delayedTasks: 1,
+      delayRate: 50,
+      startedTasks: 1,
+      reviewTasks: 0,
+      spentMinutes: 180,
+      spentHours: 3
+    });
   });
 });

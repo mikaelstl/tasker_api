@@ -1,15 +1,16 @@
 import { MemberDTO } from "@modules/members/dto/member.dto";
-import { ProjectStage } from "generated/prisma";
+import { ProjectPriority, ProjectStage } from "generated/prisma";
 
-export { ProjectStage };
+export { ProjectPriority, ProjectStage };
 
 export interface ProjectDTO {
   readonly id: string;
   readonly title: string;
   readonly description?: string;
-  readonly ownerkey?: string;
+  readonly orgkey?: string;
   readonly deadline?: Date;
   readonly stage?: ProjectStage;
+  readonly priority?: ProjectPriority;
   readonly delayed: boolean;
 
   readonly members?: MemberDTO[];

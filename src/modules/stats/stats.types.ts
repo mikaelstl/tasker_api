@@ -44,6 +44,30 @@ export type MemberProductivity = {
   ratio: number;
 };
 
+export type ProjectMemberPerformance = {
+  generatedAt: Date;
+  cutoffAt: Date;
+  project: {
+    id: string;
+    title: string;
+  };
+  members: Array<{
+    memberId: string;
+    user: StatsUser;
+    totalTasks: number;
+    completedTasks: number;
+    completionRate: number;
+    delayedTasks: number;
+    delayRate: number;
+    startedTasks: number;
+    reviewTasks: number;
+    spentMinutes: number;
+    spentHours: number;
+    averageHoursPerMonth: number;
+    months: MemberPerformance["months"];
+  }>;
+};
+
 export type MemberStats = {
   memberId: string;
   user: StatsUser;

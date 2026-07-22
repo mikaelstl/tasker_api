@@ -39,7 +39,8 @@ export class ProjectRepository {
       data: {
         title: data.title,
         description: data.description,
-        ownerkey: data.ownerkey,
+        orgkey: data.orgkey,
+        priority: data.priority,
         deadline: data.deadline
       },
     });
@@ -78,7 +79,7 @@ export class ProjectRepository {
   async listByOrganizer(key: string): Promise<ProjectDTO[]> {
     const projects = await this.prisma.project.findMany({
       where: {
-        owner: {
+        org: {
           ownerkey: {
             equals: key
           }
@@ -158,6 +159,7 @@ export class ProjectRepository {
         description: update.description,
         deadline: update.deadline,
         stage: update.stage,
+        priority: update.priority,
         delayed: current.delayed || becameDelayed
       },
     });
@@ -199,6 +201,22 @@ export class ProjectRepository {
         id: projectkey,
         manager: {
           userkey: username
+        }
+      }
+    });
+
+    return result > 0;
+  }
+
+  async isOwnedByUser(
+    projectkey: string,
+    username: string
+  ): Promise<boolean> {
+    const result = await this.prisma.project.count({
+      where: {
+        id: projectkey,
+        org: {
+          ownerkey: username
         }
       }
     });

@@ -43,7 +43,7 @@ export class ProjectController {
   ) {
     const result = await this.service.create({
       ...data,
-      ownerkey: orgkey
+      orgkey
     });
 
     const resp: ApiResponse = {
@@ -67,7 +67,7 @@ export class ProjectController {
     @Res() response,
     @CurrentAccount() account: CurrentAccountDTO,
   ) {
-    const result = await this.repository.list({ ownerkey: orgkey });
+    const result = await this.repository.list({ ...queries, orgkey });
 
     const resp: ApiResponse = {
       status: HttpStatus.OK,
@@ -171,6 +171,32 @@ export class ProjectController {
       HttpStatus.OK,
       result,
       `/project/${id}/stats`
+    );
+  }
+
+  @Get('/:id/stats/members/performance')
+  @Role(OrgRole.OWNER, OrgRole.MANAGER)
+  @Resource(Resources.PROJECT_STATS)
+  @Action(BaseActions.SEEK)
+  @UseGuards(PermissionGuard)
+  async getProjectMemberPerformance(
+    @Param('id') id: string,
+    @Query() query: ProjectStatsQueryDTO,
+    @Res() response
+  ) {
+    const cutoffAt = query.cutoffAt
+      ? new Date(query.cutoffAt)
+      : new Date();
+    const result = await this.stats.getProjectMemberPerformance(
+      id,
+      cutoffAt
+    );
+
+    return this.respond(
+      response,
+      HttpStatus.OK,
+      result,
+      `/project/${id}/stats/members/performance`
     );
   }
 

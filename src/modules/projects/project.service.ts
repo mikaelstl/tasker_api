@@ -38,15 +38,7 @@ export class ProjectService implements AccessValidator {
 
   public async belongs(subjectkey: string, targetkey: string): Promise<boolean> {
     try {
-      const result = await this.repository.exists(
-        targetkey,
-        {
-          id: targetkey,
-          ownerkey: subjectkey
-        }
-      );
-
-      return result;
+      return await this.repository.isOwnedByUser(targetkey, subjectkey);
     } catch (err) {
       this.logger.warn("[ERROR] to verify project ownership.", err);
       return false;

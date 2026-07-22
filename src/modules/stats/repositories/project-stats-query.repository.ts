@@ -13,7 +13,7 @@ export class ProjectStatsQueryRepository {
         id: projectkey
       },
       include: {
-        owner: true,
+        org: true,
         manager: {
           include: {
             user: true

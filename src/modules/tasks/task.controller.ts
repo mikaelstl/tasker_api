@@ -63,23 +63,25 @@ export class TasksController {
     return response.status(resp.status).json(resp);
   }
 
-  @Get('/:code')
+  @Get('/:projectkey/:code')
   @Action(BaseActions.SEEK)
   @UseGuards(PermissionGuard)
   async find(
+    @Param('projectkey') projectkey: string,
     @Param('code') code: string
   ) {
-    return await this.repository.find(code);
+    return await this.repository.find(projectkey, code);
   }
 
-  @Put('/:code')
+  @Put('/:projectkey/:code')
   @Action(BaseActions.EDIT)
   @UseGuards(PermissionGuard)
   async update(
+    @Param('projectkey') projectkey: string,
     @Param('code') code: string,
     @Body()        update: any
   ) {
-    return await this.repository.edit(code, update);
+    return await this.repository.edit(projectkey, code, update);
   }
 
   @Delete('/del/:id')
