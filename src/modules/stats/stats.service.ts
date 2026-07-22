@@ -1,4 +1,4 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import {
   Prisma,
   ProjectHealthStatus,
@@ -23,9 +23,21 @@ import {
   StatsTaskRecord,
   StatsUser
 } from "./stats.types";
-import { BusinessException } from 'src/common/errors/business.exception';
 import { InternalException } from 'src/common/errors/internal.exception';
 import { ValidationException } from 'src/common/errors/validation.exception';
+import { ProjectNotFoundException } from 'src/common/errors/project-not-found.exception';
+import {
+  MemberNotFoundException,
+  StatsReportNotFoundException,
+  StatsSnapshotNotFoundException,
+  TaskNotFoundException,
+} from 'src/common/errors/resource-not-found.exceptions';
+import {
+  NoPendingTaskWorkTimeException,
+  TaskMemberProjectMismatchException,
+  TaskNotStartedException,
+  TaskWorkLogOwnerMismatchException,
+} from 'src/common/errors/task-business.exceptions';
 
 const DAY_IN_MS = 24 * 60 * 60 * 1000;
 const MINUTE_IN_MS = 60 * 1000;
@@ -56,7 +68,7 @@ export class StatsService {
     const project = await this.queries.findProject(projectkey);
 
     if (!project) {
-      throw new BusinessException('Projeto não encontrado.', HttpStatus.NOT_FOUND);
+      throw new ProjectNotFoundException();
     }
 
     const effectivePeriod = period
@@ -244,29 +256,23 @@ export class StatsService {
     ]);
 
     if (!task) {
-      throw new BusinessException('Tarefa não encontrada.', HttpStatus.NOT_FOUND);
+      throw new TaskNotFoundException();
     }
 
     if (!member) {
-      throw new BusinessException('Membro não encontrado.', HttpStatus.NOT_FOUND);
+      throw new MemberNotFoundException();
     }
 
     if (task.projectkey !== member.projectkey) {
-      throw new BusinessException(
-        "A tarefa e o membro devem pertencer ao mesmo projeto."
-      );
+      throw new TaskMemberProjectMismatchException();
     }
 
     if (task.ownerkey !== member.id) {
-      throw new BusinessException(
-        "O membro do registro de trabalho deve ser o responsável pela tarefa."
-      );
+      throw new TaskWorkLogOwnerMismatchException();
     }
 
     if (!task.started_at) {
-      throw new BusinessException(
-        "A tarefa deve possuir started_at antes que seu tempo de trabalho possa ser registrado."
-      );
+      throw new TaskNotStartedException();
     }
 
     const loggedAt = input.loggedAt ?? task.done_at ?? new Date();
@@ -290,9 +296,7 @@ export class StatsService {
     );
 
     if (minutes <= 0) {
-      throw new BusinessException(
-        "Não há tempo de trabalho da tarefa pendente de registro."
-      );
+      throw new NoPendingTaskWorkTimeException();
     }
 
     return this.workLogs.create({
@@ -375,7 +379,7 @@ export class StatsService {
     const snapshot = await this.snapshots.findById(snapshotkey);
 
     if (!snapshot) {
-      throw new BusinessException('Snapshot de estatísticas não encontrado.', HttpStatus.NOT_FOUND);
+      throw new StatsSnapshotNotFoundException();
     }
 
     const tasks = await this.periodTasks.list(
@@ -469,7 +473,7 @@ export class StatsService {
       projectkey !== undefined
       && report.projectkey !== projectkey
     )) {
-      throw new BusinessException('Relatório de estatísticas não encontrado.', HttpStatus.NOT_FOUND);
+      throw new StatsReportNotFoundException();
     }
 
     return report;

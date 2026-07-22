@@ -1,5 +1,5 @@
-import { AlreadyExistsException } from "src/common/errors/user_exists.error";
-import { UserNotExistsException } from "src/common/errors/user_not_exists.exception";
+import { EmailAlreadyRegisteredException } from "src/common/errors/already-exists.exceptions";
+import { AccountNotFoundException } from "src/common/errors/resource-not-found.exceptions";
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from "src/database/prisma.service";
 import { AccountDTO } from "@modules/accounts/dto/account.dto";
@@ -21,7 +21,7 @@ export class AccountRepository {
     });
 
     if (exists) {
-      throw new AlreadyExistsException('Este e-mail já está cadastrado.')
+      throw new EmailAlreadyRegisteredException();
     }
   }
 
@@ -43,7 +43,7 @@ export class AccountRepository {
     });
 
     if (!account) {
-      throw new UserNotExistsException();
+      throw new AccountNotFoundException();
     }
 
     return account;

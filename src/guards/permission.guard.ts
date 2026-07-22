@@ -1,7 +1,8 @@
 import { Resources } from "src/common/enums/Resources.enum";
 import { AccessContext } from "@interfaces/AccessContext";
-import { CanActivate, ExecutionContext, HttpStatus, Injectable } from '@nestjs/common';
-import { BusinessException } from 'src/common/errors/business.exception';
+import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import { UnauthorizedException } from 'src/common/errors/unauthorized.exception';
+import { AccessDeniedException } from 'src/common/errors/access-denied.exception';
 import { Reflector } from "@nestjs/core";
 import { OrgRole } from "generated/prisma";
 import { ACTION_KEY } from "src/decorators/Action";
@@ -34,9 +35,9 @@ export class PermissionGuard implements CanActivate {
 
     const { user } = ctx.switchToHttp().getRequest();
 
-    if (!user) throw new BusinessException('Usuário autenticado não encontrado. Entre na sua conta ou crie uma nova.', HttpStatus.UNAUTHORIZED);
+    if (!user) throw new UnauthorizedException();
 
-    if (!orgkey) throw new BusinessException('Organização válida não encontrada. Selecione uma organização válida ou crie uma nova.', HttpStatus.UNAUTHORIZED);
+    if (!orgkey) throw new UnauthorizedException();
 
     const id = req.body?.id
       ?? req.params?.id
@@ -60,7 +61,7 @@ export class PermissionGuard implements CanActivate {
 
     // A falta de acesso e uma regra de negocio publica (HTTP 403).
     if (!hasPermission) {
-      throw new BusinessException('Você não tem permissão para realizar esta ação.', HttpStatus.FORBIDDEN);
+      throw new AccessDeniedException();
     }
 
     return hasPermission;

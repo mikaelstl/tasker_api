@@ -1,14 +1,18 @@
-import {
-  ArgumentsHost,
-  HttpStatus,
-  Logger,
-} from '@nestjs/common';
+import { ArgumentsHost, Logger } from '@nestjs/common';
 import { BusinessExceptionFilter } from './business-exception.filter';
 import { InternalExceptionFilter } from './internal-exception.filter';
 import { ValidationExceptionFilter } from './validation.filter';
 import { ValidationException } from '../errors/validation.exception';
-import { BusinessException } from '../errors/business.exception';
 import { InternalException } from '../errors/internal.exception';
+import { UserNotFoundException } from '../errors/user-not-found.exception';
+import {
+  UnauthorizedException,
+  UNAUTHORIZED_MESSAGE,
+} from '../errors/unauthorized.exception';
+import {
+  AccessDeniedException,
+  ACCESS_DENIED_MESSAGE,
+} from '../errors/access-denied.exception';
 
 function httpHost() {
   const json = jest.fn();
@@ -61,7 +65,7 @@ describe('exception filters', () => {
     const { host, json, status } = httpHost();
 
     new BusinessExceptionFilter().catch(
-      new BusinessException('Usuário não encontrado.', HttpStatus.NOT_FOUND),
+      new UserNotFoundException(),
       host,
     );
 
@@ -73,6 +77,33 @@ describe('exception filters', () => {
         message: 'Usuário não encontrado.',
         error: 'BUSINESS_ERROR',
       }],
+    }));
+  });
+
+  it.each([
+    {
+      exception: new UnauthorizedException(),
+      expectedStatus: 401,
+      message: UNAUTHORIZED_MESSAGE,
+    },
+    {
+      exception: new AccessDeniedException(),
+      expectedStatus: 403,
+      message: ACCESS_DENIED_MESSAGE,
+    },
+  ])('returns the standard status exception', ({
+    exception,
+    expectedStatus,
+    message,
+  }) => {
+    const { host, json, status } = httpHost();
+
+    new BusinessExceptionFilter().catch(exception, host);
+
+    expect(status).toHaveBeenCalledWith(expectedStatus);
+    expect(json).toHaveBeenCalledWith(expect.objectContaining({
+      status: expectedStatus,
+      errors: [expect.objectContaining({ message })],
     }));
   });
 

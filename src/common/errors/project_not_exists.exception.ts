@@ -1,8 +1,6 @@
-import { HttpStatus } from '@nestjs/common';
-import { BusinessException } from './business.exception';
+import { ProjectNotFoundException } from './project-not-found.exception';
 
-export class ProjectNotExistsException extends BusinessException {
-  constructor() {
-    super('Projeto não encontrado.', HttpStatus.NOT_FOUND);
-  }
-}
+export { ProjectNotFoundException } from './project-not-found.exception';
+
+/** @deprecated Use ProjectNotFoundException. */
+export class ProjectNotExistsException extends ProjectNotFoundException {}

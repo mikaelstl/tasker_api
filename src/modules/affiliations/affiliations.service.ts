@@ -1,6 +1,9 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
-import { BusinessException } from 'src/common/errors/business.exception';
+import { Injectable } from '@nestjs/common';
 import { InternalException } from 'src/common/errors/internal.exception';
+import {
+  AffiliationNotFoundException,
+  UserOrganizationAffiliationNotFoundException,
+} from 'src/common/errors/resource-not-found.exceptions';
 import { OrgRole } from "generated/prisma";
 import { AffiliationRepository } from "./affiliations.repository";
 import { DefineAffiliationDTO } from "./dto/define.dto";
@@ -47,7 +50,7 @@ export class AffiliationService implements AccessValidator {
     const value = await this.repository.findById(key);
 
     if (!value) {
-      throw new BusinessException('Afiliação não encontrada.', HttpStatus.NOT_FOUND);
+      throw new AffiliationNotFoundException();
     }
 
     if (value.role === OrgRole.OWNER) {
@@ -78,7 +81,7 @@ export class AffiliationService implements AccessValidator {
     const value = await this.repository.findById(key);
 
     if (!value) {
-      throw new BusinessException('Afiliação não encontrada.', HttpStatus.NOT_FOUND);
+      throw new AffiliationNotFoundException();
     }
 
     if (value.role === OrgRole.OWNER) {
@@ -103,7 +106,7 @@ export class AffiliationService implements AccessValidator {
     );
 
     if (!result) {
-      throw new BusinessException('Este membro não pertence à organização.', HttpStatus.NOT_FOUND);
+      throw new UserOrganizationAffiliationNotFoundException();
     }
 
     return result;

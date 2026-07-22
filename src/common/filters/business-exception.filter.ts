@@ -2,7 +2,6 @@ import {
   ArgumentsHost,
   Catch,
   ExceptionFilter,
-  HttpException,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { BusinessException } from 'src/common/errors/business.exception';
@@ -11,7 +10,7 @@ import { ApiError } from 'src/common/interfaces/Error';
 /** Trata somente falhas publicas e esperadas da aplicacao. */
 @Catch(BusinessException)
 export class BusinessExceptionFilter implements ExceptionFilter {
-  catch(exception: HttpException, host: ArgumentsHost): void {
+  catch(exception: BusinessException, host: ArgumentsHost): void {
     const context = host.switchToHttp();
     const response = context.getResponse<Response>();
     const request = context.getRequest<Request>();
@@ -30,7 +29,7 @@ export class BusinessExceptionFilter implements ExceptionFilter {
     response.status(status).json(body);
   }
 
-  private getPublicMessage(exception: HttpException): string {
+  private getPublicMessage(exception: BusinessException): string {
     const response = exception.getResponse();
 
     if (typeof response === 'string') {

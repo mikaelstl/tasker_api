@@ -2,7 +2,6 @@ import { JWTPayload } from "src/common/interfaces/JWTPayload";
 import { CurrentAccountDTO } from "@modules/users/dto/current-account.dto";
 import {
   ExecutionContext,
-  HttpStatus,
   Injectable,
 } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
@@ -10,7 +9,7 @@ import { JwtService } from "@nestjs/jwt";
 import { AuthGuard } from "@nestjs/passport";
 import { Request } from "express";
 import { SECRET } from "src/config/env.config";
-import { BusinessException } from 'src/common/errors/business.exception';
+import { UnauthorizedException } from 'src/common/errors/unauthorized.exception';
 
 
 @Injectable()
@@ -28,7 +27,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     const token = this.extractTokenFromHeader(request);
 
     if (!token) {
-      throw new BusinessException('Você não tem autorização para realizar esta ação. Entre na sua conta ou crie uma nova.', HttpStatus.UNAUTHORIZED);
+      throw new UnauthorizedException();
     }
 
     try {
@@ -43,7 +42,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
         email: payload.email
       } as CurrentAccountDTO;
     } catch (error) {
-      throw new BusinessException('Você não tem autorização para realizar esta ação. Entre na sua conta ou crie uma nova.', HttpStatus.UNAUTHORIZED);
+      throw new UnauthorizedException();
     }
 
     return true;
@@ -57,7 +56,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
 
   handleRequest<TUser = any>(err: any, user: any, info: any, context: ExecutionContext, status?: any): TUser {
     if (err || !user) {
-      throw new BusinessException('Você não tem autorização para realizar esta ação. Entre na sua conta ou crie uma nova.', HttpStatus.UNAUTHORIZED);
+      throw new UnauthorizedException();
     }
 
     return user;

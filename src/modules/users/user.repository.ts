@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { UserDTO } from "@modules/users/dto/user.dto";
-import { AlreadyExistsException } from "src/common/errors/user_exists.error";
-import { UserNotExistsException } from "src/common/errors/user_not_exists.exception";
+import { UsernameAlreadyExistsException } from "src/common/errors/already-exists.exceptions";
+import { UserNotFoundException } from "src/common/errors/user-not-found.exception";
 import { CreateUserDTO } from "@modules/users/dto/create.dto";
 import { PrismaService } from "src/database/prisma.service";
 import { UserQueryDTO } from "./dto/user-query.dto";
@@ -22,7 +22,7 @@ export class UserRepository {
     });
 
     if (exists) {
-      throw new AlreadyExistsException('Já existe um usuário com este nome de usuário.')
+      throw new UsernameAlreadyExistsException();
     }
   }
 
@@ -49,7 +49,7 @@ export class UserRepository {
     });
     
     if (!user) {
-      throw new UserNotExistsException();
+      throw new UserNotFoundException();
     }
     
     return user;

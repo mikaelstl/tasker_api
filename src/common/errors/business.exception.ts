@@ -15,10 +15,10 @@ export type BusinessHttpStatus =
  * esta classe: elas precisam chegar ao InternalExceptionFilter com a causa
  * original para que sejam registradas corretamente.
  */
-export class BusinessException extends HttpException {
+export abstract class BusinessException extends HttpException {
   constructor(
     message: string,
-    status: BusinessHttpStatus = HttpStatus.BAD_REQUEST,
+    status: BusinessHttpStatus,
   ) {
     super(message, status);
   }

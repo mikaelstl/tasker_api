@@ -1,8 +1,6 @@
-import { HttpStatus } from '@nestjs/common';
-import { BusinessException } from './business.exception';
+import { UserNotFoundException } from './user-not-found.exception';
 
-export class UserNotExistsException extends BusinessException {
-  constructor() {
-    super('Usuário não encontrado.', HttpStatus.NOT_FOUND);
-  }
-}
+export { UserNotFoundException } from './user-not-found.exception';
+
+/** @deprecated Use UserNotFoundException. */
+export class UserNotExistsException extends UserNotFoundException {}

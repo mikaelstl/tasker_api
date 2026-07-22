@@ -1,5 +1,5 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
-import { BusinessException } from 'src/common/errors/business.exception';
+import { Injectable } from '@nestjs/common';
+import { EventNotFoundException } from 'src/common/errors/resource-not-found.exceptions';
 import { PrismaService } from "src/database/prisma.service";
 import { EventCreateDTO } from "@modules/events/dto/event.create.dto";
 import { EventDTO } from "@modules/events/dto/event.dto";
@@ -46,7 +46,7 @@ export class EventsRepository {
     });
 
     if (!event) {
-      throw new BusinessException('Evento não encontrado.', HttpStatus.NOT_FOUND);
+      throw new EventNotFoundException();
     }
 
     return event;
@@ -71,7 +71,7 @@ export class EventsRepository {
     });
 
     if (!result) {
-      throw new BusinessException('Evento não encontrado.', HttpStatus.NOT_FOUND);
+      throw new EventNotFoundException();
     }
 
     return result;

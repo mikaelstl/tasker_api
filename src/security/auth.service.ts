@@ -1,4 +1,4 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { SECRET } from '@config/env.config';
 import { AuthDTO } from '@security/dto/auth.dto';
@@ -10,6 +10,8 @@ import { JWTPayload } from 'src/common/interfaces/JWTPayload';
 import { UserRepository } from '@modules/users/user.repository';
 import { BusinessException } from 'src/common/errors/business.exception';
 import { InternalException } from 'src/common/errors/internal.exception';
+import { UnauthorizedException } from 'src/common/errors/unauthorized.exception';
+import { WrongPasswordException } from 'src/common/errors/wrong_password.exception';
 
 @Injectable()
 export class AuthService {
@@ -29,14 +31,14 @@ export class AuthService {
         secret: SECRET,
       });
     } catch (error) {
-      throw new BusinessException('Você não tem autorização para realizar esta ação. Entre na sua conta ou crie uma nova.', HttpStatus.UNAUTHORIZED);
+      throw new UnauthorizedException();
     }
 
     try {
       await this.accounts.find(decoded.email);
     } catch (error) {
       if (error instanceof BusinessException) {
-        throw new BusinessException('Você não tem autorização para realizar esta ação. Entre na sua conta ou crie uma nova.', HttpStatus.UNAUTHORIZED);
+        throw new UnauthorizedException();
       }
 
       throw new InternalException('Falha ao validar a conta autenticada.', error);
@@ -53,12 +55,8 @@ export class AuthService {
 
     const match: boolean = await compare(data.password, account.password);
 
-    if (!account || !user) {
-      throw new BusinessException('Nenhum usuário ou conta foi encontrado com os dados informados.', HttpStatus.NOT_FOUND);
-    }
-
-    if (account && !match) {
-      throw new BusinessException('Senha incorreta. Informe a senha correta ou altere sua senha.', HttpStatus.UNAUTHORIZED);
+    if (!match) {
+      throw new WrongPasswordException();
     }
 
     const payload: JWTPayload = { sub: account.id!, username: user.username, email: account.email };
