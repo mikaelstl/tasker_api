@@ -47,7 +47,7 @@ export class TasksController {
       path: '/tasks'
     };
 
-    return res.status(res.status).json(response);
+    return res.status(response.status).json(response);
   }
 
   @Get('/:projectkey')
@@ -71,7 +71,7 @@ export class TasksController {
       path: '/tasks'
     };
     
-    return res.status(res.status).json(response);
+    return res.status(response.status).json(response);
   }
 
   @Get('/:projectkey/:code')
@@ -91,7 +91,7 @@ export class TasksController {
       path: `/tasks/${projectkey}/${code}`
     };
 
-    return res.status(res.status).json(response);
+    return res.status(response.status).json(response);
   }
 
   @Put('/:projectkey/:code')
@@ -117,7 +117,7 @@ export class TasksController {
       path: `/tasks/${projectkey}/${code}`
     };
 
-    return res.status(res.status).json(response);
+    return res.status(response.status).json(response);
   }
 
   @Delete('/del/:id')
@@ -141,6 +141,6 @@ export class TasksController {
       path: `/tasks/del/${id}`
     };
 
-    return res.status(res.status).json(response);
+    return res.status(response.status).json(response);
   }
 }

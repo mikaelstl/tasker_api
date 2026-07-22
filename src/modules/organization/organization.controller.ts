@@ -42,7 +42,7 @@ export class OrganizationController {
       path: '/org'
     };
 
-    return res.status(res.status).json(response);
+    return res.status(response.status).json(response);
   }
 
   @Delete('/del/:id')
@@ -68,6 +68,6 @@ export class OrganizationController {
       path: '/org/del'
     };
 
-    return res.status(res.status).json(response);
+    return res.status(response.status).json(response);
   }
 }

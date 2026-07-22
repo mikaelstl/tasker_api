@@ -24,7 +24,7 @@ export class AuthController {
       path: '/auth'
     };
 
-    return res.status(res.status).json(response);
+    return res.status(response.status).json(response);
   }
 
   @Post('login')
@@ -43,7 +43,7 @@ export class AuthController {
       path: '/auth/login'
     };
 
-    return res.status(res.status).json(response);
+    return res.status(response.status).json(response);
   }
 
   // @Post('register')
@@ -62,7 +62,7 @@ export class AuthController {
   //     path: '/auth/register'
   //   };
 
-  //   return res.status(res.status).json(response);
+  //   return res.status(response.status).json(response);
   // }
 
   @Get('validate')
@@ -85,6 +85,6 @@ export class AuthController {
       path: '/auth/validate'
     };
 
-    return res.status(res.status).json(response);
+    return res.status(response.status).json(response);
   }
 }

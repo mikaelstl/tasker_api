@@ -31,7 +31,7 @@ export class UserController {
       path: '/users'
     };
 
-    return res.status(res.status).json(response);
+    return res.status(response.status).json(response);
   }
 
   @Get()
@@ -50,7 +50,7 @@ export class UserController {
       path: '/users'
     };
 
-    return res.status(res.status).json(response);
+    return res.status(response.status).json(response);
   }
 
   @Get()
@@ -71,7 +71,7 @@ export class UserController {
       path: '/users'
     };
 
-    return res.status(res.status).json(response);
+    return res.status(response.status).json(response);
   }
 
   @Delete('del/:username')
@@ -91,6 +91,6 @@ export class UserController {
       path: '/users/del'
     };
 
-    return res.status(res.status).json(response);
+    return res.status(response.status).json(response);
   }
 }

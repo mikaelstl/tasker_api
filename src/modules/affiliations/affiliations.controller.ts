@@ -45,7 +45,7 @@ export class AffiliationController {
       path: '/affiliations'
     };
 
-    return res.status(res.status).json(response);
+    return res.status(response.status).json(response);
   }
 
   @Get()
@@ -65,7 +65,7 @@ export class AffiliationController {
       path: '/affiliations'
     };
 
-    return res.status(res.status).json(response);
+    return res.status(response.status).json(response);
   }
 
   @Get('/participates/:orgkey')
@@ -88,7 +88,7 @@ export class AffiliationController {
       path: `/affiliations/participates/${orgkey}`
     };
 
-    return res.status(res.status).json(response);
+    return res.status(response.status).json(response);
   }
 
   @Delete('/remove/:id')
@@ -114,7 +114,7 @@ export class AffiliationController {
       path: '/affiliations/del'
     };
 
-    return res.status(res.status).json(response);
+    return res.status(response.status).json(response);
   }
 
   @Patch('/promote/:id')
@@ -140,7 +140,7 @@ export class AffiliationController {
       path: '/affiliations/promote'
     };
 
-    return res.status(res.status).json(response);
+    return res.status(response.status).json(response);
   }
 
   @Patch('/demote/:id')
@@ -166,6 +166,6 @@ export class AffiliationController {
       path: '/affiliations/demote'
     };
 
-    return res.status(res.status).json(response);
+    return res.status(response.status).json(response);
   }
 }

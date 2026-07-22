@@ -53,7 +53,7 @@ export class ProjectController {
       path: '/project'
     };
 
-    return res.status(res.status).json(response);
+    return res.status(response.status).json(response);
   }
 
   @Get('/list')
@@ -77,7 +77,7 @@ export class ProjectController {
       path: '/project/list'
     };
 
-    return res.status(res.status).json(response);
+    return res.status(response.status).json(response);
   }
 
   @Get('/:id')
@@ -100,7 +100,7 @@ export class ProjectController {
       path: '/project'
     };
 
-    return res.status(res.status).json(response);
+    return res.status(response.status).json(response);
   }
 
   @Put('/:id')
@@ -127,7 +127,7 @@ export class ProjectController {
       path: '/project'
     };
 
-    return res.status(res.status).json(response);
+    return res.status(response.status).json(response);
   }
 
   @Delete('/del/:id')
@@ -154,7 +154,7 @@ export class ProjectController {
       path: '/project/del'
     };
 
-    return res.status(res.status).json(response);
+    return res.status(response.status).json(response);
   }
 
   @Get('/:id/stats')
@@ -183,7 +183,7 @@ export class ProjectController {
       path: `/project/${id}/stats`
     };
 
-    return res.status(res.status).json(response);
+    return res.status(response.status).json(response);
   }
 
   @Get('/:id/stats/members/performance')
@@ -212,7 +212,7 @@ export class ProjectController {
       path: `/project/${id}/stats/members/performance`
     };
 
-    return res.status(res.status).json(response);
+    return res.status(response.status).json(response);
   }
 
   @Post("/:id/stats/report")
@@ -268,7 +268,7 @@ export class ProjectController {
       path: `/project/${id}/stats/reports`
     };
 
-    return res.status(res.status).json(response);
+    return res.status(response.status).json(response);
   }
 
   @Get("/:id/stats/reports/:reportkey")
@@ -294,6 +294,6 @@ export class ProjectController {
       path: `/project/${id}/stats/reports/${reportkey}`
     };
 
-    return res.status(res.status).json(response);
+    return res.status(response.status).json(response);
   }
 }

@@ -43,7 +43,7 @@ export class UploadController {
       path: '/upload/image'
     };
 
-    return res.status(res.status).json(response);
+    return res.status(response.status).json(response);
   }
 
   /* @Get()
@@ -62,6 +62,6 @@ export class UploadController {
       path: '/comments'
     };
     
-    return res.status(res.status).json(response);
+    return res.status(response.status).json(response);
   } */
 }

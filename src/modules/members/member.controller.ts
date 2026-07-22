@@ -47,7 +47,7 @@ export class MemberController {
       path: '/members'
     };
 
-    return res.status(res.status).json(response);
+    return res.status(response.status).json(response);
   }
 
   @Get(':projectkey')
@@ -69,7 +69,7 @@ export class MemberController {
       path: '/members'
     };
 
-    return res.status(res.status).json(response);
+    return res.status(response.status).json(response);
   }
 
   @Delete('/remove/:id')
@@ -95,6 +95,6 @@ export class MemberController {
       path: '/members/del'
     };
 
-    return res.status(res.status).json(response);
+    return res.status(response.status).json(response);
   }
 }

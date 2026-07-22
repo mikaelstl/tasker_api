@@ -15,6 +15,11 @@ import { PoliciesModule } from '@authorization/policies/policies.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { DeadlinesModule } from '@modules/deadlines/deadlines.module';
 import { AuditLogModule } from '@modules/audit-log/audit-log.module';
+import { MembersModule } from '@modules/members/members.module';
+import { TasksModule } from '@modules/tasks/tasks.module';
+import { CommentsModule } from '@modules/comments/comments.module';
+import { EventsModule } from '@modules/events/events.module';
+import { StatsModule } from '@modules/stats/stats.module';
 
 @Module({
   imports: [
@@ -23,13 +28,18 @@ import { AuditLogModule } from '@modules/audit-log/audit-log.module';
     PermissionModule,
     AccessControlModule,
     PoliciesModule,
-    // UploadModule,
     AccountModule,
     AuthModule,
     UserModule,
+    // UploadModule,
     OrganizationModule,
-    ProjectsModule,
     AffiliationModule,
+    ProjectsModule,
+    MembersModule,
+    TasksModule,
+    CommentsModule,
+    EventsModule,
+    StatsModule,
     DeadlinesModule,
     AuditLogModule,
   ],

@@ -48,7 +48,7 @@ export class CommentsController {
       path: '/comments'
     };
 
-    return res.status(res.status).json(response);
+    return res.status(response.status).json(response);
   }
 
   @Get()
@@ -68,7 +68,7 @@ export class CommentsController {
       path: '/comments'
     };
     
-    return res.status(res.status).json(response);
+    return res.status(response.status).json(response);
   }
 
   @Get('/:id')
@@ -88,7 +88,7 @@ export class CommentsController {
       path: '/comments'
     };
     
-    return res.status(res.status).json(response);
+    return res.status(response.status).json(response);
   }
 
   @Delete('/del/:id')
@@ -113,6 +113,6 @@ export class CommentsController {
       path: '/comments'
     };
     
-    return res.status(res.status).json(response);
+    return res.status(response.status).json(response);
   }
 }

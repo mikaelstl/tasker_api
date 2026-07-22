@@ -1,5 +1,5 @@
 import { Controller, Get, HttpStatus, Res } from '@nestjs/common';
-import { ApiResponse as ApiResponse } from 'src/common/interfaces/ApiResponse';
+import { ApiResponse } from 'src/common/interfaces/ApiResponse';
 import { AppService } from './app.service';
 
 @Controller()
@@ -18,6 +18,6 @@ export class AppController {
       path: '/status'
     };
 
-    return res.status(res.status).json(response);
+    return res.status(response.status).json(response);
   }
 }

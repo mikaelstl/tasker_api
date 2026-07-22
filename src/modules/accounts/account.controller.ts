@@ -28,13 +28,13 @@ export class AccountController {
       path: '/accounts/register/'
     };
 
-    return res.status(res.status).json(response);
+    return res.status(response.status).json(response);
   }
 
   @Delete('del/:id')
   @UseGuards(JwtAuthGuard)
   async delete(
-    @Param() id: string,
+    @Param('id') id: string,
     @Res() res
   ) {
     const result: AccountDTO = await this.repository.delete(id);
@@ -47,6 +47,6 @@ export class AccountController {
       path: '/accounts/del'
     };
 
-    return res.status(res.status).json(response);
+    return res.status(response.status).json(response);
   }
 }

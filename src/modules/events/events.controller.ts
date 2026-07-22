@@ -48,7 +48,7 @@ export class EventsController {
       path: '/events'
     };
 
-    return res.status(res.status).json(response);
+    return res.status(response.status).json(response);
   }
 
   @Get()
@@ -69,7 +69,7 @@ export class EventsController {
       path: '/events'
     };
     
-    return res.status(res.status).json(response);
+    return res.status(response.status).json(response);
   }
 
   @Get('/:code')
@@ -88,7 +88,7 @@ export class EventsController {
       path: `/events/${code}`
     };
 
-    return res.status(res.status).json(response);
+    return res.status(response.status).json(response);
   }
 
   @Put('/:code')
@@ -114,7 +114,7 @@ export class EventsController {
       path: `/events/${code}`
     };
 
-    return res.status(res.status).json(response);
+    return res.status(response.status).json(response);
   }
 
   @Delete('/:id')
@@ -139,6 +139,6 @@ export class EventsController {
       path: `/events/${id}`
     };
 
-    return res.status(res.status).json(response);
+    return res.status(response.status).json(response);
   }
 }
