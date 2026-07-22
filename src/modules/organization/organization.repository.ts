@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from "src/database/prisma.service";
 import { OrganizationCreateDTO } from "@modules/organization/dto/create.dto";
 import { OrganizationDTO } from "@modules/organization/dto/organization.dto";
+import { OrganizationSummaryDTO } from "@modules/organization/dto/summary.dto";
 
 type OrgFindQuery = {
   id?: string,
@@ -42,6 +43,33 @@ export class OrganizationRepository {
     });
 
     return result;
+  }
+
+  async findSummary(key: string): Promise<OrganizationSummaryDTO | null> {
+    const result = await this.prisma.organization.findUnique({
+      where: {
+        id: key,
+      },
+      select: {
+        name: true,
+        _count: {
+          select: {
+            projects: true,
+            members: true,
+          },
+        },
+      },
+    });
+
+    if (!result) {
+      return null;
+    }
+
+    return {
+      name: result.name,
+      projects: result._count.projects,
+      members: result._count.members,
+    };
   }
 
   async delete(key: string): Promise<OrganizationDTO> {

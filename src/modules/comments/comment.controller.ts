@@ -19,7 +19,7 @@ import { OrgKey } from '@decorators/OrgKey';
 @Controller('comments')
 @Resource(Resources.COMMENTS)
 @Role(OrgRole.OWNER, OrgRole.MANAGER, OrgRole.MEMBER)
-@UseGuards(JwtAuthGuard,PermissionGuard)
+@UseGuards(JwtAuthGuard, PermissionGuard)
 export class CommentsController {
   constructor (
     private readonly repository: CommentsRepository,

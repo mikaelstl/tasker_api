@@ -11,6 +11,8 @@ import { Resources } from "src/common/enums/Resources.enum";
 import { InternalException } from 'src/common/errors/internal.exception';
 import { AuditLogService } from '@modules/audit-log/audit-log.service';
 import { AuditContext } from '@interfaces/AuditContext';
+import { OrganizationSummaryDTO } from './dto/summary.dto';
+import { OrganizationNotFoundException } from 'src/common/errors/resource-not-found.exceptions';
 
 @Injectable()
 export class OrganizationService implements AccessValidator {
@@ -53,6 +55,16 @@ export class OrganizationService implements AccessValidator {
       fields: ['name', 'ownerkey'],
     });
     return this.repository.delete(key);
+  }
+
+  async getSummary(key: string): Promise<OrganizationSummaryDTO> {
+    const summary = await this.repository.findSummary(key);
+
+    if (!summary) {
+      throw new OrganizationNotFoundException();
+    }
+
+    return summary;
   }
 
   public async belongs(subjectkey: string, targetkey: string): Promise<boolean> {

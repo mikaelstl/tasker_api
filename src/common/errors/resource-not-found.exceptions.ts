@@ -20,6 +20,10 @@ export class MemberNotFoundException extends ResourceNotFoundException {
   constructor() { super('Membro'); }
 }
 
+export class OrganizationNotFoundException extends ResourceNotFoundException {
+  constructor() { super('Organização'); }
+}
+
 export class StatsReportNotFoundException extends ResourceNotFoundException {
   constructor() { super('Relatório de estatísticas'); }
 }

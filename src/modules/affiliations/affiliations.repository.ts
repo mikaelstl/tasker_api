@@ -70,6 +70,17 @@ export class AffiliationRepository {
     return value;
   }
 
+  async findByOrganization(orgkey: string): Promise<AffiliationDTO[]> {
+    return this.prisma.affiliation.findMany({
+      where: {
+        orgkey,
+      },
+      include: {
+        user: true
+      },
+    });
+  }
+
   async findOrganizationsByUser(
     userkey: string
   ): Promise<UserOrganizationSummaryDTO[]> {

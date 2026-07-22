@@ -164,6 +164,13 @@ export class AffiliationService implements AccessValidator {
     return this.repository.findOrganizationsByUser(userkey);
   }
 
+  async getOrganizationAffiliations(
+    orgkey: string,
+    userkey: string,
+  ): Promise<AffiliationDTO[]> {
+    return this.repository.findByOrganization(orgkey);
+  }
+
   async getOrganizationsByUser(
     userkey: string,
   ) {

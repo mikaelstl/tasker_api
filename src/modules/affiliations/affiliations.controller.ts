@@ -16,7 +16,7 @@ import { OrgKey } from '@decorators/OrgKey';
 
 @Controller('affiliations')
 @Resource(Resources.AFFILIATIONS)
-@UseGuards(JwtAuthGuard, PermissionGuard)
+@UseGuards(JwtAuthGuard)
 export class AffiliationController {
   constructor(
     private readonly service: AffiliationService,
@@ -25,6 +25,7 @@ export class AffiliationController {
   @Post()
   @Role(OrgRole.OWNER)
   @Action(BaseActions.CREATE)
+  @UseGuards(PermissionGuard)
   async create(
     @CurrentAccount() account: CurrentAccountDTO,
     @OrgKey() orgkey: string,
@@ -49,7 +50,6 @@ export class AffiliationController {
   }
 
   @Get()
-  @Role(OrgRole.OWNER, OrgRole.MANAGER, OrgRole.MEMBER)
   @Action(BaseActions.SEEK)
   async list(
     @CurrentAccount() account: CurrentAccountDTO,
@@ -69,8 +69,9 @@ export class AffiliationController {
   }
 
   @Get('/participates/:orgkey')
-  @Role(OrgRole.OWNER, OrgRole.MANAGER, OrgRole.MEMBER)
   @Action(BaseActions.SEEK)
+  @Role(OrgRole.OWNER, OrgRole.MANAGER, OrgRole.MEMBER)
+  @UseGuards(PermissionGuard)
   async participates(
     @Param('orgkey') orgkey: string,
     @CurrentAccount() account: CurrentAccountDTO,
@@ -91,9 +92,33 @@ export class AffiliationController {
     return res.status(response.status).json(response);
   }
 
+  @Get('/:orgkey')
+  @Action(BaseActions.SEEK)
+  async listByOrganization(
+    @Param('orgkey') orgkey: string,
+    @CurrentAccount() account: CurrentAccountDTO,
+    @Res() res
+  ) {
+    const result = await this.service.getOrganizationAffiliations(
+      orgkey,
+      account.username,
+    );
+
+    const response: ApiResponse = {
+      status: HttpStatus.OK,
+      data: result,
+      message: 'Afiliações da organização encontradas.',
+      timestamp: new Date().toISOString(),
+      path: `/affiliations/${orgkey}`
+    };
+
+    return res.status(response.status).json(response);
+  }
+
   @Delete('/remove/:id')
   @Role(OrgRole.OWNER)
   @Action(BaseActions.DEL)
+  @UseGuards(PermissionGuard)
   async delete(
     @Param('id') id: string,
     @OrgKey() orgkey: string,
@@ -120,6 +145,7 @@ export class AffiliationController {
   @Patch('/promote/:id')
   @Role(OrgRole.OWNER)
   @Action(EnhancedActions.PROMOTE)
+  @UseGuards(PermissionGuard)
   async promote(
     @Param('id') id: string,
     @OrgKey() orgkey: string,
@@ -146,6 +172,7 @@ export class AffiliationController {
   @Patch('/demote/:id')
   @Role(OrgRole.OWNER)
   @Action(EnhancedActions.DEMOTE)
+  @UseGuards(PermissionGuard)
   async demote(
     @Param('id') id: string,
     @OrgKey() orgkey: string,

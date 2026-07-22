@@ -12,6 +12,7 @@ import {
 import { PrismaService } from 'src/database/prisma.service';
 import { ValidationException } from 'src/common/errors/validation.exception';
 import { AuditContext } from 'src/common/interfaces/AuditContext';
+import { FindAuditLogsQuery } from './dto/find-audit-logs.query';
 
 type AuditedRecord = Record<string, unknown>;
 
@@ -36,6 +37,61 @@ const INTERNAL_FIELDS = new Set([
 @Injectable()
 export class AuditLogService {
   constructor(private readonly prisma: PrismaService) {}
+
+  async list(orgkey: string, query: FindAuditLogsQuery) {
+    const {
+      actorkey,
+      action,
+      resource,
+      resourcekey,
+      startDate,
+      endDate,
+      page = 1,
+      limit = 20,
+    } = query;
+    const where = {
+      orgkey,
+      actorkey,
+      action,
+      resource,
+      resourcekey,
+      created_at: startDate || endDate
+        ? {
+            gte: startDate ? new Date(startDate) : undefined,
+            lte: endDate ? new Date(endDate) : undefined,
+          }
+        : undefined,
+    };
+
+    const [items, total] = await Promise.all([
+      this.prisma.auditLog.findMany({
+        where,
+        include: {
+          actor: {
+            select: {
+              username: true,
+              name: true,
+              photo: {
+                select: { url: true },
+              },
+            },
+          },
+        },
+        orderBy: { created_at: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      this.prisma.auditLog.count({ where }),
+    ]);
+
+    return {
+      items,
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+    };
+  }
 
   async log(data: CreateAuditLogInput) {
     this.validateActor(data);

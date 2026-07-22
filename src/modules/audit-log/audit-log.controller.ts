@@ -6,8 +6,3 @@ import { Controller, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '@security/auth.guard';
 import { OrgRole } from 'generated/prisma';
 
-@Resource(Resources.ORGANIZATIONS)
-@Role(OrgRole.OWNER)
-@UseGuards(JwtAuthGuard, PermissionGuard)
-@Controller('org/:id/audit-logs')
-export class AuditLogController {}
