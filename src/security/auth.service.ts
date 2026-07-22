@@ -24,6 +24,8 @@ export class AuthService {
   async validate(header: string): Promise<boolean | null> {
     const token = this.extractTokenFromHeader(header);
 
+    if (!token) throw new UnauthorizedException();
+
     let decoded: JwtPayload;
 
     try {

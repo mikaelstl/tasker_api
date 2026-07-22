@@ -60,6 +60,7 @@ export class ProjectController {
 
   @Get('/list')
   @Action(BaseActions.SEEK)
+  @Role(OrgRole.OWNER, OrgRole.MEMBER, OrgRole.MANAGER)
   @UseGuards(PermissionGuard)
   async list(
     @Query() queries: ProjectQueryDTO,
@@ -83,6 +84,7 @@ export class ProjectController {
 
   @Get('/:id')
   @Action(BaseActions.SEEK)
+  @Role(OrgRole.OWNER, OrgRole.MEMBER, OrgRole.MANAGER)
   @UseGuards(PermissionGuard)
   async find(
     @Param('id') id: string,

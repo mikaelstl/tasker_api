@@ -63,6 +63,8 @@ export class AuthController {
     @Headers('Authorization') auth: string
   ) {
     // const token = auth.split(' ')[1];
+    console.log("Requisição de validação feita");
+    
 
     const result: boolean = await this.service.validate(auth);
 

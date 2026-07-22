@@ -29,6 +29,8 @@ export class PermissionService {
 
     const userRole = (await this.getRole(subject.userkey, subject.orgkey)).role;
 
+    console.log(userRole);
+
     if (roles?.length && !roles.includes(userRole)) {
       return false;
     }
