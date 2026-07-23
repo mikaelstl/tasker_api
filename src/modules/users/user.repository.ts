@@ -5,6 +5,7 @@ import { UserNotFoundException } from "src/common/errors/user-not-found.exceptio
 import { CreateUserDTO } from "@modules/users/dto/create.dto";
 import { PrismaService } from "src/database/prisma.service";
 import { UserQueryDTO } from "./dto/user-query.dto";
+import { UserProfileDTO } from "./dto/user-profile.dto";
 
 @Injectable()
 export class UserRepository {
@@ -39,6 +40,33 @@ export class UserRepository {
 
   async list(): Promise<UserDTO[]> {
     return this.prisma.user.findMany();
+  }
+
+  async findProfileByAccountId(accountId: string): Promise<UserProfileDTO> {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        accountkey: accountId,
+      },
+      select: {
+        name: true,
+        username: true,
+        account: {
+          select: {
+            email: true,
+          },
+        },
+      },
+    });
+
+    if (!user) {
+      throw new UserNotFoundException();
+    }
+
+    return {
+      name: user.name,
+      username: user.username,
+      email: user.account.email,
+    };
   }
 
   async find(queries: UserQueryDTO): Promise<UserDTO> {

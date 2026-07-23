@@ -1,9 +1,17 @@
-import { EmailAlreadyRegisteredException } from "src/common/errors/already-exists.exceptions";
+import {
+  EmailAlreadyRegisteredException,
+  UsernameAlreadyExistsException,
+} from "src/common/errors/already-exists.exceptions";
 import { AccountNotFoundException } from "src/common/errors/resource-not-found.exceptions";
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from "src/database/prisma.service";
 import { AccountDTO } from "@modules/accounts/dto/account.dto";
 import { CreateAccountDTO } from "@modules/accounts/dto/create.dto";
+import { EditAccountDTO } from "./dto/edit-account.dto";
+import { AccountIdentityDTO } from "./dto/account-identity.dto";
+import { UserNotFoundException } from "src/common/errors/user-not-found.exception";
+import { Prisma } from "generated/prisma";
+import { ConflictException } from "src/common/errors/conflict.exception";
 
 @Injectable()
 export class AccountRepository {
@@ -49,11 +57,115 @@ export class AccountRepository {
     return account;
   }
 
-  async delete(key: string): Promise<AccountDTO> {
-    return this.prisma.account.delete({
-      where: {
-        email: key,
-      },
+  async editIdentity(
+    accountId: string,
+    data: Omit<EditAccountDTO, 'password'>,
+    encryptedPassword?: string,
+  ): Promise<AccountIdentityDTO> {
+    return this.prisma.$transaction(async (transaction) => {
+      const currentAccount = await transaction.account.findUnique({
+        where: { id: accountId },
+        include: { user: true },
+      });
+
+      if (!currentAccount) {
+        throw new AccountNotFoundException();
+      }
+
+      if (!currentAccount.user) {
+        throw new UserNotFoundException();
+      }
+
+      if (data.username && data.username !== currentAccount.user.username) {
+        const usernameInUse = await transaction.user.findUnique({
+          where: { username: data.username },
+          select: { username: true },
+        });
+
+        if (usernameInUse) {
+          throw new UsernameAlreadyExistsException();
+        }
+      }
+
+      if (data.email && data.email !== currentAccount.email) {
+        const emailInUse = await transaction.account.findUnique({
+          where: { email: data.email },
+          select: { id: true },
+        });
+
+        if (emailInUse) {
+          throw new EmailAlreadyRegisteredException();
+        }
+      }
+
+      const account = await transaction.account.update({
+        where: { id: accountId },
+        data: {
+          email: data.email,
+          password: encryptedPassword,
+        },
+        select: {
+          id: true,
+          email: true,
+          created_at: true,
+          updated_at: true,
+        },
+      });
+
+      const user = await transaction.user.update({
+        where: { username: currentAccount.user.username },
+        data: {
+          name: data.name,
+          username: data.username,
+        },
+        select: {
+          id: true,
+          name: true,
+          username: true,
+          accountkey: true,
+          created_at: true,
+          updated_at: true,
+        },
+      });
+
+      return { account, user };
     });
+  }
+
+  async deleteIdentity(accountId: string): Promise<void> {
+    try {
+      await this.prisma.$transaction(async (transaction) => {
+        const account = await transaction.account.findUnique({
+          where: { id: accountId },
+          select: { user: { select: { username: true } } },
+        });
+
+        if (!account) {
+          throw new AccountNotFoundException();
+        }
+
+        if (!account.user) {
+          throw new UserNotFoundException();
+        }
+
+        // A relação Account -> User usa onDelete: Cascade, garantindo que
+        // credenciais e perfil sejam removidos como uma única identidade.
+        await transaction.account.delete({
+          where: { id: accountId },
+        });
+      });
+    } catch (error) {
+      const hasRelatedResources =
+        error instanceof Prisma.PrismaClientKnownRequestError
+        && error.code === 'P2003';
+
+      if (hasRelatedResources) {
+        throw new ConflictException(
+          'Não é possível excluir a conta enquanto o usuário possuir recursos vinculados.',
+        );
+      }
+
+      throw error;
+    }
   }
 }

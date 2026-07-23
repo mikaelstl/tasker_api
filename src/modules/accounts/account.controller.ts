@@ -1,15 +1,17 @@
-import { Body, Controller, Delete, HttpStatus, Param, Post, Res, UseGuards, } from "@nestjs/common";
-import { AccountRepository } from "./account.repository";
+import { Body, Controller, Delete, HttpStatus, Patch, Post, Res, UseGuards, } from "@nestjs/common";
 import { AccountDTO } from "@modules/accounts/dto/account.dto";
 import { ApiResponse as ApiResponse } from "src/common/interfaces/ApiResponse";
 import { AccountService } from "./account.service";
 import { JwtAuthGuard } from "@security/auth.guard";
 import { CreateAccountDTO } from "./dto/create.dto";
+import { EditAccountDTO } from "./dto/edit-account.dto";
+import { CurrentAccount } from "src/decorators/CurrentAccount.decorator";
+import { CurrentAccountDTO } from "@modules/users/dto/current-account.dto";
+import { AccountIdentityDTO } from "./dto/account-identity.dto";
 
 @Controller('accounts')
 export class AccountController {
   constructor(
-    private readonly repository: AccountRepository,
     private readonly service: AccountService,
   ) { }
 
@@ -31,20 +33,43 @@ export class AccountController {
     return res.status(response.status).json(response);
   }
 
-  @Delete('del/:id')
+  @Patch('me')
   @UseGuards(JwtAuthGuard)
-  async delete(
-    @Param('id') id: string,
+  async editIdentity(
+    @CurrentAccount() currentAccount: CurrentAccountDTO,
+    @Body() data: EditAccountDTO,
     @Res() res
   ) {
-    const result: AccountDTO = await this.repository.delete(id);
+    const result: AccountIdentityDTO = await this.service.editIdentity(
+      currentAccount.id,
+      data,
+    );
 
     const response: ApiResponse = {
-      status: HttpStatus.CREATED,
-      data: null,
-      message: 'Conta excluída com sucesso.',
+      status: HttpStatus.OK,
+      data: result,
+      message: 'Usuário e conta atualizados com sucesso.',
       timestamp: new Date().toISOString(),
-      path: '/accounts/del'
+      path: '/accounts/me'
+    };
+
+    return res.status(response.status).json(response);
+  }
+
+  @Delete('me')
+  @UseGuards(JwtAuthGuard)
+  async deleteIdentity(
+    @CurrentAccount() currentAccount: CurrentAccountDTO,
+    @Res() res
+  ) {
+    await this.service.deleteIdentity(currentAccount.id);
+
+    const response: ApiResponse = {
+      status: HttpStatus.OK,
+      data: null,
+      message: 'Usuário e conta excluídos com sucesso.',
+      timestamp: new Date().toISOString(),
+      path: '/accounts/me'
     };
 
     return res.status(response.status).json(response);

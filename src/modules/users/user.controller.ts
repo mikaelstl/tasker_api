@@ -1,12 +1,13 @@
-import { Body, Controller, Delete, Get, HttpStatus, Param, Patch, Post, Put, Query, Res, UseGuards, UseInterceptors } from "@nestjs/common";
-import { AuthGuard } from "@nestjs/passport";
+import { Body, Controller, Get, HttpStatus, Post, Query, Res, UseGuards } from "@nestjs/common";
 import { CreateUserDTO } from "@modules/users/dto/create.dto";
 import { UserDTO } from "@modules/users/dto/user.dto";
 import { UserRepository } from "@modules/users/user.repository";
-import { AuthService } from "src/security/auth.service";
 import { JwtAuthGuard } from "src/security/auth.guard";
 import { ApiResponse as ApiResponse } from "src/common/interfaces/ApiResponse";
 import { UserQueryDTO } from "./dto/user-query.dto";
+import { CurrentAccount } from "@decorators/CurrentAccount.decorator";
+import { CurrentAccountDTO } from "./dto/current-account.dto";
+import { UserProfileDTO } from "./dto/user-profile.dto";
 
 @Controller('users')
 // @UseGuards(JwtAuthGuard)
@@ -53,20 +54,38 @@ export class UserController {
     return res.status(response.status).json(response);
   }
 
+  @Get('me')
+  @UseGuards(JwtAuthGuard)
+  async profile(
+    @CurrentAccount() currentAccount: CurrentAccountDTO,
+    @Res() res
+  ) {
+    const result: UserProfileDTO =
+      await this.repository.findProfileByAccountId(currentAccount.id);
+
+    const response: ApiResponse = {
+      status: HttpStatus.OK,
+      data: result,
+      message: 'Informações do usuário obtidas com sucesso.',
+      timestamp: new Date().toISOString(),
+      path: '/users/me'
+    };
+
+    return res.status(response.status).json(response);
+  }
+
   @Get()
   @UseGuards(JwtAuthGuard)
   async find(
     @Query()  queries: UserQueryDTO,
     @Res() res
-    
   ) {
     const result: UserDTO = await this.repository.find(queries);
-    
+
     const response: ApiResponse = {
       status: HttpStatus.OK,
       data: result,
       message: 'Usuário encontrado com sucesso.',
-      
       timestamp: new Date().toISOString(),
       path: '/users'
     };
@@ -74,23 +93,4 @@ export class UserController {
     return res.status(response.status).json(response);
   }
 
-  @Delete('del/:username')
-  @UseGuards(JwtAuthGuard)
-  async delete(
-    @Param('username') username: string,
-    @Res() res
-  ) {
-    const result: UserDTO = await this.repository.delete(username);
-    
-    const response: ApiResponse = {
-      status: HttpStatus.OK,
-      data: result,
-      message: 'Usuário excluído com sucesso.',
-      
-      timestamp: new Date().toISOString(),
-      path: '/users/del'
-    };
-
-    return res.status(response.status).json(response);
-  }
 }
