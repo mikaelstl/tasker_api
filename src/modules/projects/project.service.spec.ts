@@ -20,11 +20,42 @@ describe('ProjectService', () => {
       listByManager: jest.fn(),
       listByMember: jest.fn(),
       find: jest.fn(),
+      edit: jest.fn(),
     };
     affiliations = {
       findByUserAndOrgkey: jest.fn(),
     };
     service = new ProjectService(repository, affiliations);
+  });
+
+  it('aceita como gestor apenas MANAGER da mesma organização', async () => {
+    const project = {
+      id: 'project-1',
+      orgkey,
+      managerkey: null,
+      stage: 'STARTED',
+    };
+    repository.find.mockResolvedValue(project);
+    repository.edit.mockResolvedValue({
+      ...project,
+      managerkey: 'manager-affiliation',
+    });
+    affiliations.findByIdAndOrganization = jest.fn().mockResolvedValue({
+      id: 'manager-affiliation',
+      orgkey,
+      role: OrgRole.MANAGER,
+    });
+
+    await expect(service.edit(
+      'project-1',
+      { managerkey: 'manager-affiliation' },
+      { orgkey, actorkey: 'owner' },
+    )).resolves.toMatchObject({ managerkey: 'manager-affiliation' });
+    expect(repository.edit).toHaveBeenCalledWith(
+      'project-1',
+      orgkey,
+      { managerkey: 'manager-affiliation' },
+    );
   });
 
   it.each([

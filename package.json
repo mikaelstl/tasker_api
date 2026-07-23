@@ -96,7 +96,17 @@
     },
     "moduleNameMapper": {
       "^generated/(.*)$": "<rootDir>/../generated/$1",
-      "^src/(.*)$": "<rootDir>/$1"
+      "^src/(.*)$": "<rootDir>/$1",
+      "^@authorization/(.*)$": "<rootDir>/authorization/$1",
+      "^@decorators/(.*)$": "<rootDir>/decorators/$1",
+      "^@enums/(.*)$": "<rootDir>/common/enums/$1",
+      "^@exceptions/(.*)$": "<rootDir>/common/errors/$1",
+      "^@filters/(.*)$": "<rootDir>/common/filters/$1",
+      "^@guards/(.*)$": "<rootDir>/guards/$1",
+      "^@interfaces/(.*)$": "<rootDir>/common/interfaces/$1",
+      "^@modules/(.*)$": "<rootDir>/modules/$1",
+      "^@permissions/(.*)$": "<rootDir>/permissions/$1",
+      "^@security/(.*)$": "<rootDir>/security/$1"
     },
     "collectCoverageFrom": [
       "**/*.(t|j)s"

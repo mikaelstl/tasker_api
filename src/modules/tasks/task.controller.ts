@@ -15,6 +15,7 @@ import { OrgRole } from "generated/prisma";
 import { CurrentAccount } from '@decorators/CurrentAccount.decorator';
 import { CurrentAccountDTO } from '@modules/users/dto/current-account.dto';
 import { OrgKey } from '@decorators/OrgKey';
+import { EditTaskDTO } from './dto/edit.dto';
 
 @Controller('tasks')
 @Resource(Resources.TASKS)
@@ -101,7 +102,7 @@ export class TasksController {
     @Param('code') code: string,
     @CurrentAccount() account: CurrentAccountDTO,
     @OrgKey() orgkey: string,
-    @Body() update: any,
+    @Body() update: EditTaskDTO,
     @Res() res
   ) {
     const result = await this.service.edit(projectkey, code, update, {

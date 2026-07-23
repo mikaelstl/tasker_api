@@ -39,7 +39,7 @@ model User {
   account    Account @relation(fields: [accountkey], references: [id], onDelete: Cascade)
 
   comments        Comment[]
-  notifications   Notification[]
+  // notifications   Notification[]
   participates_in Affiliation[]
   audit_logs      AuditLog[]
 
@@ -56,10 +56,10 @@ model Organization {
   name String
 
   ownerkey String
-  owner    User   @relation("OrgOwner", fields: [ownerkey], references: [username])
+  owner    User   @relation("OrgOwner", fields: [ownerkey], references: [username], onDelete: Restrict)
 
-  projects Project[]
-  members  Affiliation[]
+  projects   Project[]
+  members    Affiliation[]
   audit_logs AuditLog[]
 
   created_at DateTime @default(now())
@@ -72,12 +72,12 @@ model Affiliation {
   id String @id @default(cuid())
 
   orgkey String
-  org    Organization @relation(fields: [orgkey], references: [id])
+  org    Organization @relation(fields: [orgkey], references: [id], onDelete: Cascade)
 
   role OrgRole @default(MEMBER)
 
   userkey String
-  user    User   @relation(fields: [userkey], references: [username])
+  user    User   @relation(fields: [userkey], references: [username], onDelete: Cascade)
 
   member_in Member[]
   manage    Project[]
@@ -95,7 +95,7 @@ model Image {
   url      String
 
   userkey String @unique
-  user    User   @relation(fields: [userkey], references: [username])
+  user    User   @relation(fields: [userkey], references: [username], onDelete: Cascade)
 
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
@@ -104,22 +104,22 @@ model Image {
 }
 
 model Project {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   title       String
   description String
-  deadline    DateTime @map("due_date")
+  deadline    DateTime  @map("due_date")
   started_at  DateTime?
   done_at     DateTime?
-  delayed     Boolean  @default(false)
+  delayed     Boolean   @default(false)
 
-  stage ProjectStage @default(STARTED) @map("progress")
+  stage    ProjectStage    @default(STARTED) @map("progress")
   priority ProjectPriority @default(MEDIUM)
 
   orgkey String
   org    Organization @relation(fields: [orgkey], references: [id])
 
   managerkey String?
-  manager    Affiliation? @relation(fields: [managerkey], references: [id])
+  manager    Affiliation? @relation(fields: [managerkey], references: [id], onDelete: SetNull)
 
   members         Member[]
   comments        Comment[]
@@ -127,7 +127,7 @@ model Project {
   events          Event[]
   work_logs       TaskWorkLog[]
   stats_snapshots ProjectStatsPeriodSnapshot[]
-  stats_reports    ProjectStatsReport[]
+  stats_reports   ProjectStatsReport[]
 
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
@@ -161,10 +161,10 @@ model Task {
 
   name        String
   description String
-  deadline    DateTime @map("due_date")
+  deadline    DateTime  @map("due_date")
   started_at  DateTime?
   done_at     DateTime?
-  delayed     Boolean  @default(false)
+  delayed     Boolean   @default(false)
 
   stage    TaskStage    @default(PENDING)
   priority TaskPriority
@@ -172,8 +172,8 @@ model Task {
   projectkey String
   project    Project @relation(fields: [projectkey], references: [id], onDelete: Cascade)
 
-  ownerkey String
-  owner    Member @relation(fields: [ownerkey], references: [id])
+  ownerkey String?
+  owner    Member? @relation(fields: [ownerkey], references: [id], onDelete: SetNull)
 
   work_logs      TaskWorkLog[]
   period_entries ProjectStatsPeriodTask[]
@@ -192,8 +192,8 @@ model Comment {
   content String
   date    DateTime @default(now())
 
-  ownerkey String
-  owner    User   @relation(fields: [ownerkey], references: [username])
+  ownerkey String?
+  owner    User?   @relation(fields: [ownerkey], references: [username], onDelete: SetNull)
 
   projectkey String
   project    Project @relation(fields: [projectkey], references: [id])
@@ -227,7 +227,7 @@ model TaskWorkLog {
   project    Project @relation(fields: [projectkey], references: [id], onDelete: Cascade)
 
   taskkey String
-  task    Task @relation(fields: [taskkey], references: [id], onDelete: Cascade)
+  task    Task   @relation(fields: [taskkey], references: [id], onDelete: Cascade)
 
   memberkey String
   member    Member @relation(fields: [memberkey], references: [id], onDelete: Cascade)
@@ -252,11 +252,11 @@ model ProjectStatsPeriodSnapshot {
   projectkey String
   project    Project @relation(fields: [projectkey], references: [id], onDelete: Cascade)
 
-  period_type StatsPeriodType
+  period_type  StatsPeriodType
   period_start DateTime
-  period_end DateTime
-  generated_at DateTime @default(now())
-  cutoff_at DateTime
+  period_end   DateTime
+  generated_at DateTime        @default(now())
+  cutoff_at    DateTime
 
   performance_per_member_json Json
   productivity_json           Json
@@ -283,7 +283,7 @@ model ProjectStatsPeriodTask {
   snapshot    ProjectStatsPeriodSnapshot @relation(fields: [snapshotkey], references: [id], onDelete: Cascade)
 
   taskkey String
-  task    Task @relation(fields: [taskkey], references: [id], onDelete: Cascade)
+  task    Task   @relation(fields: [taskkey], references: [id], onDelete: Cascade)
 
   memberkey String
   member    Member @relation(fields: [memberkey], references: [id], onDelete: Cascade)
@@ -308,14 +308,14 @@ model ProjectStatsReport {
   projectkey String
   project    Project @relation(fields: [projectkey], references: [id], onDelete: Cascade)
 
-  generated_at DateTime @default(now())
+  generated_at DateTime        @default(now())
   cutoff_at    DateTime
-  period_type   StatsPeriodType
+  period_type  StatsPeriodType
 
   snapshotkey String?
   snapshot    ProjectStatsPeriodSnapshot? @relation(fields: [snapshotkey], references: [id], onDelete: SetNull)
 
-  file_url    String?
+  file_url     String?
   payload_json Json?
 
   created_at DateTime @default(now())
@@ -326,19 +326,19 @@ model ProjectStatsReport {
   @@map("project_stats_reports")
 }
 
-model Notification {
-  id String @id @default(cuid())
-
-  action String
-
-  actorkey String
-  actor    User   @relation(fields: [actorkey], references: [username])
-
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
-
-  @@map("notifications")
-}
+// model Notification {
+//   id String @id @default(cuid())
+//
+//   action String
+//
+//   actorkey String?
+//   actor    User?  @relation(fields: [actorkey], references: [username], onDelete: SetNull)
+//
+//   created_at DateTime @default(now())
+//   updated_at DateTime @updatedAt
+//
+//   @@map("notifications")
+// }
 
 model AuditLog {
   id String @id @default(cuid())

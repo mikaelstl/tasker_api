@@ -8,6 +8,7 @@ import { Prisma, TaskStage } from "generated/prisma";
 import { InternalException } from 'src/common/errors/internal.exception';
 import { TaskNotFoundException } from 'src/common/errors/resource-not-found.exceptions';
 import { TaskCodeGenerationConflictException } from 'src/common/errors/task-business.exceptions';
+import { EditTaskDTO } from './dto/edit.dto';
 
 @Injectable()
 export class TasksRepository {
@@ -97,7 +98,44 @@ export class TasksRepository {
     return this.toTaskDTO(task);
   }
 
-  async edit(projectkey: string, code: string, update: any): Promise<TaskDTO> {
+  async findEditContext(
+    projectkey: string,
+    code: string,
+    orgkey: string,
+  ) {
+    const task = await this.prisma.task.findFirst({
+      where: {
+        projectkey,
+        code,
+        project: { orgkey },
+      },
+      include: {
+        owner: {
+          include: {
+            user: true,
+          },
+        },
+        project: {
+          include: {
+            org: true,
+            manager: true,
+          },
+        },
+      },
+    });
+
+    if (!task) {
+      throw new TaskNotFoundException();
+    }
+
+    return task;
+  }
+
+  async edit(
+    projectkey: string,
+    code: string,
+    update: EditTaskDTO,
+  ): Promise<TaskDTO> {
     const current = await this.prisma.task.findUnique({
       where: {
         projectkey_code: {
@@ -132,6 +170,7 @@ export class TasksRepository {
         priority: update.priority,
         stage: update.stage,
         deadline: update.deadline,
+        ownerkey: update.ownerkey,
         delayed: current.delayed || becameDelayed
       },
       where: {
@@ -140,6 +179,7 @@ export class TasksRepository {
           code
         }
       },
+      include: { owner: true },
     });
 
     return this.toTaskDTO(response);
@@ -168,5 +208,63 @@ export class TasksRepository {
     });
 
     return result > 0;
+  }
+
+  async memberBelongsToProject(
+    memberkey: string,
+    projectkey: string,
+  ): Promise<boolean> {
+    return (await this.prisma.member.count({
+      where: {
+        id: memberkey,
+        projectkey,
+      },
+    })) > 0;
+  }
+
+  async projectBelongsToOrganization(
+    projectkey: string,
+    orgkey: string,
+  ): Promise<boolean> {
+    return (await this.prisma.project.count({
+      where: {
+        id: projectkey,
+        orgkey,
+      },
+    })) > 0;
+  }
+
+  async isOwnedByUser(
+    taskkey: string,
+    username: string,
+  ): Promise<boolean> {
+    return (await this.prisma.task.count({
+      where: {
+        id: taskkey,
+        owner: {
+          user: {
+            userkey: username,
+          },
+        },
+      },
+    })) > 0;
+  }
+
+  async isOwnedByUserAndCode(
+    projectkey: string,
+    code: string,
+    username: string,
+  ): Promise<boolean> {
+    return (await this.prisma.task.count({
+      where: {
+        projectkey,
+        code,
+        owner: {
+          user: {
+            userkey: username,
+          },
+        },
+      },
+    })) > 0;
   }
 }

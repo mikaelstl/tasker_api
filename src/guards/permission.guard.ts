@@ -40,6 +40,8 @@ export class PermissionGuard implements CanActivate {
     if (!orgkey) throw new UnauthorizedException();
 
     const id = req.body?.id
+      ?? req.body?.project
+      ?? req.body?.projectkey
       ?? req.params?.id
       ?? req.params?.projectkey
       ?? req.params?.code;
@@ -52,7 +54,9 @@ export class PermissionGuard implements CanActivate {
       subject: {
         userkey: user.username,
         orgkey: orgkey,
-        targetkey: id
+        targetkey: id,
+        projectkey: req.params?.projectkey,
+        taskcode: req.params?.code,
       }
     } as AccessContext;
 

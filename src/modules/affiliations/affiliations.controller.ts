@@ -195,4 +195,30 @@ export class AffiliationController {
 
     return res.status(response.status).json(response);
   }
+
+  @Patch('/:id/ownership/transfer')
+  @Role(OrgRole.OWNER)
+  @Action(BaseActions.EDIT)
+  @UseGuards(PermissionGuard)
+  async transferOwnership(
+    @Param('id') id: string,
+    @OrgKey() orgkey: string,
+    @CurrentAccount() account: CurrentAccountDTO,
+    @Res() res,
+  ) {
+    const result = await this.service.transferOwnership(id, {
+      orgkey,
+      actorkey: account.username,
+    });
+
+    const response: ApiResponse = {
+      status: HttpStatus.OK,
+      data: result,
+      message: 'Propriedade da organização transferida com sucesso.',
+      timestamp: new Date().toISOString(),
+      path: `/affiliations/${id}/ownership/transfer`,
+    };
+
+    return res.status(response.status).json(response);
+  }
 }

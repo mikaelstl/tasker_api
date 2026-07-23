@@ -8,19 +8,16 @@ import { AuditAction, AuditResource, OrgRole } from "generated/prisma";
 import { AffiliationRepository } from "./affiliations.repository";
 import { DefineAffiliationDTO } from "./dto/define.dto";
 import { AffiliationDTO } from "./dto/affiliation.dto";
-import { APIMessage } from "@interfaces/ApiMessage";
 import { AccessValidator } from "@interfaces/AccessValidator";
 import { UserOrganizationSummaryDTO } from "./dto/summary.dto";
 import { AuditLogService } from '@modules/audit-log/audit-log.service';
 import { AuditContext } from '@interfaces/AuditContext';
+import { BusinessRuleException } from 'src/common/errors/business-rule.exception';
+import { AccessDeniedException } from 'src/common/errors/access-denied.exception';
 
 // type ListMethodCommand = {
 //   [key: string]: (key: string) => Promise<ProjectDTO[]>
 // }
-
-type AffiliationRoleTrasistion = {
-  [ key in OrgRole ]: (affiliation: AffiliationDTO) => AffiliationDTO
-}
 
 @Injectable()
 export class AffiliationService implements AccessValidator {
@@ -30,6 +27,12 @@ export class AffiliationService implements AccessValidator {
   ) { }
 
   async create(data: DefineAffiliationDTO, actorkey?: string) {
+    if ((data.role as OrgRole) === OrgRole.OWNER) {
+      throw new BusinessRuleException(
+        'O papel OWNER só pode ser atribuído por transferência de propriedade.',
+      );
+    }
+
     const affiliation = await this.repository.create(data);
     if (actorkey) {
       await this.audit.logUserMutation({
@@ -46,7 +49,22 @@ export class AffiliationService implements AccessValidator {
   }
 
   async delete(key: string, context: AuditContext) {
-    const affiliation = await this.repository.delete(key);
+    const current = await this.repository.findByIdAndOrganization(
+      key,
+      context.orgkey,
+    );
+
+    if (!current) {
+      throw new AffiliationNotFoundException();
+    }
+
+    if (current.role === OrgRole.OWNER) {
+      throw new BusinessRuleException(
+        'A afiliação OWNER não pode ser removida antes da transferência de propriedade.',
+      );
+    }
+
+    const affiliation = await this.repository.delete(key, context.orgkey);
     await this.audit.logUserMutation({
       ...context,
       action: AuditAction.REMOVE,
@@ -58,36 +76,28 @@ export class AffiliationService implements AccessValidator {
     return affiliation;
   }
 
-  async promote(key: string, context: AuditContext): Promise<AffiliationDTO | APIMessage> {
-    const RolePromotes: AffiliationRoleTrasistion = {
-      'MEMBER': (affiliation: AffiliationDTO) => {
-                    affiliation.role = OrgRole.MANAGER
-                    return affiliation;
-                  },
-      'MANAGER': (affiliation: AffiliationDTO) => { 
-                    affiliation.role = OrgRole.OWNER
-                    return affiliation;
-                  },
-      'OWNER': (affiliation: AffiliationDTO) => { return null }
-    }
-
-    const value = await this.repository.findById(key);
+  async promote(key: string, context: AuditContext): Promise<AffiliationDTO> {
+    const value = await this.repository.findByIdAndOrganization(
+      key,
+      context.orgkey,
+    );
 
     if (!value) {
       throw new AffiliationNotFoundException();
     }
 
-    if (value.role === OrgRole.OWNER) {
-      return {
-        message: `O usuário já possui a função máxima: OWNER. Não é possível promovê-lo.`,
-        timestamp: new Date().toISOString()
-      } as APIMessage;
+    if (value.role !== OrgRole.MEMBER) {
+      throw new BusinessRuleException(
+        'A promoção comum permite apenas a transição de MEMBER para MANAGER.',
+      );
     }
 
     const previousRole = value.role;
-    const data = RolePromotes[value.role](value);
-
-    const affiliation = await this.repository.update(key, data);
+    const affiliation = await this.repository.update(
+      key,
+      context.orgkey,
+      { role: OrgRole.MANAGER },
+    );
     await this.audit.logUserMutation({
       ...context,
       action: AuditAction.UPDATE,
@@ -100,36 +110,28 @@ export class AffiliationService implements AccessValidator {
     return affiliation;
   }
 
-  async demote(key: string, context: AuditContext): Promise<AffiliationDTO | APIMessage> {
-    const RolePromotes: AffiliationRoleTrasistion = {
-      'MEMBER': (affiliation: AffiliationDTO) => { return null },
-      'MANAGER': (affiliation: AffiliationDTO) => { 
-                    affiliation.role = OrgRole.MEMBER
-                    return affiliation;
-                  },
-      'OWNER': (affiliation: AffiliationDTO) => { 
-                    affiliation.role = OrgRole.MANAGER
-                    return affiliation;
-                  }
-    }
-
-    const value = await this.repository.findById(key);
+  async demote(key: string, context: AuditContext): Promise<AffiliationDTO> {
+    const value = await this.repository.findByIdAndOrganization(
+      key,
+      context.orgkey,
+    );
 
     if (!value) {
       throw new AffiliationNotFoundException();
     }
 
-    if (value.role === OrgRole.OWNER) {
-      return {
-        message: `O usuário possui a função OWNER. Não é possível rebaixá-lo por esta operação.`,
-        timestamp: new Date().toISOString()
-      } as APIMessage;
+    if (value.role !== OrgRole.MANAGER) {
+      throw new BusinessRuleException(
+        'O rebaixamento comum permite apenas a transição de MANAGER para MEMBER.',
+      );
     }
 
     const previousRole = value.role;
-    const data = RolePromotes[value.role](value);
-
-    const affiliation = await this.repository.update(key, data);
+    const affiliation = await this.repository.update(
+      key,
+      context.orgkey,
+      { role: OrgRole.MEMBER },
+    );
     await this.audit.logUserMutation({
       ...context,
       action: AuditAction.UPDATE,
@@ -168,7 +170,53 @@ export class AffiliationService implements AccessValidator {
     orgkey: string,
     userkey: string,
   ): Promise<AffiliationDTO[]> {
+    await this.findByUserAndOrgkey(userkey, orgkey);
     return this.repository.findByOrganization(orgkey);
+  }
+
+  async transferOwnership(
+    targetAffiliationId: string,
+    context: AuditContext,
+  ): Promise<AffiliationDTO> {
+    const requester = await this.findByUserAndOrgkey(
+      context.actorkey,
+      context.orgkey,
+    );
+
+    if (requester.role !== OrgRole.OWNER) {
+      throw new AccessDeniedException();
+    }
+
+    const previousOwner = requester;
+    const newOwner = await this.repository.transferOwnership(
+      context.orgkey,
+      targetAffiliationId,
+      context.actorkey,
+    );
+
+    if (previousOwner.id !== newOwner.id) {
+      await this.audit.logUserMutation({
+        ...context,
+        action: AuditAction.UPDATE,
+        resource: AuditResource.AFFILIATIONS,
+        resourcekey: newOwner.id,
+        before: { ownerkey: previousOwner.userkey },
+        after: {
+          ownerkey: newOwner.userkey,
+          role: newOwner.role,
+        },
+        fields: ['ownerkey', 'role'],
+      });
+    }
+
+    return newOwner;
+  }
+
+  async findByIdAndOrganization(
+    id: string,
+    orgkey: string,
+  ): Promise<AffiliationDTO | null> {
+    return this.repository.findByIdAndOrganization(id, orgkey);
   }
 
   async getOrganizationsByUser(

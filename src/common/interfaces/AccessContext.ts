@@ -7,6 +7,7 @@ type AccessSubject = {
   orgkey: string,
   targetkey: string,
   projectkey?: string,
+  taskcode?: string,
   taskkey?: string,
   commentkey?: string,
   eventkey?: string,

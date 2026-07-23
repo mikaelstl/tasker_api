@@ -12,6 +12,7 @@ import { AccessDeniedException } from "src/common/errors/access-denied.exception
 import { AuditLogService } from '@modules/audit-log/audit-log.service';
 import { AuditContext } from '@interfaces/AuditContext';
 import { EditProjectDTO } from './dto/edit.dto';
+import { AffiliationNotFoundException } from 'src/common/errors/resource-not-found.exceptions';
 
 type ListMethodCommand = {
   [K in OrgRole]: () => Promise<ProjectDTO[]>
@@ -41,7 +42,23 @@ export class ProjectService implements AccessValidator {
 
   async edit(key: string, update: EditProjectDTO, context: AuditContext) {
     const before = await this.repository.find(key, { orgkey: context.orgkey });
-    const project = await this.repository.edit(key, update);
+
+    if (update.managerkey !== undefined && update.managerkey !== null) {
+      const manager = await this.affiliations.findByIdAndOrganization(
+        update.managerkey,
+        before.orgkey,
+      );
+
+      if (!manager || manager.role !== OrgRole.MANAGER) {
+        throw new AffiliationNotFoundException();
+      }
+    }
+
+    const project = await this.repository.edit(
+      key,
+      context.orgkey,
+      update,
+    );
     const action = before.stage !== project.stage
       ? AuditAction.STATUS_CHANGE
       : AuditAction.UPDATE;
@@ -58,7 +75,7 @@ export class ProjectService implements AccessValidator {
   }
 
   async delete(key: string, context: AuditContext) {
-    const project = await this.repository.delete(key);
+    const project = await this.repository.delete(key, context.orgkey);
     await this.audit?.logUserMutation({
       ...context,
       action: AuditAction.DELETE,

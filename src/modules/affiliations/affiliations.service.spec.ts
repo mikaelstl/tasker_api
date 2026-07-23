@@ -1,15 +1,88 @@
+import { OrgRole } from 'generated/prisma';
+import { BusinessRuleException } from 'src/common/errors/business-rule.exception';
 import { AffiliationService } from './affiliations.service';
 
 describe('AffiliationService', () => {
   let repository: any;
+  let audit: any;
   let service: AffiliationService;
 
   beforeEach(() => {
     repository = {
       findByUserAndOrgkey: jest.fn(),
       findByOrganization: jest.fn(),
+      findByIdAndOrganization: jest.fn(),
+      transferOwnership: jest.fn(),
+      update: jest.fn(),
     };
-    service = new AffiliationService(repository, {} as any);
+    audit = {
+      logUserMutation: jest.fn(),
+    };
+    service = new AffiliationService(repository, audit);
+  });
+
+  it('promove somente MEMBER para MANAGER', async () => {
+    repository.findByIdAndOrganization.mockResolvedValue({
+      id: 'affiliation-1',
+      orgkey: 'org-1',
+      userkey: 'user-1',
+      role: OrgRole.MEMBER,
+    });
+    repository.update.mockImplementation((id, orgkey, data) => ({
+      ...data,
+      id,
+      orgkey,
+    }));
+
+    await expect(service.promote('affiliation-1', {
+      orgkey: 'org-1',
+      actorkey: 'owner',
+    })).resolves.toMatchObject({ role: OrgRole.MANAGER });
+    expect(repository.update).toHaveBeenCalledWith(
+      'affiliation-1',
+      'org-1',
+      expect.objectContaining({ role: OrgRole.MANAGER }),
+    );
+  });
+
+  it('não promove MANAGER para OWNER pelo fluxo comum', async () => {
+    repository.findByIdAndOrganization.mockResolvedValue({
+      id: 'affiliation-1',
+      orgkey: 'org-1',
+      userkey: 'user-1',
+      role: OrgRole.MANAGER,
+    });
+
+    await expect(service.promote('affiliation-1', {
+      orgkey: 'org-1',
+      actorkey: 'owner',
+    })).rejects.toBeInstanceOf(BusinessRuleException);
+    expect(repository.update).not.toHaveBeenCalled();
+  });
+
+  it('transfere a propriedade apenas quando o solicitante é OWNER', async () => {
+    repository.findByUserAndOrgkey.mockResolvedValue({
+      id: 'owner-affiliation',
+      orgkey: 'org-1',
+      userkey: 'old-owner',
+      role: OrgRole.OWNER,
+    });
+    repository.transferOwnership.mockResolvedValue({
+      id: 'target-affiliation',
+      orgkey: 'org-1',
+      userkey: 'new-owner',
+      role: OrgRole.OWNER,
+    });
+
+    await expect(service.transferOwnership('target-affiliation', {
+      orgkey: 'org-1',
+      actorkey: 'old-owner',
+    })).resolves.toMatchObject({
+      userkey: 'new-owner',
+      role: OrgRole.OWNER,
+    });
+    expect(repository.transferOwnership)
+      .toHaveBeenCalledWith('org-1', 'target-affiliation', 'old-owner');
   });
 
   it('lista as afiliações quando o usuário pertence à organização', async () => {

@@ -132,9 +132,16 @@ export class ProjectRepository {
     return this.toProjectDTO(projects);
   };
 
-  async edit(key: string, update: EditProjectDTO): Promise<ProjectDTO> {
+  async edit(
+    key: string,
+    orgkey: string,
+    update: EditProjectDTO,
+  ): Promise<ProjectDTO> {
     const current = await this.prisma.project.findUnique({
-      where: { id: key }
+      where: {
+        id: key,
+        orgkey,
+      },
     });
 
     if (!current) {
@@ -155,7 +162,8 @@ export class ProjectRepository {
 
     const result = await this.prisma.project.update({
       where: {
-        id: key
+        id: key,
+        orgkey,
       },
       data: {
         title: update.title,
@@ -163,6 +171,7 @@ export class ProjectRepository {
         deadline: update.deadline,
         stage: update.stage,
         priority: update.priority,
+        managerkey: update.managerkey,
         delayed: current.delayed || becameDelayed
       },
     });
@@ -170,10 +179,11 @@ export class ProjectRepository {
     return this.toProjectDTO(result);
   }
 
-  async delete(id: string) {
+  async delete(id: string, orgkey: string) {
     const response = await this.prisma.project.delete({
       where: {
-        id: id
+        id,
+        orgkey,
       }
     });
 

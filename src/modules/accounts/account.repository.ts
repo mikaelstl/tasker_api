@@ -10,7 +10,6 @@ import { CreateAccountDTO } from "@modules/accounts/dto/create.dto";
 import { EditAccountDTO } from "./dto/edit-account.dto";
 import { AccountIdentityDTO } from "./dto/account-identity.dto";
 import { UserNotFoundException } from "src/common/errors/user-not-found.exception";
-import { Prisma } from "generated/prisma";
 import { ConflictException } from "src/common/errors/conflict.exception";
 
 @Injectable()
@@ -133,39 +132,36 @@ export class AccountRepository {
   }
 
   async deleteIdentity(accountId: string): Promise<void> {
-    try {
-      await this.prisma.$transaction(async (transaction) => {
-        const account = await transaction.account.findUnique({
-          where: { id: accountId },
-          select: { user: { select: { username: true } } },
-        });
-
-        if (!account) {
-          throw new AccountNotFoundException();
-        }
-
-        if (!account.user) {
-          throw new UserNotFoundException();
-        }
-
-        // A relação Account -> User usa onDelete: Cascade, garantindo que
-        // credenciais e perfil sejam removidos como uma única identidade.
-        await transaction.account.delete({
-          where: { id: accountId },
-        });
+    await this.prisma.$transaction(async (transaction) => {
+      const account = await transaction.account.findUnique({
+        where: { id: accountId },
+        select: {
+          user: {
+            select: {
+              username: true,
+              _count: {
+                select: { organizations: true },
+              },
+            },
+          },
+        },
       });
-    } catch (error) {
-      const hasRelatedResources =
-        error instanceof Prisma.PrismaClientKnownRequestError
-        && error.code === 'P2003';
 
-      if (hasRelatedResources) {
-        throw new ConflictException(
-          'Não é possível excluir a conta enquanto o usuário possuir recursos vinculados.',
-        );
+      if (!account) {
+        throw new AccountNotFoundException();
       }
 
-      throw error;
-    }
+      if (!account.user) {
+        throw new UserNotFoundException();
+      }
+
+      if (account.user._count.organizations > 0) {
+        throw new ConflictException('Usuário possui organizações');
+      }
+
+      await transaction.account.delete({
+        where: { id: accountId },
+      });
+    });
   }
 }

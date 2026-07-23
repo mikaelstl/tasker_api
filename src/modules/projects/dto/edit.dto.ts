@@ -5,5 +5,6 @@ export type EditProjectDTO = {
   description?: string,
   deadline?: Date,
   stage?: ProjectStage,
-  priority?: ProjectPriority
+  priority?: ProjectPriority,
+  managerkey?: string | null,
 }

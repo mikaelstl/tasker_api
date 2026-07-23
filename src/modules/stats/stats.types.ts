@@ -155,7 +155,7 @@ export type StatsTaskRecord = {
   stage: TaskStage;
   delayed: boolean;
   deadline: Date;
-  ownerkey: string;
+  ownerkey: string | null;
   started_at: Date | null;
   done_at: Date | null;
 };

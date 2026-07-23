@@ -2,7 +2,6 @@ import { AccessSubject } from "@interfaces/AccessContext";
 import { ResourcePolicyHandler } from "@interfaces/ResourcePolicyHandler";
 import { TasksService } from "@modules/tasks/tasks.service";
 import { Injectable } from "@nestjs/common";
-import { AccessValidatorRegistry } from "src/authorization/access-control/access-control.registry";
 
 @Injectable()
 export class TasksOwnershipPolicy implements ResourcePolicyHandler {  
@@ -11,6 +10,14 @@ export class TasksOwnershipPolicy implements ResourcePolicyHandler {
   ) {}
 
   async validate(subject: AccessSubject): Promise<boolean> {
+    if (subject.projectkey && subject.taskcode) {
+      return this.service.ownsTask(
+        subject.userkey,
+        subject.projectkey,
+        subject.taskcode,
+      );
+    }
+
     return await this.service.belongs(subject.userkey, subject.targetkey);
   }
 }

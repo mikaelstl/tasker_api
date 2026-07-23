@@ -7,6 +7,6 @@ export interface AffiliationDTO {
   readonly orgkey:  string,
   readonly userkey: string,
   readonly org?: OrganizationDTO,
-  readonly user?: UserDTO,
+  readonly user?: Pick<UserDTO, 'id' | 'name' | 'username'>,
   role:    OrgRole,
 }
