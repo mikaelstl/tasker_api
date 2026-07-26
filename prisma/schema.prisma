@@ -61,11 +61,32 @@ model Organization {
   projects   Project[]
   members    Affiliation[]
   audit_logs AuditLog[]
+  invites    OrganizationInvite[]
 
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
   @@map("organizations")
+}
+
+model OrganizationInvite {
+  id        String @id @default(cuid())
+  tokenHash String @unique @map("token_hash") @db.Char(64)
+
+  orgkey String
+  org    Organization @relation(fields: [orgkey], references: [id], onDelete: Cascade)
+
+  expiresAt  DateTime @map("expires_at")
+  usedAt     DateTime? @map("used_at")
+  rejectedAt DateTime? @map("rejected_at")
+  rejectedBy String? @map("rejected_by")
+  revokedAt  DateTime? @map("revoked_at")
+
+  created_at DateTime @default(now())
+
+  @@index([orgkey, created_at])
+  @@index([expiresAt])
+  @@map("organization_invites")
 }
 
 model Affiliation {

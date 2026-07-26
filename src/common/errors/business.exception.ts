@@ -6,6 +6,8 @@ export type BusinessHttpStatus =
   | HttpStatus.FORBIDDEN
   | HttpStatus.NOT_FOUND
   | HttpStatus.CONFLICT
+  | HttpStatus.GONE
+  | HttpStatus.TOO_MANY_REQUESTS
   | HttpStatus.UNPROCESSABLE_ENTITY;
 
 /**
@@ -16,10 +18,7 @@ export type BusinessHttpStatus =
  * original para que sejam registradas corretamente.
  */
 export abstract class BusinessException extends HttpException {
-  constructor(
-    message: string,
-    status: BusinessHttpStatus,
-  ) {
+  constructor(message: string, status: BusinessHttpStatus) {
     super(message, status);
   }
 }
