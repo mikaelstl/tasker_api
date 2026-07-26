@@ -63,3 +63,4 @@ firebase-service-account.json
 
 /context
 */seed*
+!prisma/seed.ts
