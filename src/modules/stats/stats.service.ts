@@ -48,7 +48,6 @@ const MINUTE_IN_MS = 60 * 1000;
 const STARTED_STAGES: TaskStage[] = [
   TaskStage.STARTED,
   TaskStage.PENDING,
-  TaskStage.IN_PROGRESS
 ];
 
 @Injectable()

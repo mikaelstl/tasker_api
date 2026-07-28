@@ -418,7 +418,6 @@ enum OrgRole {
 enum TaskStage {
   STARTED
   PENDING
-  IN_PROGRESS
   REVIEW
   DONE
 }

@@ -110,7 +110,7 @@ describe("StatsService member performance", () => {
             id: "task-2",
             code: "TSK-002",
             name: "Atrasada",
-            stage: TaskStage.IN_PROGRESS,
+            stage: TaskStage.STARTED,
             delayed: false,
             deadline: new Date("2026-07-10T00:00:00.000Z"),
             ownerkey: "member-1",

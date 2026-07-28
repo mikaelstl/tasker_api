@@ -28,7 +28,7 @@ describe("ProjectStatsReportDocument", () => {
       project: {
         id: "PRJ-001",
         title: "Tasker",
-        stage: "IN_PROGRESS",
+        stage: "STARTED",
         startedAt: new Date("2026-05-01T00:00:00.000Z"),
         doneAt: null,
         deadline: new Date("2026-08-31T00:00:00.000Z"),
@@ -90,7 +90,7 @@ describe("ProjectStatsReportDocument", () => {
           id: "task-1",
           code: "TSK-001",
           name: "Gerar relatório",
-          stage: TaskStage.IN_PROGRESS,
+          stage: TaskStage.STARTED,
           delayed: false,
           spentMinutes: 120,
           deadline: new Date("2026-07-24T00:00:00.000Z"),

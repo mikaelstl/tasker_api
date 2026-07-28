@@ -34,7 +34,6 @@ const projectPriorities = [
 const taskStages = [
   TaskStage.STARTED,
   TaskStage.PENDING,
-  TaskStage.IN_PROGRESS,
   TaskStage.REVIEW,
   TaskStage.DONE,
 ] as const;

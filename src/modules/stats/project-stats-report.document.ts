@@ -976,7 +976,6 @@ export class ProjectStatsReportDocument {
     return {
       [TaskStage.STARTED]: "INICIADA",
       [TaskStage.PENDING]: "PENDENTE",
-      [TaskStage.IN_PROGRESS]: "EM ANDAMENTO",
       [TaskStage.REVIEW]: "REVISÃO",
       [TaskStage.DONE]: "CONCLUÍDA"
     }[stage];
