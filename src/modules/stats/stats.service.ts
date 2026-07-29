@@ -50,6 +50,18 @@ const STARTED_STAGES: TaskStage[] = [
   TaskStage.PENDING,
 ];
 
+type StatsTaskDetails = {
+  id: string;
+  code: string;
+  name: string;
+  stage: TaskStage;
+  delayed: boolean;
+  spentMinutes: number;
+  deadline: Date;
+  startedAt: Date | null;
+  doneAt: Date | null;
+};
+
 @Injectable()
 export class StatsService {
   constructor(
@@ -69,138 +81,7 @@ export class StatsService {
   ): Promise<ProjectStats> {
     this.assertValidDate(cutoffAt, "cutoffAt");
 
-    const project = await this.queries.findProject(projectkey);
-
-    if (!project) {
-      throw new ProjectNotFoundException();
-    }
-
-    const effectivePeriod = period
-      ? this.limitPeriodToCutoff(period, cutoffAt)
-      : null;
-    const logs = await this.workLogs.list(
-      {
-        projectkey,
-        logged_at: effectivePeriod
-          ? {
-            gte: effectivePeriod.start,
-            lte: effectivePeriod.end
-          }
-          : {
-            lte: cutoffAt
-          }
-      },
-      {
-        logged_at: "asc"
-      }
-    );
-    const tasks = project.tasks as StatsTaskRecord[];
-    const delayedTasks = tasks.filter((task) =>
-      this.isTaskDelayed(task, cutoffAt)
-    );
-    const doneTasks = tasks.filter((task) =>
-      task.stage === TaskStage.DONE
-    );
-    const openTasks = tasks.filter((task) =>
-      task.stage !== TaskStage.DONE
-    );
-    const startedTasks = tasks.filter((task) =>
-      STARTED_STAGES.includes(task.stage)
-    );
-    const reviewTasks = tasks.filter((task) =>
-      task.stage === TaskStage.REVIEW
-    );
-    const progress = tasks.length === 0
-      ? 0
-      : this.round((doneTasks.length / tasks.length) * 100);
-    const logsByTask = this.sumLogsBy(logs, "taskkey");
-    const performancePeriod = effectivePeriod ?? {
-      start: project.started_at
-        ?? logs[0]?.logged_at
-        ?? cutoffAt,
-      end: cutoffAt
-    };
-    const members = project.members.map((member) => {
-      const memberTasks = tasks.filter((task) =>
-        task.ownerkey === member.id
-      );
-
-      return this.buildMemberStats(
-        member,
-        memberTasks,
-        logsByTask,
-        cutoffAt,
-        effectivePeriod
-      );
-    });
-    const health = this.calculateHealth(
-      {
-        deadline: project.deadline,
-        startedAt: project.started_at,
-        totalTasks: tasks.length,
-        doneTasks: doneTasks.length,
-        delayedTasks: delayedTasks.length,
-        progress
-      },
-      cutoffAt
-    );
-
-    return {
-      generatedAt: new Date(),
-      cutoffAt,
-      period: effectivePeriod,
-      project: {
-        id: project.id,
-        title: project.title,
-        stage: project.stage,
-        startedAt: project.started_at,
-        doneAt: project.done_at,
-        deadline: project.deadline,
-        organization: project.org.name,
-        manager: project.manager?.user.name ?? null,
-        delayed: (
-          project.delayed
-        ) || (
-          project.done_at === null
-          && project.deadline.getTime() < cutoffAt.getTime()
-        ) || (
-          project.done_at !== null
-          && project.done_at.getTime() > project.deadline.getTime()
-        )
-      },
-      summary: {
-        totalTasks: tasks.length,
-        doneTasks: doneTasks.length,
-        openTasks: openTasks.length,
-        startedTasks: startedTasks.length,
-        reviewTasks: reviewTasks.length,
-        delayedTasks: delayedTasks.length,
-        progress
-      },
-      deadline: {
-        dueDate: project.deadline,
-        daysLeft: this.daysBetween(cutoffAt, project.deadline)
-      },
-      health,
-      performancePerMember: members.map((member) =>
-        this.buildPerformance(member, logs, performancePeriod)
-      ),
-      productivity: members.map((member) => ({
-        memberId: member.memberId,
-        completed: member.completedTasks,
-        delayed: member.delayedTasks,
-        ratio: this.round(
-          member.completedTasks / Math.max(member.delayedTasks, 1)
-        )
-      })),
-      members,
-      events: project.events.map((event) => ({
-        id: event.id,
-        title: event.title,
-        date: event.date,
-        category: event.category
-      }))
-    };
+    return (await this.collectProjectStats(projectkey, cutoffAt, period)).stats;
   }
 
   async getProjectMemberPerformance(
@@ -328,11 +209,13 @@ export class StatsService {
   async generateSnapshot(input: GenerateSnapshotInput) {
     const cutoffAt = input.cutoffAt ?? new Date();
     const period = this.normalizePeriod(input.periodType, cutoffAt);
-    const stats = await this.getProjectStats(
-      input.projectkey,
-      cutoffAt,
-      period
-    );
+    const { stats, memberTaskDetailsByMemberId } =
+      await this.collectProjectStats(
+        input.projectkey,
+        cutoffAt,
+        period
+      );
+    const effectivePeriod = stats.period ?? period;
     const snapshot = await this.snapshots.create({
       projectkey: input.projectkey,
       period_type: input.periodType,
@@ -347,21 +230,22 @@ export class StatsService {
       health_status: stats.health.status,
       health_score: stats.health.score
     });
-    const entries = stats.members.flatMap((member) =>
-      member.tasks
-        .filter((task) =>
-          task.spentMinutes > 0
-          || this.isInsidePeriod(task.startedAt, period, cutoffAt)
-          || this.isInsidePeriod(task.doneAt, period, cutoffAt)
-        )
-        .map((task) => ({
-          snapshotkey: snapshot.id,
-          taskkey: task.id,
-          memberkey: member.memberId,
-          spent_minutes: task.spentMinutes,
-          started_at: task.startedAt,
-          done_at: task.doneAt
-        }))
+    const entries = Array.from(memberTaskDetailsByMemberId.entries()).flatMap(
+      ([memberId, tasks]) =>
+        tasks
+          .filter((task) =>
+            task.spentMinutes > 0
+            || this.isInsidePeriod(task.startedAt, effectivePeriod, cutoffAt)
+            || this.isInsidePeriod(task.doneAt, effectivePeriod, cutoffAt)
+          )
+          .map((task) => ({
+            snapshotkey: snapshot.id,
+            taskkey: task.id,
+            memberkey: memberId,
+            spent_minutes: task.spentMinutes,
+            started_at: task.startedAt,
+            done_at: task.doneAt
+          }))
     );
 
     try {
@@ -518,7 +402,42 @@ export class StatsService {
       name: member.user.user.name,
       photoUrl: member.user.user.photo?.url ?? null
     };
-    const memberTasks = tasks.map((task) => {
+    const memberTaskDetails = this.buildMemberTaskDetails(
+      tasks,
+      logsByTask,
+      cutoffAt,
+      period
+    );
+    const memberTasks = memberTaskDetails.map(({ id, startedAt, doneAt, ...task }) =>
+      task
+    );
+
+    return {
+      memberId: member.id,
+      user,
+      completedTasks: memberTasks.filter((task) =>
+        task.stage === TaskStage.DONE
+      ).length,
+      delayedTasks: memberTasks.filter((task) =>
+        task.delayed
+      ).length,
+      startedTasks: memberTasks.filter((task) =>
+        STARTED_STAGES.includes(task.stage)
+      ).length,
+      reviewTasks: memberTasks.filter((task) =>
+        task.stage === TaskStage.REVIEW
+      ).length,
+      tasks: memberTasks
+    };
+  }
+
+  private buildMemberTaskDetails(
+    tasks: StatsTaskRecord[],
+    logsByTask: Map<string, number>,
+    cutoffAt: Date,
+    period: StatsPeriod | null
+  ): StatsTaskDetails[] {
+    return tasks.map((task) => {
       const loggedMinutes = logsByTask.get(task.id) ?? 0;
       const lifecycleMinutes = this.lifecycleMinutesInPeriod(
         task,
@@ -540,24 +459,6 @@ export class StatsService {
         doneAt: task.done_at
       };
     });
-
-    return {
-      memberId: member.id,
-      user,
-      completedTasks: memberTasks.filter((task) =>
-        task.stage === TaskStage.DONE
-      ).length,
-      delayedTasks: memberTasks.filter((task) =>
-        task.delayed
-      ).length,
-      startedTasks: memberTasks.filter((task) =>
-        STARTED_STAGES.includes(task.stage)
-      ).length,
-      reviewTasks: memberTasks.filter((task) =>
-        task.stage === TaskStage.REVIEW
-      ).length,
-      tasks: memberTasks
-    };
   }
 
   private buildPerformance(
@@ -825,6 +726,167 @@ export class StatsService {
       totals.set(log[key], (totals.get(log[key]) ?? 0) + log.minutes);
       return totals;
     }, new Map<string, number>());
+  }
+
+  private async collectProjectStats(
+    projectkey: string,
+    cutoffAt: Date,
+    period: StatsPeriod | null = null
+  ): Promise<{
+    stats: ProjectStats;
+    memberTaskDetailsByMemberId: Map<string, StatsTaskDetails[]>;
+  }> {
+    const project = await this.queries.findProject(projectkey);
+
+    if (!project) {
+      throw new ProjectNotFoundException();
+    }
+
+    const effectivePeriod = period
+      ? this.limitPeriodToCutoff(period, cutoffAt)
+      : null;
+    const logs = await this.workLogs.list(
+      {
+        projectkey,
+        logged_at: effectivePeriod
+          ? {
+            gte: effectivePeriod.start,
+            lte: effectivePeriod.end
+          }
+          : {
+            lte: cutoffAt
+          }
+      },
+      {
+        logged_at: "asc"
+      }
+    );
+    const tasks = project.tasks as StatsTaskRecord[];
+    const delayedTasks = tasks.filter((task) =>
+      this.isTaskDelayed(task, cutoffAt)
+    );
+    const doneTasks = tasks.filter((task) =>
+      task.stage === TaskStage.DONE
+    );
+    const openTasks = tasks.filter((task) =>
+      task.stage !== TaskStage.DONE
+    );
+    const startedTasks = tasks.filter((task) =>
+      STARTED_STAGES.includes(task.stage)
+    );
+    const reviewTasks = tasks.filter((task) =>
+      task.stage === TaskStage.REVIEW
+    );
+    const progress = tasks.length === 0
+      ? 0
+      : this.round((doneTasks.length / tasks.length) * 100);
+    const logsByTask = this.sumLogsBy(logs, "taskkey");
+    const performancePeriod = effectivePeriod ?? {
+      start: project.started_at
+        ?? logs[0]?.logged_at
+        ?? cutoffAt,
+      end: cutoffAt
+    };
+    const members = project.members.map((member) => {
+      const memberTasks = tasks.filter((task) =>
+        task.ownerkey === member.id
+      );
+
+      return {
+        member: member,
+        stats: this.buildMemberStats(
+          member,
+          memberTasks,
+          logsByTask,
+          cutoffAt,
+          effectivePeriod
+        ),
+        taskDetails: this.buildMemberTaskDetails(
+          memberTasks,
+          logsByTask,
+          cutoffAt,
+          effectivePeriod
+        )
+      };
+    });
+    const memberTaskDetailsByMemberId = new Map(
+      members.map((member) => [
+        member.stats.memberId,
+        member.taskDetails
+      ] as const)
+    );
+    const memberStats = members.map((member) => member.stats);
+    const health = this.calculateHealth(
+      {
+        deadline: project.deadline,
+        startedAt: project.started_at,
+        totalTasks: tasks.length,
+        doneTasks: doneTasks.length,
+        delayedTasks: delayedTasks.length,
+        progress
+      },
+      cutoffAt
+    );
+
+    return {
+      stats: {
+        generatedAt: new Date(),
+        cutoffAt,
+        period: effectivePeriod,
+        project: {
+          id: project.id,
+          title: project.title,
+          stage: project.stage,
+          startedAt: project.started_at,
+          doneAt: project.done_at,
+          deadline: project.deadline,
+          organization: project.org.name,
+          manager: project.manager?.user.name ?? null,
+          delayed: (
+            project.delayed
+          ) || (
+            project.done_at === null
+            && project.deadline.getTime() < cutoffAt.getTime()
+          ) || (
+            project.done_at !== null
+            && project.done_at.getTime() > project.deadline.getTime()
+          )
+        },
+        summary: {
+          totalTasks: tasks.length,
+          doneTasks: doneTasks.length,
+          openTasks: openTasks.length,
+          startedTasks: startedTasks.length,
+          reviewTasks: reviewTasks.length,
+          delayedTasks: delayedTasks.length,
+          progress
+        },
+        deadline: {
+          dueDate: project.deadline,
+          daysLeft: this.daysBetween(cutoffAt, project.deadline)
+        },
+        health,
+        performancePerMember: memberStats.map((member) =>
+          this.buildPerformance(member, logs, performancePeriod)
+        ),
+        productivity: memberStats.map((member) => ({
+          memberId: member.memberId,
+          completed: member.completedTasks,
+          delayed: member.delayedTasks,
+          ratio: this.round(
+            member.completedTasks / Math.max(member.delayedTasks, 1)
+          )
+        })),
+        members: memberStats,
+        events: project.events.map((event) => ({
+          id: event.id,
+          title: event.title,
+          date: event.date,
+          category: event.category
+        }))
+      },
+      memberTaskDetailsByMemberId
+    };
   }
 
   private listWeeks(start: Date, end: Date): Date[] {

@@ -16,15 +16,12 @@ export type StatsUser = {
 };
 
 export type StatsTask = {
-  id: string;
   code: string;
   name: string;
   stage: TaskStage;
   delayed: boolean;
   spentMinutes: number;
   deadline: Date;
-  startedAt: Date | null;
-  doneAt: Date | null;
 };
 
 export type MemberPerformance = {
