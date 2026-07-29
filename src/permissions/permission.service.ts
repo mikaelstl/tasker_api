@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { BaseActions } from "@enums/Actions.enum";
 import { Resources } from "@enums/Resources.enum";
 import { OrgRole } from "generated/prisma";
@@ -12,6 +12,8 @@ type RolesPermissions = Map<OrgRole, ResourceMap>
 
 @Injectable()
 export class PermissionService {
+  private readonly logger = new Logger(PermissionService.name);
+
   private readonly ROLES_PERMISSIONS: RolesPermissions = new Map();
   
   private readonly registry: AccessValidatorRegistry = AccessValidatorRegistry.instance();
@@ -27,24 +29,60 @@ export class PermissionService {
     // EXTRAIR role, action, resource DE ctx
     const { action, resource, subject, roles } = ctx;
 
-    const userRole = (await this.getRole(subject.userkey, subject.orgkey)).role;
+    this.logger.debug(
+      `Verificando se o usuário "${subject.userkey}" pode executar a ação "${action}" no recurso "${resource}" da organização "${subject.orgkey}".`
+    );
 
-    console.log(userRole);
+    const affiliation = await this.getRole(subject.userkey, subject.orgkey);
+    const userRole = affiliation.role;
+    const allowedRoles = roles?.length
+      ? roles.join(', ')
+      : 'qualquer papel';
+
+    this.logger.debug(
+      `O usuário "${subject.userkey}" possui o papel "${userRole}". Papéis aceitos por esta rota: ${allowedRoles}.`
+    );
 
     if (roles?.length && !roles.includes(userRole)) {
+      this.logger.warn(
+        `Permissão negada para o usuário "${subject.userkey}": o papel "${userRole}" não está entre os papéis aceitos (${allowedRoles}).`
+      );
       return false;
     }
+
+    this.logger.debug(
+      `O papel "${userRole}" é aceito pela rota. Verificando agora a política específica do recurso.`
+    );
 
     // BUSCAR EM UM MAP PRIVADO, AS PERMISSOES PELA ROLE
     const key: ResourcePoliciesKeys = `${userRole}:${resource}:${action}` as ResourcePoliciesKeys;
     
     const hasPerm = this.registry.has(key);
-    if (!hasPerm) return false;
+    if (!hasPerm) {
+      this.logger.warn(
+        `Permissão negada para o usuário "${subject.userkey}": não existe uma política cadastrada para o papel "${userRole}", recurso "${resource}" e ação "${action}".`
+      );
+      return false;
+    }
 
     const policy = this.registry.get(key);
 
-    const canPerform = policy.validate(subject);
-    
+    this.logger.debug(
+      `Política "${policy.constructor.name}" encontrada. Validando o acesso ao alvo "${subject.targetkey ?? 'não informado'}".`
+    );
+
+    const canPerform = await policy.validate(subject);
+
+    if (canPerform) {
+      this.logger.log(
+        `Permissão concedida ao usuário "${subject.userkey}" para executar a ação "${action}" no recurso "${resource}".`
+      );
+    } else {
+      this.logger.warn(
+        `Permissão negada ao usuário "${subject.userkey}" pela política "${policy.constructor.name}".`
+      );
+    }
+
     return canPerform;
   }
 

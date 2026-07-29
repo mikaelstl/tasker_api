@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { UserDTO } from "@modules/users/dto/user.dto";
 import { UsernameAlreadyExistsException } from "src/common/errors/already-exists.exceptions";
 import { UserNotFoundException } from "src/common/errors/user-not-found.exception";
@@ -9,8 +9,6 @@ import { UserProfileDTO } from "./dto/user-profile.dto";
 
 @Injectable()
 export class UserRepository {
-  private logger: Logger = new Logger('UserRepository');
-
   constructor(
     private readonly prisma: PrismaService
   ) {}
@@ -70,8 +68,6 @@ export class UserRepository {
   }
 
   async find(queries: UserQueryDTO): Promise<UserDTO> {
-    console.log(queries);
-    
     const user = await this.prisma.user.findUnique({
       where: queries,
     });

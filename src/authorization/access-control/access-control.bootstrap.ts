@@ -186,6 +186,14 @@ const OwnerAccessHandlers: Array<ResourcePolicies> = [
     handler: OrganizationOwnershipPolicy
   },
   {
+    key: `OWNER:AFFILIATIONS:${EnhancedActions.PROMOTE}`,
+    handler: OrganizationOwnershipPolicy
+  },
+  {
+    key: `OWNER:AFFILIATIONS:${EnhancedActions.DEMOTE}`,
+    handler: OrganizationOwnershipPolicy
+  },
+  {
     key: "OWNER:AFFILIATIONS:DEL",
     handler: OrganizationOwnershipPolicy
   },
@@ -263,6 +271,22 @@ const OwnerAccessHandlers: Array<ResourcePolicies> = [
   },
   {
     key: "OWNER:COMMENTS:EDIT",
+    handler: ProjectOwnershipPolicy
+  },
+  {
+    key: "OWNER:COMMENTS:SEEK",
+    handler: ProjectOwnershipPolicy
+  },
+  {
+    key: "OWNER:EVENTS:CREATE",
+    handler: ProjectOwnershipPolicy
+  },
+  {
+    key: "OWNER:EVENTS:DEL",
+    handler: ProjectOwnershipPolicy
+  },
+  {
+    key: "OWNER:EVENTS:EDIT",
     handler: ProjectOwnershipPolicy
   },
   {
