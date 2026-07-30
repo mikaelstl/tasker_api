@@ -12,6 +12,8 @@ export class ProjectOwnershipPolicy implements ResourcePolicyHandler {
   ) {}
 
   async validate(subject: AccessSubject): Promise<boolean> {
+    console.log(subject);
+    
     const isOwner = await this.orgs.belongs(
       subject.userkey,
       subject.orgkey

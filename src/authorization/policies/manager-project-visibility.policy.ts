@@ -24,7 +24,11 @@ export class ManagerProjectVisibilityPolicy implements ResourcePolicyHandler {
     }
 
     const [manages, participates] = await Promise.all([
-      this.service.manage(subject.userkey, subject.targetkey),
+      this.service.manage(
+        subject.userkey,
+        subject.targetkey,
+        subject.orgkey,
+      ),
       this.service.participates(subject.userkey, subject.targetkey),
     ]);
 

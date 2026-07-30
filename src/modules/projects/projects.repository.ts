@@ -207,11 +207,13 @@ export class ProjectRepository {
 
   async isManagedByUser(
     projectkey: string,
-    username: string
+    username: string,
+    orgkey: string,
   ): Promise<boolean> {
     const result = await this.prisma.project.count({
       where: {
         id: projectkey,
+        orgkey,
         manager: {
           userkey: username
         }

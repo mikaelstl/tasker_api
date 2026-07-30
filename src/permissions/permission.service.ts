@@ -71,7 +71,7 @@ export class PermissionService {
       `Política "${policy.constructor.name}" encontrada. Validando o acesso ao alvo "${subject.targetkey ?? 'não informado'}".`
     );
 
-    const canPerform = await policy.validate(subject);
+    const canPerform = await policy.validate(subject, resource);
 
     if (canPerform) {
       this.logger.log(

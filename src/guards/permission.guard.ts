@@ -70,12 +70,18 @@ export class PermissionGuard implements CanActivate {
       `A verificação será realizada na organização "${orgkey}" para o usuário "${user.username}".`
     );
 
+    const projectkey = req.params?.projectkey
+      ?? req.query?.projectkey
+      ?? req.body?.projectkey
+      ?? req.body?.project;
+    const taskcode = req.params?.code ?? req.query?.taskcode ?? req.query?.taskkey;
+
     const id = req.body?.id
       ?? req.body?.project
       ?? req.body?.projectkey
       ?? req.params?.id
-      ?? req.params?.projectkey
-      ?? req.params?.code;
+      ?? projectkey
+      ?? taskcode;
 
     // MONTAR CONTEXT
     const payload = {
@@ -86,8 +92,8 @@ export class PermissionGuard implements CanActivate {
         userkey: user.username,
         orgkey: orgkey,
         targetkey: id,
-        projectkey: req.params?.projectkey,
-        taskcode: req.params?.code,
+        projectkey,
+        taskcode,
       }
     } as AccessContext;
 

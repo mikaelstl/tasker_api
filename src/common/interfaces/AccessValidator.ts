@@ -26,5 +26,9 @@ export interface AccessValidator {
     @param subjectkey Id do usuário logado
     @param targetkey Objeto a ser manipulado
   */
-  manage?(subjectkey: string, targetkey: string): Promise<boolean>;
+  manage?(
+    subjectkey: string,
+    targetkey: string,
+    orgkey: string
+  ): Promise<boolean>;
 }

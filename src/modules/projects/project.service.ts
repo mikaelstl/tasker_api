@@ -150,9 +150,17 @@ export class ProjectService implements AccessValidator {
     }
   }
 
-  public async manage(subjectkey: string, targetkey: string): Promise<boolean> {
+  public async manage(
+    subjectkey: string,
+    targetkey: string,
+    orgkey: string,
+  ): Promise<boolean> {
     try {
-      return await this.repository.isManagedByUser(targetkey, subjectkey);
+      return await this.repository.isManagedByUser(
+        targetkey,
+        subjectkey,
+        orgkey,
+      );
     } catch (err) {
       throw new InternalException('Falha ao verificar o gerenciamento do projeto.', err);
     }
