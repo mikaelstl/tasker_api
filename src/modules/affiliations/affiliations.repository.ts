@@ -61,6 +61,9 @@ export class AffiliationRepository {
     const value = await this.prisma.affiliation.findUnique({
       where: {
         id: key
+      },
+      include: {
+        user: true
       }
     });
 
@@ -73,6 +76,9 @@ export class AffiliationRepository {
   ): Promise<AffiliationDTO | null> {
     return this.prisma.affiliation.findFirst({
       where: { id, orgkey },
+      include: {
+        user: true
+      }
     });
   }
 
@@ -166,13 +172,7 @@ export class AffiliationRepository {
         orgkey,
       },
       include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            username: true,
-          },
-        },
+        user: true
       },
     });
   }

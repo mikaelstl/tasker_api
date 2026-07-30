@@ -24,6 +24,7 @@ export class ProjectScopeResolver {
       [Resources.COMMENTS, this.resolveCommentProject.bind(this)],
       [Resources.EVENTS, this.resolveEventProject.bind(this)],
       [Resources.MEMBERS, this.resolveMemberProject.bind(this)],
+      [Resources.ORGANIZATIONS, this.resolveMemberProject.bind(this)],
     ]);
   }
 
@@ -121,6 +122,9 @@ export class ProjectScopeResolver {
         projectkey: true,
       },
     });
+
+    console.log(member);
+    
 
     return member?.projectkey ?? null;
   }

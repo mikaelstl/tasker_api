@@ -1,5 +1,5 @@
 import { ApiResponse as ApiResponse } from "src/common/interfaces/ApiResponse";
-import { Body, Controller, Delete, Get, HttpStatus, Param, Patch, Post, Res, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, Get, HttpStatus, Param, Patch, Post, Query, Res, UseGuards } from "@nestjs/common";
 import { JwtAuthGuard } from "@security/auth.guard";
 import { PermissionGuard } from "@guards/permission.guard";
 import { CurrentAccount } from "@decorators/CurrentAccount.decorator";
@@ -87,6 +87,26 @@ export class AffiliationController {
         : 'O usuário não participa da organização.',
       timestamp: new Date().toISOString(),
       path: `/affiliations/participates/${orgkey}`
+    };
+
+    return res.status(response.status).json(response);
+  }
+
+  @Get('/find')
+  @Action(BaseActions.SEEK)
+  async find(
+    @Query('userkey') userkey: string,
+    @OrgKey() orgkey: string,
+    @Res() res
+  ) {
+    const result = await this.service.findByUserAndOrgkey(userkey, orgkey);
+
+    const response: ApiResponse = {
+      status: HttpStatus.OK,
+      data: result,
+      message: 'Afiliação encontrada com sucesso.',
+      timestamp: new Date().toISOString(),
+      path: '/affiliations/find'
     };
 
     return res.status(response.status).json(response);

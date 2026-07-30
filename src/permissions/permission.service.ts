@@ -29,6 +29,8 @@ export class PermissionService {
     // EXTRAIR role, action, resource DE ctx
     const { action, resource, subject, roles } = ctx;
 
+    console.log(subject);
+
     this.logger.debug(
       `Verificando se o usuário "${subject.userkey}" pode executar a ação "${action}" no recurso "${resource}" da organização "${subject.orgkey}".`
     );
