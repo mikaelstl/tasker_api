@@ -84,6 +84,15 @@ export class StatsService {
     return (await this.collectProjectStats(projectkey, cutoffAt, period)).stats;
   }
 
+  async getProjectMemberStats(
+    projectkey: string,
+    cutoffAt: Date = new Date()
+  ): Promise<MemberStats[]> {
+    const stats = await this.getProjectStats(projectkey, cutoffAt);
+
+    return stats.members;
+  }
+
   async getProjectMemberPerformance(
     projectkey: string,
     cutoffAt: Date = new Date()
@@ -398,6 +407,7 @@ export class StatsService {
     period: StatsPeriod | null
   ): MemberStats {
     const user: StatsUser = {
+      affiliationId: member.id,
       username: member.user.user.username,
       name: member.user.user.name,
       photoUrl: member.user.user.photo?.url ?? null

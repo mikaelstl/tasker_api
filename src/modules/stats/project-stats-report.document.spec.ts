@@ -58,6 +58,7 @@ describe("ProjectStatsReportDocument", () => {
       performancePerMember: [{
         memberId: "member-1",
         user: {
+          affiliationId: "member-1",
           username: "mikael",
           name: "Mikael Alves",
           photoUrl: null
@@ -78,6 +79,7 @@ describe("ProjectStatsReportDocument", () => {
       members: [{
         memberId: "member-1",
         user: {
+          affiliationId: "member-1",
           username: "mikael",
           name: "Mikael Alves",
           photoUrl: null

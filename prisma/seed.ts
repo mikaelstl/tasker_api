@@ -601,7 +601,7 @@ async function seedTasks() {
         await prisma.task.upsert({
           where: { id },
           update: {
-            code: `${organization.code.slice(0, 3)}-${String(taskIndex + 1).padStart(3, '0')}`,
+            code: `TSK-${String(taskIndex + 1).padStart(3, '0')}`,
             name: taskTemplate.name,
             description: taskTemplate.description,
             deadline,
@@ -615,7 +615,7 @@ async function seedTasks() {
           },
           create: {
             id,
-            code: `${organization.code.slice(0, 3)}-${String(taskIndex + 1).padStart(3, '0')}`,
+            code: `TSK-${String(taskIndex + 1).padStart(3, '0')}`,
             name: taskTemplate.name,
             description: taskTemplate.description,
             deadline,

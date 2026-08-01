@@ -98,7 +98,7 @@ export class ProjectRepository {
       where: {
         ...this.toProjectWhere(queries),
         orgkey,
-        OR: [
+        AND: [
           { managerkey: affiliationkey },
           {
             members: {
@@ -110,6 +110,9 @@ export class ProjectRepository {
         ],
       }
     });
+
+    console.log("--- Projects ---");
+    console.log(projects);
 
     return projects.map((project) => this.toProjectDTO(project));
   };

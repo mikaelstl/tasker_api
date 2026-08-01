@@ -98,7 +98,6 @@ export class ProjectService implements AccessValidator {
     );
 
     console.log(affiliation);
-    
 
     const methods: ListMethodCommand = {
       OWNER: () => this.repository.listByOrganizer(orgkey, queries),

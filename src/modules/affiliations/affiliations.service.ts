@@ -14,6 +14,7 @@ import { AuditLogService } from '@modules/audit-log/audit-log.service';
 import { AuditContext } from '@interfaces/AuditContext';
 import { BusinessRuleException } from 'src/common/errors/business-rule.exception';
 import { AccessDeniedException } from 'src/common/errors/access-denied.exception';
+import { AffiliationQuery } from './dto/query.dto';
 
 // type ListMethodCommand = {
 //   [key: string]: (key: string) => Promise<ProjectDTO[]>
@@ -152,6 +153,22 @@ export class AffiliationService implements AccessValidator {
       userkey,
       orgkey
     );
+
+    console.log("--- AFILIAÇÃO ---");
+    console.log(result);
+
+    if (!result) {
+      throw new UserOrganizationAffiliationNotFoundException();
+    }
+
+    return result;
+  }
+
+  async findWithQueries(queries: AffiliationQuery): Promise<AffiliationDTO> {
+    const result = await this.repository.findWithQueries(queries);
+
+    console.log("--- AFILIAÇÃO ---");
+    console.log(result);
 
     if (!result) {
       throw new UserOrganizationAffiliationNotFoundException();

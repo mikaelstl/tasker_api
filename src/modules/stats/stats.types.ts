@@ -10,6 +10,7 @@ export type StatsPeriod = {
 };
 
 export type StatsUser = {
+  affiliationId: string;
   username: string;
   name: string;
   photoUrl: string | null;

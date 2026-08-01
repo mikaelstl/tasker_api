@@ -92,14 +92,14 @@ export class AffiliationController {
     return res.status(response.status).json(response);
   }
 
-  @Get('/find')
+  @Get('/find/:id')
   @Action(BaseActions.SEEK)
   async find(
-    @Query('userkey') userkey: string,
+    @Param('id') id: string,
     @OrgKey() orgkey: string,
     @Res() res
   ) {
-    const result = await this.service.findByUserAndOrgkey(userkey, orgkey);
+    const result = await this.service.findWithQueries({id, orgkey});
 
     const response: ApiResponse = {
       status: HttpStatus.OK,

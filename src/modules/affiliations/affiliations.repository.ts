@@ -147,7 +147,18 @@ export class AffiliationRepository {
     });
   }
 
-  async findWithQueries(queries: AffiliationQuery): Promise<AffiliationDTO[]> {
+  async findWithQueries(queries: AffiliationQuery): Promise<AffiliationDTO> {
+    const value = await this.prisma.affiliation.findFirst({
+      where: queries,
+      include: {
+        user: true
+      }
+    });
+
+    return value;
+  }
+
+  async listWithQueries(queries: AffiliationQuery): Promise<AffiliationDTO[]> {
     const value = await this.prisma.affiliation.findMany({
       where: queries
     });

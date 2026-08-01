@@ -186,6 +186,35 @@ export class ProjectController {
     return res.status(response.status).json(response);
   }
 
+  @Get('/:id/stats/members')
+  @Role(OrgRole.OWNER, OrgRole.MANAGER)
+  @Resource(Resources.PROJECT_STATS)
+  @Action(BaseActions.SEEK)
+  @UseGuards(PermissionGuard)
+  async getProjectMemberStats(
+    @Param('id') id: string,
+    @Query() query: ProjectStatsQueryDTO,
+    @Res() res
+  ) {
+    const cutoffAt = query.cutoffAt
+      ? new Date(query.cutoffAt)
+      : new Date();
+    const result = await this.stats.getProjectMemberStats(
+      id,
+      cutoffAt
+    );
+
+    const response: ApiResponse = {
+      status: HttpStatus.OK,
+      data: result,
+      message: '',
+      timestamp: new Date().toISOString(),
+      path: `/project/${id}/stats/members`
+    };
+
+    return res.status(response.status).json(response);
+  }
+
   @Get('/:id/stats/members/performance')
   @Role(OrgRole.OWNER, OrgRole.MANAGER)
   @Resource(Resources.PROJECT_STATS)
