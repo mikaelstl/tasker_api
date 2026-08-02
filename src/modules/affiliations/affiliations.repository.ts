@@ -196,6 +196,7 @@ export class AffiliationRepository {
         userkey: userkey
       },
       select: {
+        id: true,
         role: true,
         org: {
           select: {
@@ -213,6 +214,7 @@ export class AffiliationRepository {
     });
 
     return affiliations.map((affiliation) => ({
+      affiliationId: affiliation.id,
       orgkey: affiliation.org.id,
       role: affiliation.role,
       name: affiliation.org.name,

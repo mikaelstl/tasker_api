@@ -59,8 +59,8 @@ export class TasksController {
     @Res() res
   ) {
     const result = await this.repository.list({
-      ...queries,
-      projectkey
+      projectkey,
+      ...queries
     });
 
     const response: ApiResponse = {

@@ -60,17 +60,25 @@ export class TasksRepository {
   }
 
   async list(queries: TaskQueryDTO): Promise<TaskDTO[]> {
+    console.log("--- FOR MEMBER");
+    console.log(queries.ownerkey);
+    
+    const { ownerkey, ...query } = queries;
+
     const tasks = await this.prisma.task.findMany({
       where: {
         owner: {
-          userkey: queries.ownerkey
+          userkey: ownerkey
         },
-        ...queries,
+        ...query,
       },
       include: {
         owner: true
       }
     });
+
+    console.log(tasks);
+    
 
     return tasks;
   }
