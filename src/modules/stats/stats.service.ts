@@ -4,7 +4,6 @@ import {
   AuditAction,
   AuditResource,
   ProjectHealthStatus,
-  StatsPeriodType,
   TaskStage
 } from "generated/prisma";
 import { ProjectStatsPeriodSnapshotsRepository } from "./repositories/project-stats-period-snapshots.repository";
@@ -27,6 +26,7 @@ import {
 } from "./stats.types";
 import { InternalException } from 'src/common/errors/internal.exception';
 import { ValidationException } from 'src/common/errors/validation.exception';
+import { InvalidPeriodTime } from 'src/common/errors/invalid-period-time.exception';
 import { ProjectNotFoundException } from 'src/common/errors/project-not-found.exception';
 import {
   MemberNotFoundException,
@@ -76,28 +76,26 @@ export class StatsService {
 
   async getProjectStats(
     projectkey: string,
-    cutoffAt: Date = new Date(),
-    period: StatsPeriod | null = null
+    month?: string | Date,
   ): Promise<ProjectStats> {
-    this.assertValidDate(cutoffAt, "cutoffAt");
-
-    return (await this.collectProjectStats(projectkey, cutoffAt, period)).stats;
+    const period = this.resolveMonth(month);
+    return (await this.collectProjectStats(projectkey, period)).stats;
   }
 
   async getProjectMemberStats(
     projectkey: string,
-    cutoffAt: Date = new Date()
+    month?: string | Date
   ): Promise<MemberStats[]> {
-    const stats = await this.getProjectStats(projectkey, cutoffAt);
+    const stats = await this.getProjectStats(projectkey, month);
 
     return stats.members;
   }
 
   async getProjectMemberPerformance(
     projectkey: string,
-    cutoffAt: Date = new Date()
+    month?: string | Date
   ): Promise<ProjectMemberPerformance> {
-    const stats = await this.getProjectStats(projectkey, cutoffAt);
+    const stats = await this.getProjectStats(projectkey, month);
     const performanceByMember = new Map(
       stats.performancePerMember.map((performance) => [
         performance.memberId,
@@ -107,7 +105,7 @@ export class StatsService {
 
     return {
       generatedAt: stats.generatedAt,
-      cutoffAt: stats.cutoffAt,
+      month: stats.month,
       project: {
         id: stats.project.id,
         title: stats.project.title
@@ -216,21 +214,19 @@ export class StatsService {
   }
 
   async generateSnapshot(input: GenerateSnapshotInput) {
-    const cutoffAt = input.cutoffAt ?? new Date();
-    const period = this.normalizePeriod(input.periodType, cutoffAt);
+    const period = this.resolveMonth(input.month);
     const { stats, memberTaskDetailsByMemberId } =
       await this.collectProjectStats(
         input.projectkey,
-        cutoffAt,
         period
       );
-    const effectivePeriod = stats.period ?? period;
+    const effectivePeriod = stats.period;
     const snapshot = await this.snapshots.create({
       projectkey: input.projectkey,
-      period_type: input.periodType,
+      period_type: 'MONTH',
       period_start: period.start,
       period_end: period.end,
-      cutoff_at: cutoffAt,
+      cutoff_at: period.end,
       performance_per_member_json: this.toJson(
         stats.performancePerMember
       ),
@@ -244,8 +240,8 @@ export class StatsService {
         tasks
           .filter((task) =>
             task.spentMinutes > 0
-            || this.isInsidePeriod(task.startedAt, effectivePeriod, cutoffAt)
-            || this.isInsidePeriod(task.doneAt, effectivePeriod, cutoffAt)
+            || this.isInsidePeriod(task.startedAt, effectivePeriod)
+            || this.isInsidePeriod(task.doneAt, effectivePeriod)
           )
           .map((task) => ({
             snapshotkey: snapshot.id,
@@ -294,11 +290,11 @@ export class StatsService {
     };
   }
 
-  async listSnapshots(projectkey: string, periodType?: StatsPeriodType) {
+  async listSnapshots(projectkey: string) {
     return this.snapshots.list(
       {
         projectkey,
-        period_type: periodType
+        period_type: 'MONTH'
       },
       {
         cutoff_at: "desc"
@@ -310,22 +306,20 @@ export class StatsService {
     input: GenerateReportInput,
     context?: AuditContext,
   ): Promise<GeneratedProjectReport> {
-    const cutoffAt = input.cutoffAt ?? new Date();
+    const period = this.resolveMonth(input.month);
     const snapshot = await this.generateSnapshot({
       projectkey: input.projectkey,
-      periodType: input.periodType,
-      cutoffAt
+      month: input.month
     });
     const stats = await this.getProjectStats(
       input.projectkey,
-      cutoffAt
+      input.month
     );
     const previousSnapshots = await this.snapshots.list(
       {
         projectkey: input.projectkey,
-        cutoff_at: {
-          lte: cutoffAt
-        }
+        period_type: 'MONTH',
+        cutoff_at: { lte: period.end }
       },
       {
         cutoff_at: "asc"
@@ -339,8 +333,8 @@ export class StatsService {
 
     const report = await this.reports.create({
       projectkey: input.projectkey,
-      cutoff_at: cutoffAt,
-      period_type: input.periodType,
+      cutoff_at: period.end,
+      period_type: 'MONTH',
       snapshotkey: snapshot.id,
       payload_json: this.toJson(payload)
     });
@@ -349,7 +343,6 @@ export class StatsService {
     try {
       document = await this.reportDocument.generate({
         reportId: report.id,
-        periodType: input.periodType,
         stats,
         historicalSnapshots: previousSnapshots
       });
@@ -370,7 +363,7 @@ export class StatsService {
     }
 
     return {
-      filename: this.reportFilename(stats.project.title, cutoffAt),
+      filename: this.reportFilename(stats.project.title, period.start),
       document
     };
   }
@@ -403,7 +396,7 @@ export class StatsService {
     member: any,
     tasks: StatsTaskRecord[],
     logsByTask: Map<string, number>,
-    cutoffAt: Date,
+    periodEnd: Date,
     period: StatsPeriod | null
   ): MemberStats {
     const user: StatsUser = {
@@ -415,7 +408,7 @@ export class StatsService {
     const memberTaskDetails = this.buildMemberTaskDetails(
       tasks,
       logsByTask,
-      cutoffAt,
+      periodEnd,
       period
     );
     const memberTasks = memberTaskDetails.map(({ id, startedAt, doneAt, ...task }) =>
@@ -444,7 +437,7 @@ export class StatsService {
   private buildMemberTaskDetails(
     tasks: StatsTaskRecord[],
     logsByTask: Map<string, number>,
-    cutoffAt: Date,
+    periodEnd: Date,
     period: StatsPeriod | null
   ): StatsTaskDetails[] {
     return tasks.map((task) => {
@@ -452,7 +445,7 @@ export class StatsService {
       const lifecycleMinutes = this.lifecycleMinutesInPeriod(
         task,
         period,
-        cutoffAt
+        periodEnd
       );
 
       return {
@@ -460,7 +453,7 @@ export class StatsService {
         code: task.code,
         name: task.name,
         stage: task.stage,
-        delayed: this.isTaskDelayed(task, cutoffAt),
+        delayed: this.isTaskDelayed(task, periodEnd),
         spentMinutes: loggedMinutes > 0
           ? loggedMinutes
           : lifecycleMinutes,
@@ -481,28 +474,11 @@ export class StatsService {
     );
     const months = new Map<string, {
       minutes: number;
-      weeks: number;
     }>();
 
     for (const month of this.listMonths(period.start, period.end)) {
-      const monthEnd = new Date(
-        Date.UTC(month.getUTCFullYear(), month.getUTCMonth() + 1, 1) - 1
-      );
-      const effectiveStart = new Date(Math.max(
-        month.getTime(),
-        period.start.getTime()
-      ));
-      const effectiveEnd = new Date(Math.min(
-        monthEnd.getTime(),
-        period.end.getTime()
-      ));
-
       months.set(this.monthKey(month), {
-        minutes: 0,
-        weeks: Math.max(
-          this.listWeeks(effectiveStart, effectiveEnd).length,
-          1
-        )
+        minutes: 0
       });
     }
 
@@ -517,7 +493,7 @@ export class StatsService {
 
     const series = Array.from(months.entries()).map(([month, value]) => ({
       month,
-      averageHours: this.round(value.minutes / 60 / value.weeks)
+      averageHours: this.round(value.minutes / 60)
     }));
     const totalAverageHours = series.reduce(
       (total, item) => total + item.averageHours,
@@ -543,7 +519,7 @@ export class StatsService {
       delayedTasks: number;
       progress: number;
     },
-    cutoffAt: Date
+    referenceAt: Date
   ) {
     if (data.totalTasks === 0) {
       return {
@@ -555,15 +531,15 @@ export class StatsService {
     }
 
     const openTasks = data.totalTasks - data.doneTasks;
-    const overdue = data.deadline.getTime() < cutoffAt.getTime()
+    const overdue = data.deadline.getTime() < referenceAt.getTime()
       && openTasks > 0;
-    const startedAt = data.startedAt ?? cutoffAt;
+    const startedAt = data.startedAt ?? referenceAt;
     const totalDuration = Math.max(
       data.deadline.getTime() - startedAt.getTime(),
       DAY_IN_MS
     );
     const elapsed = Math.max(
-      cutoffAt.getTime() - startedAt.getTime(),
+      referenceAt.getTime() - startedAt.getTime(),
       0
     );
     const expectedProgress = Math.min(
@@ -586,7 +562,7 @@ export class StatsService {
     const completedPerDay = data.doneTasks / elapsedDays;
     const projectedDeliveryAt = completedPerDay > 0
       ? new Date(
-        cutoffAt.getTime()
+        referenceAt.getTime()
         + (openTasks / completedPerDay) * DAY_IN_MS
       )
       : null;
@@ -622,82 +598,50 @@ export class StatsService {
     };
   }
 
-  private normalizePeriod(
-    periodType: StatsPeriodType,
-    reference: Date
-  ): StatsPeriod {
-    this.assertValidDate(reference, "cutoffAt");
+  private resolveMonth(month?: string | Date): StatsPeriod {
+    const now = new Date();
+    const currentMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+    const value = month instanceof Date
+      ? this.monthKey(month)
+      : month ?? this.monthKey(currentMonth);
 
-    const year = reference.getUTCFullYear();
-    const month = reference.getUTCMonth();
-
-    if (periodType === StatsPeriodType.MONTH) {
-      return {
-        start: new Date(Date.UTC(year, month, 1)),
-        end: new Date(Date.UTC(year, month + 1, 1) - 1)
-      };
+    if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(value)) {
+      throw new ValidationException('month deve estar no formato YYYY-MM.');
     }
 
-    if (periodType === StatsPeriodType.QUARTER) {
-      const quarterStartMonth = Math.floor(month / 3) * 3;
-
-      return {
-        start: new Date(Date.UTC(year, quarterStartMonth, 1)),
-        end: new Date(Date.UTC(year, quarterStartMonth + 3, 1) - 1)
-      };
+    const [year, monthNumber] = value.split('-').map(Number);
+    const start = new Date(Date.UTC(year, monthNumber - 1, 1));
+    if (start.getTime() > currentMonth.getTime()) {
+      throw new InvalidPeriodTime();
     }
-
-    if (periodType !== StatsPeriodType.WEEK) {
-      throw new ValidationException('Tipo de período estatístico não suportado.');
-    }
-
-    const start = this.startOfIsoWeek(reference);
 
     return {
       start,
-      end: new Date(start.getTime() + (7 * DAY_IN_MS) - 1)
+      end: new Date(Date.UTC(year, monthNumber, 1))
     };
   }
 
-  private limitPeriodToCutoff(
+  private assertPeriodNotBeforeProjectCreation(
     period: StatsPeriod,
-    cutoffAt: Date
-  ): StatsPeriod {
-    this.assertValidDate(period.start, "period.start");
-    this.assertValidDate(period.end, "period.end");
-
-    if (period.start.getTime() > period.end.getTime()) {
-      throw new ValidationException(
-        "O início do período deve ser anterior ao fim do período."
-      );
+    projectCreatedAt: Date
+  ): void {
+    if (period.end.getTime() <= projectCreatedAt.getTime()) {
+      throw new InvalidPeriodTime();
     }
-
-    if (cutoffAt.getTime() < period.start.getTime()) {
-      throw new ValidationException(
-        "A data de corte deve estar dentro ou depois do período solicitado."
-      );
-    }
-
-    return {
-      start: period.start,
-      end: new Date(
-        Math.min(period.end.getTime(), cutoffAt.getTime())
-      )
-    };
   }
 
   private lifecycleMinutesInPeriod(
     task: StatsTaskRecord,
     period: StatsPeriod | null,
-    cutoffAt: Date
+    periodEnd: Date
   ): number {
     if (!task.started_at) {
       return 0;
     }
 
-    const end = task.done_at && task.done_at.getTime() < cutoffAt.getTime()
+    const end = task.done_at && task.done_at.getTime() < periodEnd.getTime()
       ? task.done_at
-      : cutoffAt;
+      : periodEnd;
     const start = period && task.started_at.getTime() < period.start.getTime()
       ? period.start
       : task.started_at;
@@ -715,11 +659,11 @@ export class StatsService {
     );
   }
 
-  private isTaskDelayed(task: StatsTaskRecord, cutoffAt: Date): boolean {
+  private isTaskDelayed(task: StatsTaskRecord, referenceAt: Date): boolean {
     return task.delayed
       || (
         task.stage !== TaskStage.DONE
-        && task.deadline.getTime() < cutoffAt.getTime()
+        && task.deadline.getTime() < referenceAt.getTime()
       )
       || (
         task.stage === TaskStage.DONE
@@ -740,8 +684,7 @@ export class StatsService {
 
   private async collectProjectStats(
     projectkey: string,
-    cutoffAt: Date,
-    period: StatsPeriod | null = null
+    period: StatsPeriod
   ): Promise<{
     stats: ProjectStats;
     memberTaskDetailsByMemberId: Map<string, StatsTaskDetails[]>;
@@ -752,20 +695,15 @@ export class StatsService {
       throw new ProjectNotFoundException();
     }
 
-    const effectivePeriod = period
-      ? this.limitPeriodToCutoff(period, cutoffAt)
-      : null;
+    this.assertPeriodNotBeforeProjectCreation(period, project.created_at);
+
     const logs = await this.workLogs.list(
       {
         projectkey,
-        logged_at: effectivePeriod
-          ? {
-            gte: effectivePeriod.start,
-            lte: effectivePeriod.end
-          }
-          : {
-            lte: cutoffAt
-          }
+        logged_at: {
+          gte: period.start,
+          lt: period.end
+        }
       },
       {
         logged_at: "asc"
@@ -773,7 +711,7 @@ export class StatsService {
     );
     const tasks = project.tasks as StatsTaskRecord[];
     const delayedTasks = tasks.filter((task) =>
-      this.isTaskDelayed(task, cutoffAt)
+      this.isTaskDelayed(task, period.end)
     );
     const doneTasks = tasks.filter((task) =>
       task.stage === TaskStage.DONE
@@ -791,12 +729,7 @@ export class StatsService {
       ? 0
       : this.round((doneTasks.length / tasks.length) * 100);
     const logsByTask = this.sumLogsBy(logs, "taskkey");
-    const performancePeriod = effectivePeriod ?? {
-      start: project.started_at
-        ?? logs[0]?.logged_at
-        ?? cutoffAt,
-      end: cutoffAt
-    };
+    const performancePeriod = period;
     const members = project.members.map((member) => {
       const memberTasks = tasks.filter((task) =>
         task.ownerkey === member.id
@@ -808,14 +741,14 @@ export class StatsService {
           member,
           memberTasks,
           logsByTask,
-          cutoffAt,
-          effectivePeriod
+          period.end,
+          period
         ),
         taskDetails: this.buildMemberTaskDetails(
           memberTasks,
           logsByTask,
-          cutoffAt,
-          effectivePeriod
+          period.end,
+          period
         )
       };
     });
@@ -835,14 +768,14 @@ export class StatsService {
         delayedTasks: delayedTasks.length,
         progress
       },
-      cutoffAt
+      period.end
     );
 
     return {
       stats: {
         generatedAt: new Date(),
-        cutoffAt,
-        period: effectivePeriod,
+        month: this.monthKey(period.start),
+        period,
         project: {
           id: project.id,
           title: project.title,
@@ -856,7 +789,7 @@ export class StatsService {
             project.delayed
           ) || (
             project.done_at === null
-            && project.deadline.getTime() < cutoffAt.getTime()
+            && project.deadline.getTime() < period.end.getTime()
           ) || (
             project.done_at !== null
             && project.done_at.getTime() > project.deadline.getTime()
@@ -873,7 +806,7 @@ export class StatsService {
         },
         deadline: {
           dueDate: project.deadline,
-          daysLeft: this.daysBetween(cutoffAt, project.deadline)
+          daysLeft: this.daysBetween(period.end, project.deadline)
         },
         health,
         performancePerMember: memberStats.map((member) =>
@@ -888,27 +821,17 @@ export class StatsService {
           )
         })),
         members: memberStats,
-        events: project.events.map((event) => ({
+        events: project.events
+          .filter((event) => event.date >= period.start && event.date < period.end)
+          .map((event) => ({
           id: event.id,
           title: event.title,
           date: event.date,
           category: event.category
-        }))
+          }))
       },
       memberTaskDetailsByMemberId
     };
-  }
-
-  private listWeeks(start: Date, end: Date): Date[] {
-    const weeks: Date[] = [];
-    let cursor = this.startOfIsoWeek(start);
-
-    while (cursor.getTime() <= end.getTime()) {
-      weeks.push(cursor);
-      cursor = new Date(cursor.getTime() + 7 * DAY_IN_MS);
-    }
-
-    return weeks;
   }
 
   private listMonths(start: Date, end: Date): Date[] {
@@ -919,7 +842,7 @@ export class StatsService {
       1
     ));
 
-    while (cursor.getTime() <= end.getTime()) {
+    while (cursor.getTime() < end.getTime()) {
       months.push(cursor);
       cursor = new Date(Date.UTC(
         cursor.getUTCFullYear(),
@@ -937,47 +860,13 @@ export class StatsService {
     ).padStart(2, "0")}`;
   }
 
-  private startOfIsoWeek(date: Date): Date {
-    const start = new Date(Date.UTC(
-      date.getUTCFullYear(),
-      date.getUTCMonth(),
-      date.getUTCDate()
-    ));
-    const day = start.getUTCDay() || 7;
-    start.setUTCDate(start.getUTCDate() - day + 1);
-    return start;
-  }
-
-  private isoWeekKey(date: Date): string {
-    const target = new Date(Date.UTC(
-      date.getUTCFullYear(),
-      date.getUTCMonth(),
-      date.getUTCDate()
-    ));
-    const day = target.getUTCDay() || 7;
-    target.setUTCDate(target.getUTCDate() + 4 - day);
-    const yearStart = new Date(Date.UTC(target.getUTCFullYear(), 0, 1));
-    const week = Math.ceil(
-      (((target.getTime() - yearStart.getTime()) / DAY_IN_MS) + 1) / 7
-    );
-
-    return `${target.getUTCFullYear()}-W${String(week).padStart(2, "0")}`;
-  }
-
-  private isInsidePeriod(
-    value: Date | null,
-    period: StatsPeriod,
-    cutoffAt: Date
-  ): boolean {
+  private isInsidePeriod(value: Date | null, period: StatsPeriod): boolean {
     if (!value) {
       return false;
     }
 
     return value.getTime() >= period.start.getTime()
-      && value.getTime() <= Math.min(
-        period.end.getTime(),
-        cutoffAt.getTime()
-      );
+      && value.getTime() < period.end.getTime();
   }
 
   private assertValidDate(value: Date, field: string): void {
@@ -1005,7 +894,7 @@ export class StatsService {
     return Math.min(Math.max(value, minimum), maximum);
   }
 
-  private reportFilename(title: string, cutoffAt: Date): string {
+  private reportFilename(title: string, monthStart: Date): string {
     const slug = title
       .normalize("NFD")
       .replace(/[\u0300-\u036f]/g, "")
@@ -1013,7 +902,7 @@ export class StatsService {
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-|-$/g, "")
       .slice(0, 60) || "projeto";
-    const date = cutoffAt.toISOString().slice(0, 10);
+    const date = monthStart.toISOString().slice(0, 7);
 
     return `relatorio-desempenho-${slug}-${date}.pdf`;
   }

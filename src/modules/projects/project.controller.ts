@@ -6,7 +6,7 @@ import { ProjectService } from "@modules/projects/project.service";
 import { CreateProjectDTO } from "@modules/projects/dto/project.create.dto";
 import { ProjectQueryDTO } from "@modules/projects/dto/project.query.dto";
 import { PermissionGuard } from "@guards/permission.guard";
-import { OrgRole, StatsPeriodType } from "generated/prisma";
+import { OrgRole } from "generated/prisma";
 import { CurrentAccount } from "src/decorators/CurrentAccount.decorator";
 import { CurrentAccountDTO } from "@modules/users/dto/current-account.dto";
 import { EditProjectDTO } from "@modules/projects/dto/edit.dto";
@@ -167,13 +167,7 @@ export class ProjectController {
     @Query() query: ProjectStatsQueryDTO,
     @Res() res
   ) {
-    const cutoffAt = query.cutoffAt
-      ? new Date(query.cutoffAt)
-      : new Date();
-    const result = await this.stats.getProjectStats(
-      id,
-      cutoffAt
-    );
+    const result = await this.stats.getProjectStats(id, query.month);
 
     const response: ApiResponse = {
       status: HttpStatus.OK,
@@ -196,13 +190,7 @@ export class ProjectController {
     @Query() query: ProjectStatsQueryDTO,
     @Res() res
   ) {
-    const cutoffAt = query.cutoffAt
-      ? new Date(query.cutoffAt)
-      : new Date();
-    const result = await this.stats.getProjectMemberStats(
-      id,
-      cutoffAt
-    );
+    const result = await this.stats.getProjectMemberStats(id, query.month);
 
     const response: ApiResponse = {
       status: HttpStatus.OK,
@@ -225,13 +213,7 @@ export class ProjectController {
     @Query() query: ProjectStatsQueryDTO,
     @Res() res
   ) {
-    const cutoffAt = query.cutoffAt
-      ? new Date(query.cutoffAt)
-      : new Date();
-    const result = await this.stats.getProjectMemberPerformance(
-      id,
-      cutoffAt
-    );
+    const result = await this.stats.getProjectMemberPerformance(id, query.month);
 
     const response: ApiResponse = {
       status: HttpStatus.OK,
@@ -258,10 +240,7 @@ export class ProjectController {
   ) {
     const result = await this.stats.generateReport({
       projectkey: id,
-      periodType: data.periodType ?? StatsPeriodType.WEEK,
-      cutoffAt: data.cutoffAt
-        ? new Date(data.cutoffAt)
-        : new Date()
+      month: data.month
     }, {
       orgkey,
       actorkey: account.username,

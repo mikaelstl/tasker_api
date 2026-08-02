@@ -1,7 +1,9 @@
-import { IsDateString, IsOptional } from "class-validator";
+import { IsOptional, Matches } from "class-validator";
 
 export class ProjectStatsQueryDTO {
   @IsOptional()
-  @IsDateString()
-  readonly cutoffAt?: string;
+  @Matches(/^\d{4}-(0[1-9]|1[0-2])$/, {
+    message: 'month deve estar no formato YYYY-MM.',
+  })
+  readonly month?: string;
 }

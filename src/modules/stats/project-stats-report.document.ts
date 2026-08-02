@@ -1,16 +1,12 @@
 import { Injectable } from "@nestjs/common";
 import PDFDocument = require("pdfkit");
 import { join } from "node:path";
-import {
-  ProjectHealthStatus,
-  StatsPeriodType,
-  TaskStage
-} from "generated/prisma";
-import { ProjectStats } from "./stats.types";
+import { ProjectHealthStatus, TaskStage } from "generated/prisma";
+import { ProjectStats, StatsPeriod } from "./stats.types";
 
 type ReportSource = {
   reportId: string;
-  periodType: StatsPeriodType;
+  periodType?: string;
   stats: ProjectStats;
   historicalSnapshots: any[];
 };
@@ -131,9 +127,9 @@ export class ProjectStatsReportDocument {
     const rows = [
       ["Projeto", stats.project.title],
       ["Organização", stats.project.organization],
-      ["Período avaliado", `${this.date(start)} a ${this.date(stats.cutoffAt)}`],
+      ["Período avaliado", `${this.date(this.statsPeriod(stats).start)} a ${this.date(this.statsPeriod(stats).end)}`],
       ["Responsável", stats.project.manager ?? "Não definido"],
-      ["Data de corte", this.dateTime(stats.cutoffAt)]
+      ["Mês de referência", stats.month]
     ];
     let y = 295;
 
@@ -187,7 +183,7 @@ export class ProjectStatsReportDocument {
       ["Início", this.date(stats.project.startedAt)],
       ["Prazo", this.date(stats.project.deadline)],
       ["Status", this.projectStage(stats.project.stage)],
-      ["Período", `${this.date(stats.project.startedAt)} a ${this.date(stats.cutoffAt)}`]
+      ["Período", `${this.date(this.statsPeriod(stats).start)} a ${this.date(this.statsPeriod(stats).end)}`]
     ]);
 
     const cards = [
@@ -254,7 +250,7 @@ export class ProjectStatsReportDocument {
         this.healthLabel(snapshot.health_status)
       ])
       : [[
-        this.periodName(source.periodType),
+        "Mês consultado",
         `${source.stats.summary.progress}%`,
         `${source.stats.health.score}/100`,
         this.healthLabel(source.stats.health.status)
@@ -434,7 +430,7 @@ export class ProjectStatsReportDocument {
       "Eventos integrados ao relatório para apoiar acompanhamento e governança."
     );
     const events = stats.events
-      .filter((event) => event.date.getTime() >= stats.cutoffAt.getTime())
+      .filter((event) => event.date >= this.statsPeriod(stats).start && event.date < this.statsPeriod(stats).end)
       .slice(0, 8);
     this.label(document, "PRÓXIMOS EVENTOS", MARGIN, 132);
     let y = 163;
@@ -476,7 +472,7 @@ export class ProjectStatsReportDocument {
         "Início formal do projeto",
         stats.project.startedAt ? "CONCLUÍDO" : "NÃO INFORMADO"
       ],
-      [this.date(stats.cutoffAt), "Corte deste relatório", "ATUAL"],
+      [this.date(this.statsPeriod(stats).start), "Início do mês consultado", "PERÍODO"],
       [
         this.date(stats.health.projectedDeliveryAt),
         "Entrega projetada",
@@ -567,7 +563,7 @@ export class ProjectStatsReportDocument {
       .fontSize(6.5)
       .fillColor(COLORS.muted)
       .text(
-        `Rastreabilidade: periodType=${source.periodType} • cutoffAt=${stats.cutoffAt.toISOString()} • generatedAt=${stats.generatedAt.toISOString()} • reportId=${source.reportId}`,
+        `Rastreabilidade: month=${stats.month} • generatedAt=${stats.generatedAt.toISOString()} • reportId=${source.reportId}`,
         MARGIN,
         750,
         { width: CONTENT_WIDTH }
@@ -904,6 +900,13 @@ export class ProjectStatsReportDocument {
     ];
   }
 
+  private statsPeriod(stats: ProjectStats): StatsPeriod {
+    return stats.period ?? {
+      start: stats.project.startedAt ?? stats.generatedAt,
+      end: stats.generatedAt
+    };
+  }
+
   private periodLabel(snapshot: any): string {
     const start = new Date(snapshot.period_start);
     const end = new Date(snapshot.period_end);
@@ -946,14 +949,6 @@ export class ProjectStatsReportDocument {
       year: "2-digit",
       timeZone: "UTC"
     }).format(new Date(Date.UTC(year, month - 1, 1)));
-  }
-
-  private periodName(period: StatsPeriodType): string {
-    return {
-      [StatsPeriodType.WEEK]: "Semana atual",
-      [StatsPeriodType.MONTH]: "Mês atual",
-      [StatsPeriodType.QUARTER]: "Trimestre atual"
-    }[period];
   }
 
   private healthLabel(status: ProjectHealthStatus): string {

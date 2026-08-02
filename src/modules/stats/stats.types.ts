@@ -1,8 +1,4 @@
-import {
-  ProjectHealthStatus,
-  StatsPeriodType,
-  TaskStage
-} from "generated/prisma";
+import { ProjectHealthStatus, TaskStage } from "generated/prisma";
 
 export type StatsPeriod = {
   start: Date;
@@ -44,7 +40,7 @@ export type MemberProductivity = {
 
 export type ProjectMemberPerformance = {
   generatedAt: Date;
-  cutoffAt: Date;
+  month: string;
   project: {
     id: string;
     title: string;
@@ -78,8 +74,8 @@ export type MemberStats = {
 
 export type ProjectStats = {
   generatedAt: Date;
-  cutoffAt: Date;
-  period: StatsPeriod | null;
+  month: string;
+  period: StatsPeriod;
   project: {
     id: string;
     title: string;
@@ -131,14 +127,12 @@ export type RecordTaskWorkLogInput = {
 
 export type GenerateSnapshotInput = {
   projectkey: string;
-  periodType: StatsPeriodType;
-  cutoffAt?: Date;
+  month?: string;
 };
 
 export type GenerateReportInput = {
   projectkey: string;
-  periodType: StatsPeriodType;
-  cutoffAt?: Date;
+  month?: string;
 };
 
 export type GeneratedProjectReport = {

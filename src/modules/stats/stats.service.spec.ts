@@ -2,11 +2,32 @@ import { ProjectStage, TaskStage } from "generated/prisma";
 import { StatsService } from "./stats.service";
 
 describe("StatsService member performance", () => {
+  it("rejects months before the project creation month", async () => {
+    const queries = {
+      findProject: jest.fn().mockResolvedValue({
+        created_at: new Date("2026-06-15T12:00:00.000Z")
+      })
+    };
+    const service = new StatsService(
+      queries as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any
+    );
+
+    await expect(
+      service.getProjectStats("project-1", "2026-05")
+    ).rejects.toThrow("Período inválido");
+  });
+
   it("uses project months on the X axis and averages member hours per month", async () => {
     const queries = {
       findProject: jest.fn().mockResolvedValue({
         id: "project-1",
         title: "Tasker",
+        created_at: new Date("2026-05-01T00:00:00.000Z"),
         stage: ProjectStage.IN_PROGRESS,
         started_at: new Date("2026-05-01T00:00:00.000Z"),
         done_at: null,
@@ -84,6 +105,7 @@ describe("StatsService member performance", () => {
       findProject: jest.fn().mockResolvedValue({
         id: "project-1",
         title: "Tasker",
+        created_at: new Date("2026-07-01T00:00:00.000Z"),
         stage: ProjectStage.IN_PROGRESS,
         started_at: new Date("2026-07-01T00:00:00.000Z"),
         done_at: null,
