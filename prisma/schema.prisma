@@ -38,7 +38,6 @@ model User {
   accountkey String  @unique
   account    Account @relation(fields: [accountkey], references: [id], onDelete: Cascade)
 
-  comments        Comment[]
   // notifications   Notification[]
   participates_in Affiliation[]
   audit_logs      AuditLog[]
@@ -76,10 +75,10 @@ model OrganizationInvite {
   orgkey String
   org    Organization @relation(fields: [orgkey], references: [id], onDelete: Cascade)
 
-  expiresAt  DateTime @map("expires_at")
+  expiresAt  DateTime  @map("expires_at")
   usedAt     DateTime? @map("used_at")
   rejectedAt DateTime? @map("rejected_at")
-  rejectedBy String? @map("rejected_by")
+  rejectedBy String?   @map("rejected_by")
   revokedAt  DateTime? @map("revoked_at")
 
   created_at DateTime @default(now())
@@ -167,6 +166,7 @@ model Member {
   user    Affiliation @relation(fields: [userkey], references: [id], onDelete: Cascade)
 
   tasks          Task[]
+  comments       Comment[]
   work_logs      TaskWorkLog[]
   period_entries ProjectStatsPeriodTask[]
 
@@ -214,7 +214,7 @@ model Comment {
   date    DateTime @default(now())
 
   ownerkey String?
-  owner    User?   @relation(fields: [ownerkey], references: [username], onDelete: SetNull)
+  owner    Member? @relation(fields: [ownerkey], references: [id], onDelete: SetNull)
 
   projectkey String
   project    Project @relation(fields: [projectkey], references: [id])

@@ -7,7 +7,10 @@ export interface MemberDTO {
   readonly id: string;
   readonly projectkey: string;
   readonly userkey: string;
-  readonly user: UserDTO;
-  readonly tasks: TaskDTO[];
-  readonly role: MemberRole;
+  readonly created_at: Date;
+  readonly updated_at: Date;
+  
+  readonly user?: UserDTO;
+  readonly tasks?: TaskDTO[];
+  readonly role?: MemberRole;
 }

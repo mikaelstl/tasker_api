@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { CommentNotFoundException } from 'src/common/errors/resource-not-found.exceptions';
 import { PrismaService } from "src/database/prisma.service";
+import { Prisma } from "generated/prisma";
 import { CreateCommentDTO } from "@modules/comments/dto/comment.create.dto";
 import { CommentDTO } from "@modules/comments/dto/comment.dto";
 import { CommentQueryDTO } from "@modules/comments/dto/comment.query.dto";
@@ -11,22 +12,35 @@ export class CommentsRepository {
     private readonly prisma: PrismaService
   ) { }
 
-  async create(data: CreateCommentDTO): Promise<CommentDTO> {
+  async create(data: CreateCommentDTO, memberkey: string): Promise<CommentDTO> {
     const comment = await this.prisma.comment.create({
       data: {
         content: data.content,
         date: data.date,
         projectkey: data.projectkey,
-        ownerkey: data.ownerkey
+        ownerkey: memberkey,
       }
     });
 
     return comment;
   }
 
+  async findMemberByUserAndProject(userkey: string, projectkey: string) {
+    return this.prisma.member.findFirst({
+      where: {
+        projectkey,
+        user: { userkey },
+      },
+      select: { id: true },
+    });
+  }
+
   async list(queries: CommentQueryDTO): Promise<CommentDTO[]> {
     const comments = await this.prisma.comment.findMany({
       where: queries,
+      include: {
+        owner: true
+      }
     });
 
     return comments;
@@ -36,6 +50,9 @@ export class CommentsRepository {
     const comment = await this.prisma.comment.findUnique({
       where: {
         id: id
+      },
+      include: {
+        owner: true
       }
     });
 
@@ -51,6 +68,9 @@ export class CommentsRepository {
       data: update,
       where: {
         id: id
+      },
+      include: {
+        owner: true
       }
     });
 
@@ -61,6 +81,9 @@ export class CommentsRepository {
     const result = await this.prisma.comment.delete({
       where: {
         id: key
+      },
+      include: {
+        owner: true
       }
     });
 
@@ -71,7 +94,7 @@ export class CommentsRepository {
     return result;
   }
 
-  async exists(key: string, query: CommentQueryDTO): Promise<boolean> {
+  async exists(key: string, query: Prisma.CommentWhereInput): Promise<boolean> {
     const result = await this.prisma.comment.count({
       where: {
         id: key,

@@ -654,7 +654,7 @@ async function seedCommentsAndEvents() {
             -18 + orgIndex * 2 + projectIndex + commentIndex,
             10 + commentIndex,
           ),
-          ownerkey: owner.username,
+          ownerkey: memberId(projectKey, owner.username),
           projectkey: projectKey,
         };
 

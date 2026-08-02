@@ -23,14 +23,6 @@ export class TasksRepository {
     private readonly prisma: PrismaService
   ) { }
 
-  private toTaskDTO(task: any): TaskDTO {
-    return task;
-  }
-
-  private toTaskWhere(queries: TaskQueryDTO) {
-    return queries;
-  }
-
   private generateCode(): string {
     const prefix = 'TSK-';
     const code = this.nanoid();
@@ -53,7 +45,7 @@ export class TasksRepository {
           }
         });
 
-        return this.toTaskDTO(task);
+        return task;
       } catch (error) {
         const codeCollision = error instanceof Prisma.PrismaClientKnownRequestError
           && error.code === 'P2002';
@@ -69,13 +61,18 @@ export class TasksRepository {
 
   async list(queries: TaskQueryDTO): Promise<TaskDTO[]> {
     const tasks = await this.prisma.task.findMany({
-      where: this.toTaskWhere(queries),
+      where: {
+        owner: {
+          userkey: queries.ownerkey
+        },
+        ...queries,
+      },
       include: {
         owner: true
       }
     });
 
-    return tasks.map((task) => this.toTaskDTO(task));
+    return tasks;
   }
 
   async find(projectkey: string, code: string): Promise<TaskDTO> {
@@ -95,7 +92,7 @@ export class TasksRepository {
       throw new TaskNotFoundException();
     }
 
-    return this.toTaskDTO(task);
+    return task;
   }
 
   async findEditContext(
@@ -182,7 +179,7 @@ export class TasksRepository {
       include: { owner: true },
     });
 
-    return this.toTaskDTO(response);
+    return response;
   }
 
   async delete(key: string): Promise<TaskDTO> {
@@ -203,7 +200,7 @@ export class TasksRepository {
     const result = await this.prisma.task.count({
       where: {
         id: key,
-        ...this.toTaskWhere(query)
+        ...query
       }
     });
 

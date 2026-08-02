@@ -5,6 +5,7 @@ import { AuditAction, AuditResource } from 'generated/prisma';
 import { AuditLogService } from '@modules/audit-log/audit-log.service';
 import { AuditContext } from '@interfaces/AuditContext';
 import { CreateCommentDTO } from './dto/comment.create.dto';
+import { MemberNotFoundException } from 'src/common/errors/resource-not-found.exceptions';
 
 @Injectable()
 export class CommentsService {
@@ -14,14 +15,24 @@ export class CommentsService {
   ) {}
 
   async create(data: CreateCommentDTO, context: AuditContext) {
-    const comment = await this.repository.create(data);
+    const member = await this.repository.findMemberByUserAndProject(
+      context.actorkey,
+      data.projectkey,
+    );
+
+    if (!member) {
+      throw new MemberNotFoundException();
+    }
+
+    const comment = await this.repository.create(data, member.id);
+
     await this.audit.logUserMutation({
       ...context,
       action: AuditAction.COMMENT,
       resource: AuditResource.COMMENTS,
       resourcekey: comment.id,
       after: comment as unknown as Record<string, unknown>,
-      fields: ['content', 'projectkey'],
+      fields: ['content', 'projectkey', 'memberkey'],
     });
     return comment;
   }
@@ -34,7 +45,7 @@ export class CommentsService {
       resource: AuditResource.COMMENTS,
       resourcekey: comment.id,
       before: comment as unknown as Record<string, unknown>,
-      fields: ['content', 'projectkey'],
+      fields: ['content', 'projectkey', 'memberkey'],
     });
     return comment;
   }
@@ -45,7 +56,9 @@ export class CommentsService {
         targetkey,
         {
           id: targetkey,
-          ownerkey: subjectkey
+          owner: {
+            
+          }
         }
       );
 
