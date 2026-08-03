@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpStatus, Post, Query, Res, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, HttpStatus, Param, Post, Query, Res, UseGuards } from "@nestjs/common";
 import { CreateUserDTO } from "@modules/users/dto/create.dto";
 import { UserDTO } from "@modules/users/dto/user.dto";
 import { UserRepository } from "@modules/users/user.repository";
@@ -74,13 +74,14 @@ export class UserController {
     return res.status(response.status).json(response);
   }
 
-  @Get()
+  @Get(':username')
   @UseGuards(JwtAuthGuard)
   async find(
+    @Param('username') username: string,
     @Query()  queries: UserQueryDTO,
     @Res() res
   ) {
-    const result: UserDTO = await this.repository.find(queries);
+    const result: UserDTO = await this.repository.find({ username, accountkey: queries.accountkey });
 
     const response: ApiResponse = {
       status: HttpStatus.OK,

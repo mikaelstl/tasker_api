@@ -153,7 +153,7 @@ export class ProjectRepository {
 
     const deadline = update.deadline ?? current.deadline;
     const stage = update.stage ?? current.stage;
-    const becameDelayed = deadline.getTime() < Date.now()
+    const becameDelayed = new Date(deadline).getTime() < Date.now()
       && (
         stage !== ProjectStage.COMPLETED
         || current.stage !== ProjectStage.COMPLETED

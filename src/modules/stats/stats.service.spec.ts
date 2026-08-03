@@ -42,6 +42,7 @@ describe("StatsService member performance", () => {
         members: [{
           id: "member-1",
           user: {
+            id: "affiliation-1",
             user: {
               username: "mikael",
               name: "Mikael Alves",
@@ -82,20 +83,17 @@ describe("StatsService member performance", () => {
       {} as any
     );
 
-    const stats = await service.getProjectStats(
-      "project-1",
-      new Date("2026-07-20T23:59:59.000Z")
-    );
+    const stats = await service.getProjectStats("project-1", "2026-07");
 
     expect(stats.performancePerMember[0]).toMatchObject({
       memberId: "member-1",
       months: [
-        { month: "2026-05", averageHours: 2 },
-        { month: "2026-06", averageHours: 1 },
-        { month: "2026-07", averageHours: 1 }
+        { month: "2026-07", averageHours: 0.8 }
       ],
-      averageHoursPerMonth: 1.33
+      averageHoursPerMonth: 0.8,
     });
+    expect(stats.performancePerMember[0].user.affiliationId)
+      .toBe("affiliation-1");
     expect(stats.members[0].tasks).toEqual([]);
     expect(stats.project.stage).toBe(ProjectStage.IN_PROGRESS);
   });
@@ -143,6 +141,7 @@ describe("StatsService member performance", () => {
         members: [{
           id: "member-1",
           user: {
+            id: "affiliation-1",
             user: {
               username: "mikaelst",
               name: "Mikael",

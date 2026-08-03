@@ -400,7 +400,7 @@ export class StatsService {
     period: StatsPeriod | null
   ): MemberStats {
     const user: StatsUser = {
-      affiliationId: member.id,
+      affiliationId: member.user.id,
       username: member.user.user.username,
       name: member.user.user.name,
       photoUrl: member.user.user.photo?.url ?? null
@@ -474,11 +474,21 @@ export class StatsService {
     );
     const months = new Map<string, {
       minutes: number;
+      weeks: number;
     }>();
 
     for (const month of this.listMonths(period.start, period.end)) {
+      const monthEnd = new Date(Date.UTC(
+        month.getUTCFullYear(),
+        month.getUTCMonth() + 1,
+        1
+      ));
       months.set(this.monthKey(month), {
-        minutes: 0
+        minutes: 0,
+        weeks: Math.max(
+          this.listWeeks(month, monthEnd).length,
+          1
+        )
       });
     }
 
@@ -493,7 +503,7 @@ export class StatsService {
 
     const series = Array.from(months.entries()).map(([month, value]) => ({
       month,
-      averageHours: this.round(value.minutes / 60)
+      averageHours: this.round(value.minutes / 60 / value.weeks)
     }));
     const totalAverageHours = series.reduce(
       (total, item) => total + item.averageHours,
@@ -852,6 +862,28 @@ export class StatsService {
     }
 
     return months;
+  }
+
+  private listWeeks(start: Date, end: Date): Date[] {
+    const weeks: Date[] = [];
+    let cursor = this.startOfIsoWeek(start);
+
+    while (cursor.getTime() < end.getTime()) {
+      weeks.push(cursor);
+      cursor = new Date(cursor.getTime() + 7 * DAY_IN_MS);
+    }
+
+    return weeks;
+  }
+
+  private startOfIsoWeek(date: Date): Date {
+    const day = date.getUTCDay();
+    const daysSinceMonday = (day + 6) % 7;
+    return new Date(Date.UTC(
+      date.getUTCFullYear(),
+      date.getUTCMonth(),
+      date.getUTCDate() - daysSinceMonday
+    ));
   }
 
   private monthKey(date: Date): string {
