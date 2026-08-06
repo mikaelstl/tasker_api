@@ -5,7 +5,10 @@ import {
 import { AccountNotFoundException } from "src/common/errors/resource-not-found.exceptions";
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from "src/database/prisma.service";
-import { AccountDTO } from "@modules/accounts/dto/account.dto";
+import {
+  AccountCredentialsDTO,
+  AccountDTO,
+} from "@modules/accounts/dto/account.dto";
 import { CreateAccountDTO } from "@modules/accounts/dto/create.dto";
 import { EditAccountDTO } from "./dto/edit-account.dto";
 import { AccountIdentityDTO } from "./dto/account-identity.dto";
@@ -39,10 +42,14 @@ export class AccountRepository {
         password: data.password,
         email: data.email,
       },
+      select: {
+        id: true,
+        email: true,
+      },
     });
   }
 
-  async find(key: string): Promise<AccountDTO> {
+  async find(key: string): Promise<AccountCredentialsDTO> {
     const account = await this.prisma.account.findUnique({
       where: {
         email: key

@@ -15,7 +15,7 @@ export class AppController {
       data: result,
       message: 'API disponível.',
       timestamp: new Date().toISOString(),
-      path: '/status'
+      path: '/api/v1/status'
     };
 
     return res.status(response.status).json(response);

@@ -27,8 +27,13 @@ export type MemberPerformance = {
   months: Array<{
     month: string;
     averageHours: number;
+    weeks?: Array<{
+      week: string;
+      averageHours: number;
+    }>;
   }>;
   averageHoursPerMonth: number;
+  averageHoursPerTask?: number;
 };
 
 export type MemberProductivity = {
@@ -58,7 +63,9 @@ export type ProjectMemberPerformance = {
     spentMinutes: number;
     spentHours: number;
     averageHoursPerMonth: number;
+    averageHoursPerTask: number;
     months: MemberPerformance["months"];
+    weeks: NonNullable<MemberPerformance["months"][number]["weeks"]>;
   }>;
 };
 

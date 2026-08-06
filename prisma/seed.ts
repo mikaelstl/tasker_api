@@ -16,39 +16,11 @@ import { hash } from 'bcrypt';
 
 const prisma = new PrismaClient();
 
-const projectStages = [
-  ProjectStage.STARTED,
-  ProjectStage.PENDING,
-  ProjectStage.IN_PROGRESS,
-  ProjectStage.PAUSED,
-  ProjectStage.COMPLETED,
-] as const;
-
-const projectPriorities = [
-  ProjectPriority.LOW,
-  ProjectPriority.MEDIUM,
-  ProjectPriority.HIGH,
-  ProjectPriority.EXTREME,
-] as const;
-
-const taskStages = [
-  TaskStage.STARTED,
-  TaskStage.PENDING,
-  TaskStage.REVIEW,
-  TaskStage.DONE,
-] as const;
-
 const taskPriorities = [
   TaskPriority.LOW,
   TaskPriority.MEDIUM,
   TaskPriority.HIGH,
   TaskPriority.EXTREME,
-] as const;
-
-const healthStatuses = [
-  ProjectHealthStatus.SAFE,
-  ProjectHealthStatus.WARNING,
-  ProjectHealthStatus.CRITICAL,
 ] as const;
 
 const users = [
@@ -178,14 +150,9 @@ const organizations = [
     managers: [1, 2],
     members: [3, 4, 5, 6, 7],
     projects: [
-      'Modernização da Plataforma',
-      'Portal Corporativo',
-      'Automação de Atendimento',
-      'Observabilidade e SRE',
-      'Gestão de Identidades',
-      'Data Lake Operacional',
-      'Aplicativo de Colaboradores',
-      'Programa de Segurança',
+      'Plataforma em Estado SAFE',
+      'Portal em Estado WARNING',
+      'Operação em Estado CRITICAL',
     ],
   },
   {
@@ -194,16 +161,7 @@ const organizations = [
     code: 'ATLAS',
     managers: [2, 8],
     members: [4, 9, 10, 11, 12, 13],
-    projects: [
-      'Open Finance',
-      'Motor Antifraude',
-      'Onboarding Digital',
-      'Conciliação Financeira',
-      'Crédito para Empresas',
-      'Adequação Regulatória',
-      'Cobrança Inteligente',
-      'Painel Executivo',
-    ],
+    projects: [],
   },
   {
     id: 'seed-organization-vita',
@@ -211,16 +169,7 @@ const organizations = [
     code: 'VITA',
     managers: [6, 14],
     members: [5, 10, 15, 16, 17],
-    projects: [
-      'Prontuário Integrado',
-      'Telemedicina',
-      'Agendamento Omnichannel',
-      'Jornada do Paciente',
-      'Gestão de Leitos',
-      'Interoperabilidade Clínica',
-      'Farmácia Digital',
-      'Indicadores Assistenciais',
-    ],
+    projects: [],
   },
   {
     id: 'seed-organization-nortelog',
@@ -228,16 +177,7 @@ const organizations = [
     code: 'NORTE',
     managers: [8, 18],
     members: [3, 11, 13, 19, 20, 21],
-    projects: [
-      'Torre de Controle Logística',
-      'Roteirização Inteligente',
-      'Gestão de Frota',
-      'Portal de Transportadoras',
-      'Rastreamento em Tempo Real',
-      'Otimização de Armazéns',
-      'Previsão de Demanda',
-      'Logística Reversa',
-    ],
+    projects: [],
   },
   {
     id: 'seed-organization-aurora',
@@ -245,16 +185,7 @@ const organizations = [
     code: 'AURORA',
     managers: [14, 22],
     members: [7, 12, 16, 18, 21, 23],
-    projects: [
-      'Marketplace B2B',
-      'Clube de Fidelidade',
-      'Experiência Omnichannel',
-      'Recomendação de Produtos',
-      'Gestão de Catálogo',
-      'Checkout Unificado',
-      'Campanhas Personalizadas',
-      'Expansão Regional',
-    ],
+    projects: [],
   },
 ] as const;
 
@@ -337,6 +268,76 @@ const commentCatalog = [
   'Ponto de atenção registrado para capacidade e prazo de integração.',
 ] as const;
 
+const projectScenarios = [
+  {
+    healthStatus: ProjectHealthStatus.SAFE,
+    healthScore: 86,
+    stage: ProjectStage.IN_PROGRESS,
+    priority: ProjectPriority.HIGH,
+    deadlineOffset: 45,
+    startedOffset: -60,
+    taskStages: [
+      TaskStage.DONE,
+      TaskStage.DONE,
+      TaskStage.DONE,
+      TaskStage.DONE,
+      TaskStage.STARTED,
+      TaskStage.PENDING,
+    ],
+    taskDeadlineOffsets: [-20, -18, -16, -14, 35, 40],
+  },
+  {
+    healthStatus: ProjectHealthStatus.WARNING,
+    healthScore: 62,
+    stage: ProjectStage.IN_PROGRESS,
+    priority: ProjectPriority.MEDIUM,
+    deadlineOffset: 42,
+    startedOffset: -5,
+    taskStages: [
+      TaskStage.DONE,
+      TaskStage.DONE,
+      TaskStage.DONE,
+      TaskStage.STARTED,
+      TaskStage.STARTED,
+      TaskStage.PENDING,
+      TaskStage.PENDING,
+      TaskStage.PENDING,
+    ],
+    taskDeadlineOffsets: [-25, -20, -15, 32, 35, 38, 40, 42],
+  },
+  {
+    healthStatus: ProjectHealthStatus.CRITICAL,
+    healthScore: 25,
+    stage: ProjectStage.PAUSED,
+    priority: ProjectPriority.EXTREME,
+    deadlineOffset: 8,
+    startedOffset: -30,
+    taskStages: [
+      TaskStage.DONE,
+      TaskStage.STARTED,
+      TaskStage.STARTED,
+      TaskStage.PENDING,
+      TaskStage.PENDING,
+      TaskStage.PENDING,
+      TaskStage.PENDING,
+      TaskStage.PENDING,
+      TaskStage.PENDING,
+      TaskStage.PENDING,
+    ],
+    taskDeadlineOffsets: [-25, -20, -15, -10, -5, 0, 3, 5, 7, 8],
+  },
+] as const;
+
+function projectScenario(projectIndex: number) {
+  const scenario = projectScenarios[projectIndex];
+
+  if (!scenario) {
+    throw new Error(`Cenário de projeto não configurado para o índice ${projectIndex}.`);
+  }
+
+  return scenario;
+}
+
 function accountId(index: number) {
   return `seed-account-${String(index + 1).padStart(2, '0')}`;
 }
@@ -362,6 +363,22 @@ function utcDate(dayOffset: number, hour = 12) {
   date.setUTCDate(date.getUTCDate() + dayOffset);
   date.setUTCHours(hour);
   return date;
+}
+
+function organizationCreatedAt(orgIndex: number) {
+  return utcDate(-130 + orgIndex * 4, 8);
+}
+
+function projectCreatedAt(orgIndex: number, projectIndex: number) {
+  return utcDate(-100 + orgIndex * 4 + projectIndex * 3, 8);
+}
+
+function taskCreatedAt(
+  orgIndex: number,
+  projectIndex: number,
+  taskIndex: number,
+) {
+  return utcDate(-75 + orgIndex * 4 + projectIndex * 3 + taskIndex, 10);
 }
 
 function organizationUserIndexes(organization: (typeof organizations)[number]) {
@@ -405,16 +422,39 @@ function validateSeedConfiguration() {
       );
     }
 
-    if (organization.projects.length !== 8) {
+    if (organization.projects.length > 3) {
       throw new Error(
-        `${organization.name} deve possuir exatamente 8 projetos.`,
+        `${organization.name} não pode possuir mais de 3 projetos.`,
       );
     }
   }
 
-  if (taskCatalog.length < 10) {
-    throw new Error('Cada projeto deve possuir ao menos 10 tarefas.');
+  const totalProjects = organizations.reduce(
+    (total, organization) => total + organization.projects.length,
+    0,
+  );
+
+  if (totalProjects !== 3) {
+    throw new Error('O seed deve possuir exatamente 3 projetos.');
   }
+
+  if (projectScenarios.length !== totalProjects) {
+    throw new Error('Cada projeto deve possuir um cenário de saúde configurado.');
+  }
+}
+
+async function clearSeedProjects() {
+  const projectFilter = { startsWith: 'seed-project-' };
+
+  await prisma.auditLog.deleteMany({ where: { resourcekey: projectFilter } });
+  await prisma.taskWorkLog.deleteMany({ where: { projectkey: projectFilter } });
+  await prisma.comment.deleteMany({ where: { projectkey: projectFilter } });
+  await prisma.event.deleteMany({ where: { projectkey: projectFilter } });
+  await prisma.task.deleteMany({ where: { projectkey: projectFilter } });
+  await prisma.member.deleteMany({ where: { projectkey: projectFilter } });
+  await prisma.projectStatsReport.deleteMany({ where: { projectkey: projectFilter } });
+  await prisma.projectStatsPeriodSnapshot.deleteMany({ where: { projectkey: projectFilter } });
+  await prisma.project.deleteMany({ where: { id: projectFilter } });
 }
 
 async function seedAccountsAndUsers() {
@@ -442,17 +482,19 @@ async function seedAccountsAndUsers() {
 }
 
 async function seedOrganizationsAndAffiliations() {
-  for (const organization of organizations) {
+  for (const [orgIndex, organization] of organizations.entries()) {
     await prisma.organization.upsert({
       where: { id: organization.id },
       update: {
         name: organization.name,
         ownerkey: users[0].username,
+        created_at: organizationCreatedAt(orgIndex),
       },
       create: {
         id: organization.id,
         name: organization.name,
         ownerkey: users[0].username,
+        created_at: organizationCreatedAt(orgIndex),
       },
     });
 
@@ -471,12 +513,14 @@ async function seedOrganizationsAndAffiliations() {
           orgkey: organization.id,
           userkey: user.username,
           role: affiliationRole,
+          created_at: organizationCreatedAt(orgIndex),
         },
         create: {
           id,
           orgkey: organization.id,
           userkey: user.username,
           role: affiliationRole,
+          created_at: organizationCreatedAt(orgIndex),
         },
       });
     }
@@ -488,28 +532,18 @@ async function seedProjectsAndMembers() {
     const organizationUsers = organizationUserIndexes(organization);
 
     for (const [projectIndex, title] of organization.projects.entries()) {
+      const scenario = projectScenario(projectIndex);
       const id = projectId(organization.code, projectIndex);
-      const stage =
-        projectStages[(projectIndex + orgIndex) % projectStages.length];
-      const priority =
-        projectPriorities[
-          (projectIndex + orgIndex * 2) % projectPriorities.length
-        ];
+      const stage = scenario.stage;
+      const priority = scenario.priority;
       const managerIndex =
         organization.managers[projectIndex % organization.managers.length];
       const manager = users[managerIndex];
-      const startedAt =
-        stage === ProjectStage.PENDING
-          ? null
-          : utcDate(-60 + orgIndex * 4 + projectIndex * 3, 9);
-      const doneAt =
-        stage === ProjectStage.COMPLETED
-          ? utcDate(-8 + orgIndex + projectIndex, 18)
-          : null;
-      const deadline = utcDate(-18 + orgIndex * 12 + projectIndex * 13, 23);
-      const delayed =
-        stage !== ProjectStage.COMPLETED &&
-        deadline.getTime() < utcDate(22).getTime();
+      const startedAt = utcDate(scenario.startedOffset, 9);
+      const doneAt = null;
+      const deadline = utcDate(scenario.deadlineOffset, 23);
+      const createdAt = projectCreatedAt(orgIndex, projectIndex);
+      const delayed = deadline.getTime() < utcDate(22).getTime();
 
       await prisma.project.upsert({
         where: { id },
@@ -524,6 +558,7 @@ async function seedProjectsAndMembers() {
           priority,
           orgkey: organization.id,
           managerkey: affiliationId(organization.code, manager.username),
+          created_at: createdAt,
         },
         create: {
           id,
@@ -537,6 +572,7 @@ async function seedProjectsAndMembers() {
           priority,
           orgkey: organization.id,
           managerkey: affiliationId(organization.code, manager.username),
+          created_at: createdAt,
         },
       });
 
@@ -549,11 +585,13 @@ async function seedProjectsAndMembers() {
           update: {
             projectkey: id,
             userkey: affiliationId(organization.code, user.username),
+            created_at: new Date(createdAt.getTime() + 24 * 60 * 60 * 1000),
           },
           create: {
             id: idMember,
             projectkey: id,
             userkey: affiliationId(organization.code, user.username),
+            created_at: new Date(createdAt.getTime() + 24 * 60 * 60 * 1000),
           },
         });
       }
@@ -566,12 +604,14 @@ async function seedTasks() {
     const organizationUsers = organizationUserIndexes(organization);
 
     for (const [projectIndex] of organization.projects.entries()) {
+      const scenario = projectScenario(projectIndex);
       const projectKey = projectId(organization.code, projectIndex);
 
-      for (const [taskIndex, taskTemplate] of taskCatalog.entries()) {
+      for (const [taskIndex, taskTemplate] of taskCatalog
+        .slice(0, scenario.taskStages.length)
+        .entries()) {
         const id = taskId(projectKey, taskIndex);
-        const stage =
-          taskStages[(taskIndex + projectIndex + orgIndex) % taskStages.length];
+        const stage = scenario.taskStages[taskIndex];
         const priority =
           taskPriorities[
             (taskIndex + projectIndex * 2 + orgIndex) % taskPriorities.length
@@ -590,10 +630,8 @@ async function seedTasks() {
           stage === TaskStage.DONE
             ? utcDate(-12 + projectIndex * 2 + taskIndex, 18)
             : null;
-        const deadline = utcDate(
-          -10 + orgIndex * 9 + projectIndex * 7 + taskIndex * 3,
-          23,
-        );
+        const deadline = utcDate(scenario.taskDeadlineOffsets[taskIndex], 23);
+        const createdAt = taskCreatedAt(orgIndex, projectIndex, taskIndex);
         const delayed =
           stage !== TaskStage.DONE &&
           deadline.getTime() < utcDate(22).getTime();
@@ -612,6 +650,7 @@ async function seedTasks() {
             priority,
             projectkey: projectKey,
             ownerkey: memberId(projectKey, ownerUser.username),
+            created_at: createdAt,
           },
           create: {
             id,
@@ -626,6 +665,7 @@ async function seedTasks() {
             priority,
             projectkey: projectKey,
             ownerkey: memberId(projectKey, ownerUser.username),
+            created_at: createdAt,
           },
         });
       }
@@ -654,6 +694,10 @@ async function seedCommentsAndEvents() {
             -18 + orgIndex * 2 + projectIndex + commentIndex,
             10 + commentIndex,
           ),
+          created_at: utcDate(
+            -19 + orgIndex * 2 + projectIndex + commentIndex,
+            10 + commentIndex,
+          ),
           ownerkey: memberId(projectKey, owner.username),
           projectkey: projectKey,
         };
@@ -674,6 +718,10 @@ async function seedCommentsAndEvents() {
             9 + eventIndex * 2,
           ),
           category: eventTemplate.category,
+          created_at: utcDate(
+            3 + orgIndex * 4 + projectIndex * 6 + eventIndex * 3,
+            9 + eventIndex * 2,
+          ),
           projectkey: projectKey,
         };
 
@@ -710,6 +758,10 @@ async function seedWorkLogs() {
           logged_at: utcDate(-15 + orgIndex + projectIndex + taskIndex, 17),
           note: `Atividades executadas em ${taskCatalog[taskIndex].name.toLowerCase()}.`,
           source: 'ENTERPRISE_SEED',
+          created_at: new Date(
+            utcDate(-15 + orgIndex + projectIndex + taskIndex, 17).getTime()
+            - 60 * 60 * 1000,
+          ),
         };
 
         await prisma.taskWorkLog.upsert({
@@ -727,15 +779,13 @@ async function seedProjectStats() {
     const organizationUsers = organizationUserIndexes(organization);
 
     for (const [projectIndex] of organization.projects.entries()) {
+      const scenario = projectScenario(projectIndex);
       const projectKey = projectId(organization.code, projectIndex);
-      const healthStatus =
-        healthStatuses[(projectIndex + orgIndex) % healthStatuses.length];
-      const healthScore =
-        healthStatus === ProjectHealthStatus.SAFE
-          ? 86 - projectIndex
-          : healthStatus === ProjectHealthStatus.WARNING
-            ? 64 - orgIndex
-            : 38 + projectIndex;
+      const healthStatus = scenario.healthStatus;
+      const healthScore = scenario.healthScore;
+      const doneTasks = scenario.taskStages.filter(
+        (stage) => stage === TaskStage.DONE,
+      ).length;
       const id = `seed-snapshot-${projectKey}`;
       const performance = organizationUsers
         .slice(0, 5)
@@ -751,16 +801,23 @@ async function seedProjectStats() {
         period_end: new Date('2026-07-31T23:59:59.000Z'),
         generated_at: new Date('2026-07-23T20:00:00.000Z'),
         cutoff_at: new Date('2026-07-23T19:59:59.000Z'),
+        created_at: new Date('2026-07-23T19:00:00.000Z'),
         performance_per_member_json: performance,
         productivity_json: {
-          completed_tasks: 12 + ((orgIndex + projectIndex) % 14),
+          completed_tasks: doneTasks,
           average_cycle_days: 3.2 + ((orgIndex + projectIndex) % 5) * 0.7,
           logged_hours: 48 + ((orgIndex * 8 + projectIndex * 3) % 52),
         },
         summary_json: {
           active_members: organizationUsers.length,
-          completion_percentage: 35 + ((orgIndex * 11 + projectIndex * 7) % 61),
-          open_risks: (orgIndex + projectIndex) % 6,
+          completion_percentage: Math.round(
+            (doneTasks / scenario.taskStages.length) * 100,
+          ),
+          open_risks: healthStatus === ProjectHealthStatus.SAFE
+            ? 0
+            : healthStatus === ProjectHealthStatus.WARNING
+              ? 2
+              : 5,
         },
         health_status: healthStatus,
         health_score: healthScore,
@@ -776,7 +833,7 @@ async function seedProjectStats() {
 }
 
 async function seedAuditLogs() {
-  for (const organization of organizations) {
+  for (const [orgIndex, organization] of organizations.entries()) {
     const organizationAuditId = `seed-audit-${organization.code.toLowerCase()}-organization`;
     const organizationData = {
       orgkey: organization.id,
@@ -810,7 +867,7 @@ async function seedAuditLogs() {
         resource: AuditResource.PROJECTS,
         resourcekey: projectId(organization.code, projectIndex),
         changes: { title },
-        created_at: utcDate(-60 + projectIndex * 3, 9),
+        created_at: projectCreatedAt(orgIndex, projectIndex),
       };
 
       await prisma.auditLog.upsert({
@@ -826,6 +883,7 @@ async function main() {
   validateSeedConfiguration();
   await seedAccountsAndUsers();
   await seedOrganizationsAndAffiliations();
+  await clearSeedProjects();
   await seedProjectsAndMembers();
   await seedTasks();
   await seedCommentsAndEvents();
@@ -834,7 +892,7 @@ async function main() {
   await seedAuditLogs();
 
   console.info('Seed empresarial concluído com sucesso.');
-  console.info('24 usuários, 5 organizações, 40 projetos e 400 tarefas.');
+  console.info('24 usuários, 5 organizações, 3 projetos e 24 tarefas.');
   console.info('Owner de todas as organizações: mikaelstl / Demo@01');
   console.info('Demais senhas seguem a sequência Demo@02 até Demo@24.');
 }

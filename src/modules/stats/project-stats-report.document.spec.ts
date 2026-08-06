@@ -64,9 +64,28 @@ describe("ProjectStatsReportDocument", () => {
           photoUrl: null
         },
         months: [
-          { month: "2026-05", averageHours: 12 },
-          { month: "2026-06", averageHours: 18 },
-          { month: "2026-07", averageHours: 20 }
+          {
+            month: "2026-05",
+            averageHours: 12,
+            weeks: [
+              { week: "2026-04-27", averageHours: 10 },
+              { week: "2026-05-04", averageHours: 14 }
+            ]
+          },
+          {
+            month: "2026-06",
+            averageHours: 18,
+            weeks: [
+              { week: "2026-06-01", averageHours: 18 }
+            ]
+          },
+          {
+            month: "2026-07",
+            averageHours: 20,
+            weeks: [
+              { week: "2026-06-29", averageHours: 20 }
+            ]
+          }
         ],
         averageHoursPerMonth: 16.67
       }],

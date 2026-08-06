@@ -111,9 +111,6 @@ export class ProjectRepository {
       }
     });
 
-    console.log("--- Projects ---");
-    console.log(projects);
-
     return projects.map((project) => this.toProjectDTO(project));
   };
 

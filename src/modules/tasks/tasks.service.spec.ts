@@ -1,7 +1,3 @@
-jest.mock('nanoid', () => ({
-  customAlphabet: jest.fn(() => jest.fn(() => 'ABC123')),
-}));
-
 import { AccessDeniedException } from 'src/common/errors/access-denied.exception';
 import { TasksService } from './tasks.service';
 

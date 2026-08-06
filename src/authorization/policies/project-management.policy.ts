@@ -16,9 +16,6 @@ export class ProjectManagementPolicy implements ResourcePolicyHandler {
     subject: AccessSubject,
     resource: Resources,
   ): Promise<boolean> {
-    console.log("Resource ---- "+resource);
-    console.log("Target ---- "+subject.targetkey);
-
     const projectkey = await this.projectScopeResolver.resolve(
       resource,
       subject,

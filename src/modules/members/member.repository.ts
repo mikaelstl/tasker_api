@@ -24,6 +24,7 @@ export class MembersRepository {
         projectkey,
       },
       include: {
+        user: true,
         tasks: true,
       },
     });

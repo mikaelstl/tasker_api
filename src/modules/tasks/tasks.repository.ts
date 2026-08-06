@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { customAlphabet } from "nanoid";
 import { PrismaService } from "src/database/prisma.service";
 import { TaskCreateDTO } from "@modules/tasks/dto/task.create.dto";
 import { TaskDTO } from "@modules/tasks/dto/task.dto";
@@ -14,20 +13,33 @@ import { EditTaskDTO } from './dto/edit.dto';
 export class TasksRepository {
   private readonly maxCodeGenerationAttempts = 5;
 
-  private nanoid = customAlphabet(
-    'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', 6
-  );
-
   constructor(
     // @InjectModel(Task) private readonly Tasks: typeof Task
     private readonly prisma: PrismaService
   ) { }
 
-  private generateCode(): string {
+  private async generateCode(projectkey: string): Promise<string> {
     const prefix = 'TSK-';
-    const code = this.nanoid();
+    const tasks = await this.prisma.task.findMany({
+      where: {
+        projectkey,
+        code: {
+          startsWith: prefix,
+        },
+      },
+      select: {
+        code: true,
+      },
+    });
 
-    return prefix.concat(code);
+    const highestSequence = tasks.reduce((highest, task) => {
+      const match = task.code.match(/^TSK-(\d+)$/);
+      const sequence = match ? Number(match[1]) : 0;
+
+      return Math.max(highest, sequence);
+    }, 0);
+
+    return `${prefix}${String(highestSequence + 1).padStart(3, '0')}`;
   }
 
   async create(data: TaskCreateDTO): Promise<TaskDTO> {
@@ -35,7 +47,7 @@ export class TasksRepository {
       try {
         const task = await this.prisma.task.create({
           data: {
-            code: this.generateCode(),
+            code: await this.generateCode(data.project),
             name: data.name,
             description: data.description,
             projectkey: data.project,
@@ -60,9 +72,6 @@ export class TasksRepository {
   }
 
   async list(queries: TaskQueryDTO): Promise<TaskDTO[]> {
-    console.log("--- FOR MEMBER");
-    console.log(queries.ownerkey);
-    
     const { ownerkey, ...query } = queries;
 
     const tasks = await this.prisma.task.findMany({
@@ -76,9 +85,6 @@ export class TasksRepository {
         owner: true
       }
     });
-
-    console.log(tasks);
-    
 
     return tasks;
   }
@@ -158,6 +164,14 @@ export class TasksRepository {
       ? new Date(update.deadline)
       : current.deadline;
     const stage = update.stage ?? current.stage;
+    const stageChanged = update.stage !== undefined
+      && update.stage !== current.stage;
+    const becameStarted = stageChanged
+      && current.stage === TaskStage.PENDING
+      && update.stage === TaskStage.STARTED;
+    const becameDone = stageChanged && update.stage === TaskStage.DONE;
+    const stageChangedAt = new Date();
+
     const becameDelayed = deadline.getTime() < Date.now()
       && (
         stage !== TaskStage.DONE
@@ -176,7 +190,13 @@ export class TasksRepository {
         stage: update.stage,
         deadline: update.deadline,
         ownerkey: update.ownerkey,
-        delayed: current.delayed || becameDelayed
+        delayed: current.delayed || becameDelayed,
+        started_at: becameStarted
+          ? stageChangedAt
+          : becameDone && (!current.started_at || current.started_at.getTime() === 0)
+            ? stageChangedAt
+            : undefined,
+        done_at: becameDone ? stageChangedAt : undefined,
       },
       where: {
         projectkey_code: {

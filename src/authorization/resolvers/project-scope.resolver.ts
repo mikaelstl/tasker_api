@@ -123,9 +123,6 @@ export class ProjectScopeResolver {
       },
     });
 
-    console.log(member);
-    
-
     return member?.projectkey ?? null;
   }
 }

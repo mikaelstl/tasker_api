@@ -135,7 +135,9 @@ export class StatsService {
           spentMinutes,
           spentHours: this.round(spentMinutes / 60),
           averageHoursPerMonth: performance?.averageHoursPerMonth ?? 0,
-          months: performance?.months ?? []
+          averageHoursPerTask: performance?.averageHoursPerTask ?? 0,
+          months: performance?.months ?? [],
+          weeks: performance?.months[0]?.weeks ?? []
         };
       })
     };
@@ -475,6 +477,7 @@ export class StatsService {
     const months = new Map<string, {
       minutes: number;
       weeks: number;
+      weeklyMinutes: Map<string, number>;
     }>();
 
     for (const month of this.listMonths(period.start, period.end)) {
@@ -488,7 +491,8 @@ export class StatsService {
         weeks: Math.max(
           this.listWeeks(month, monthEnd).length,
           1
-        )
+        ),
+        weeklyMinutes: new Map()
       });
     }
 
@@ -498,12 +502,34 @@ export class StatsService {
 
       if (value) {
         value.minutes += log.minutes;
+        const week = this.startOfIsoWeek(log.logged_at);
+        const weekKey = this.weekKey(week);
+        value.weeklyMinutes.set(
+          weekKey,
+          (value.weeklyMinutes.get(weekKey) ?? 0) + log.minutes
+        );
       }
     }
 
     const series = Array.from(months.entries()).map(([month, value]) => ({
       month,
-      averageHours: this.round(value.minutes / 60 / value.weeks)
+      averageHours: this.round(value.minutes / 60 / value.weeks),
+      weeks: this.listWeeks(
+        new Date(`${month}-01T00:00:00.000Z`),
+        new Date(Date.UTC(
+          Number(month.slice(0, 4)),
+          Number(month.slice(5, 7)),
+          1
+        ))
+      ).map((week) => {
+        const weekKey = this.weekKey(week);
+        return {
+          week: weekKey,
+          averageHours: this.round(
+            (value.weeklyMinutes.get(weekKey) ?? 0) / 60
+          )
+        };
+      })
     }));
     const totalAverageHours = series.reduce(
       (total, item) => total + item.averageHours,
@@ -516,7 +542,15 @@ export class StatsService {
       months: series,
       averageHoursPerMonth: series.length === 0
         ? 0
-        : this.round(totalAverageHours / series.length)
+        : this.round(totalAverageHours / series.length),
+      averageHoursPerTask: member.tasks.length === 0
+        ? 0
+        : this.round(
+          member.tasks.reduce(
+            (total, task) => total + task.spentMinutes,
+            0
+          ) / 60 / member.tasks.length
+        )
     };
   }
 
@@ -890,6 +924,10 @@ export class StatsService {
     return `${date.getUTCFullYear()}-${String(
       date.getUTCMonth() + 1
     ).padStart(2, "0")}`;
+  }
+
+  private weekKey(date: Date): string {
+    return date.toISOString().slice(0, 10);
   }
 
   private isInsidePeriod(value: Date | null, period: StatsPeriod): boolean {

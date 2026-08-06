@@ -154,9 +154,6 @@ export class AffiliationService implements AccessValidator {
       orgkey
     );
 
-    console.log("--- AFILIAÇÃO ---");
-    console.log(result);
-
     if (!result) {
       throw new UserOrganizationAffiliationNotFoundException();
     }
@@ -166,9 +163,6 @@ export class AffiliationService implements AccessValidator {
 
   async findWithQueries(queries: AffiliationQuery): Promise<AffiliationDTO> {
     const result = await this.repository.findWithQueries(queries);
-
-    console.log("--- AFILIAÇÃO ---");
-    console.log(result);
 
     if (!result) {
       throw new UserOrganizationAffiliationNotFoundException();

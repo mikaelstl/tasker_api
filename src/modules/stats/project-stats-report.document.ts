@@ -294,7 +294,7 @@ export class ProjectStatsReportDocument {
     );
     this.label(
       document,
-      "PERFORMANCE POR MEMBRO — MÉDIA DE HORAS POR MÊS",
+      "PERFORMANCE POR MEMBRO — MÉDIA DE HORAS POR SEMANA",
       MARGIN,
       126
     );
@@ -659,13 +659,19 @@ export class ProjectStatsReportDocument {
     stats: ProjectStats
   ): void {
     const chart = { x: MARGIN + 34, y, width: CONTENT_WIDTH - 45, height: 185 };
+    const weeks = Array.from(new Set(
+      stats.performancePerMember.flatMap((member) =>
+        member.months.flatMap((month) =>
+          (month.weeks ?? []).map((week) => week.week)
+        )
+      )
+    )).sort();
     const allValues = stats.performancePerMember.flatMap((member) =>
-      member.months.map((item) => item.averageHours)
+      member.months.flatMap((month) =>
+        (month.weeks ?? []).map((week) => week.averageHours)
+      )
     );
     const max = Math.max(5, ...allValues);
-    const months = stats.performancePerMember[0]?.months.map(
-      (item) => item.month
-    ) ?? [];
 
     for (let index = 0; index <= 4; index += 1) {
       const rowY = chart.y + ((chart.height / 4) * index);
@@ -682,14 +688,14 @@ export class ProjectStatsReportDocument {
         .text(`${value}h`, MARGIN, rowY - 3, { width: 28, align: "right" });
     }
 
-    const step = months.length > 1 ? chart.width / (months.length - 1) : 0;
-    months.forEach((month, index) => {
-      const x = chart.x + (months.length === 1 ? chart.width / 2 : step * index);
+    const step = weeks.length > 1 ? chart.width / (weeks.length - 1) : 0;
+    weeks.forEach((week, index) => {
+      const x = chart.x + (weeks.length === 1 ? chart.width / 2 : step * index);
       document
         .font("Poppins")
         .fontSize(6)
         .fillColor(COLORS.muted)
-        .text(this.monthLabel(month), x - 30, chart.y + chart.height + 8, {
+        .text(this.weekLabel(week), x - 30, chart.y + chart.height + 8, {
           width: 60,
           align: "center"
         });
@@ -697,14 +703,23 @@ export class ProjectStatsReportDocument {
 
     stats.performancePerMember.slice(0, 6).forEach((member, memberIndex) => {
       const color = SERIES_COLORS[memberIndex];
-      const points = member.months.map((item, index) => ({
+      const weeklyValues = new Map<string, number>();
+      member.months.forEach((month) => {
+        (month.weeks ?? []).forEach((week) => {
+          weeklyValues.set(
+            week.week,
+            (weeklyValues.get(week.week) ?? 0) + week.averageHours
+          );
+        });
+      });
+      const points = weeks.map((week, index) => ({
         x: chart.x + (
-          member.months.length === 1
+          weeks.length === 1
             ? chart.width / 2
             : step * index
         ),
         y: chart.y + chart.height - (
-          (item.averageHours / max) * chart.height
+          ((weeklyValues.get(week) ?? 0) / max) * chart.height
         )
       }));
 
@@ -942,13 +957,12 @@ export class ProjectStatsReportDocument {
     return `${hours}h ${String(minutes % 60).padStart(2, "0")}min`;
   }
 
-  private monthLabel(value: string): string {
-    const [year, month] = value.split("-").map(Number);
+  private weekLabel(value: string): string {
     return new Intl.DateTimeFormat("pt-BR", {
-      month: "short",
-      year: "2-digit",
+      day: "2-digit",
+      month: "2-digit",
       timeZone: "UTC"
-    }).format(new Date(Date.UTC(year, month - 1, 1)));
+    }).format(new Date(`${value}T00:00:00.000Z`));
   }
 
   private healthLabel(status: ProjectHealthStatus): string {

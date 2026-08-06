@@ -88,9 +88,20 @@ describe("StatsService member performance", () => {
     expect(stats.performancePerMember[0]).toMatchObject({
       memberId: "member-1",
       months: [
-        { month: "2026-07", averageHours: 0.8 }
+        {
+          month: "2026-07",
+          averageHours: 0.8,
+          weeks: [
+            { week: "2026-06-29", averageHours: 0 },
+            { week: "2026-07-06", averageHours: 0 },
+            { week: "2026-07-13", averageHours: 4 },
+            { week: "2026-07-20", averageHours: 0 },
+            { week: "2026-07-27", averageHours: 0 }
+          ]
+        }
       ],
       averageHoursPerMonth: 0.8,
+      averageHoursPerTask: 0,
     });
     expect(stats.performancePerMember[0].user.affiliationId)
       .toBe("affiliation-1");
@@ -195,7 +206,15 @@ describe("StatsService member performance", () => {
       startedTasks: 1,
       reviewTasks: 0,
       spentMinutes: 180,
-      spentHours: 3
+      spentHours: 3,
+      averageHoursPerTask: 1.5,
+      weeks: [
+        { week: "2026-06-29", averageHours: 2 },
+        { week: "2026-07-06", averageHours: 0 },
+        { week: "2026-07-13", averageHours: 1 },
+        { week: "2026-07-20", averageHours: 0 },
+        { week: "2026-07-27", averageHours: 0 }
+      ]
     });
   });
 });

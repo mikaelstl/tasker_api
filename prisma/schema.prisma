@@ -292,7 +292,6 @@ model ProjectStatsPeriodSnapshot {
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
-  @@unique([projectkey, period_type, period_start, cutoff_at])
   @@index([projectkey, period_type, period_start, period_end])
   @@map("project_stats_period_snapshots")
 }

@@ -9,6 +9,7 @@ import { InviteUnavailableException } from 'src/common/errors/invite-unavailable
 import { ConflictException } from 'src/common/errors/conflict.exception';
 import { InternalException } from 'src/common/errors/internal.exception';
 import { OrganizationInviteService } from './organization-invite.service';
+import { describe } from 'node:test';
 
 const SECRET = 'organization-invite-test-secret';
 
@@ -60,6 +61,11 @@ describe('OrganizationInviteService', () => {
     );
     expect(repository.create.mock.calls[0][1]).not.toBe(result.token);
     expect(result).not.toHaveProperty('url');
+
+    const expiresInSeconds =
+      (result.expiresAt.getTime() - Date.now()) / 1000;
+    expect(expiresInSeconds).toBeGreaterThanOrEqual(24 * 60 * 60 - 1);
+    expect(expiresInSeconds).toBeLessThanOrEqual(24 * 60 * 60);
   });
 
   it('gera tokens distintos para convites criados no mesmo segundo', async () => {
