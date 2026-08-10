@@ -68,6 +68,9 @@ password: Senha@01
 
 Esta API utiliza de tokens JWT para autenticação dentro do sistema. para garantir a segurança dos dados.
 
+Todos os endpoints da API utilizam o prefixo de versão `/api/v1`. Por exemplo, o
+endpoint de status está disponível em `GET /api/v1/status`.
+
 ### Fluxo
 
 Para obter o token JWT, é necessário seguir os seguintes passos.

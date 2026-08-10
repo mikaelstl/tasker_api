@@ -9,6 +9,7 @@ import {
 } from "generated/prisma";
 import { PrismaService } from "src/database/prisma.service";
 import { AuditLogService } from '@modules/audit-log/audit-log.service';
+import { DateTime } from 'luxon';
 
 @Injectable()
 export class DeadlinesService {
@@ -23,7 +24,7 @@ export class DeadlinesService {
     name: "mark-overdue-entities",
     waitForCompletion: true
   })
-  async markOverdueEntities(now = new Date()): Promise<{
+  async markOverdueEntities(now = DateTime.now().toJSDate()): Promise<{
     projects: number;
     tasks: number;
   }> {

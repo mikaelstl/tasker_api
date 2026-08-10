@@ -8,6 +8,7 @@ import { InternalException } from 'src/common/errors/internal.exception';
 import { InviteUnavailableException } from 'src/common/errors/invite-unavailable.exception';
 import { ORGANIZATION_INVITE_SECRET } from 'src/config/env.config';
 import { OrganizationInviteRepository } from './organization-invite.repository';
+import { DateTime } from 'luxon';
 
 type OrganizationInviteTokenPayload = {
   orgkey: string;
@@ -22,8 +23,9 @@ export class OrganizationInviteService {
 
   async create(orgkey: string, username: string) {
     void username;
-    const exp = Math.floor(Date.now() / 1000) + INVITE_LIFETIME_SECONDS;
-    const expiresAt = new Date(exp * 1000);
+    const expiresAtDateTime = DateTime.now().plus({ seconds: INVITE_LIFETIME_SECONDS });
+    const exp = Math.floor(expiresAtDateTime.toSeconds());
+    const expiresAt = expiresAtDateTime.toJSDate();
     const secret = this.getSecret();
     let token: string;
 
@@ -93,8 +95,8 @@ export class OrganizationInviteService {
       );
     }
 
-    const now = new Date();
-    const payloadExpiresAt = new Date(payload.exp * 1000);
+    const now = DateTime.now().toJSDate();
+    const payloadExpiresAt = DateTime.fromSeconds(payload.exp).toJSDate();
 
     if (!this.isAvailable(invite, payload.orgkey, payloadExpiresAt, now)) {
       return this.unavailablePreview();
@@ -110,8 +112,8 @@ export class OrganizationInviteService {
   async accept(token: string, username: string) {
     const payload = this.verifyOrUnavailable(token);
     const tokenHash = this.hash(token);
-    const expiresAt = new Date(payload.exp * 1000);
-    const now = new Date();
+    const expiresAt = DateTime.fromSeconds(payload.exp).toJSDate();
+    const now = DateTime.now().toJSDate();
 
     try {
       return await this.repository.transaction(async (repository) => {
@@ -157,8 +159,8 @@ export class OrganizationInviteService {
   async reject(token: string, username: string) {
     const payload = this.verifyOrUnavailable(token);
     const tokenHash = this.hash(token);
-    const expiresAt = new Date(payload.exp * 1000);
-    const now = new Date();
+    const expiresAt = DateTime.fromSeconds(payload.exp).toJSDate();
+    const now = DateTime.now().toJSDate();
 
     try {
       return await this.repository.transaction(async (repository) => {
@@ -190,7 +192,7 @@ export class OrganizationInviteService {
   }
 
   async revoke(inviteId: string, orgkey: string) {
-    const now = new Date();
+    const now = DateTime.now().toJSDate();
 
     try {
       const revoked = await this.repository.revoke(inviteId, orgkey, now);
@@ -282,7 +284,7 @@ export class OrganizationInviteService {
     return Boolean(
       invite &&
         invite.orgkey === orgkey &&
-        invite.expiresAt.getTime() === expiresAt.getTime() &&
+        DateTime.fromJSDate(invite.expiresAt).toMillis() === DateTime.fromJSDate(expiresAt).toMillis() &&
         invite.expiresAt > now &&
         !invite.usedAt &&
         !invite.rejectedAt &&

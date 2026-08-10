@@ -42,12 +42,12 @@ import {
 } from 'src/common/errors/task-business.exceptions';
 import { AuditLogService } from '@modules/audit-log/audit-log.service';
 import { AuditContext } from '@interfaces/AuditContext';
+import { DateTime } from 'luxon';
 
 const DAY_IN_MS = 24 * 60 * 60 * 1000;
 const MINUTE_IN_MS = 60 * 1000;
 const STARTED_STAGES: TaskStage[] = [
-  TaskStage.STARTED,
-  TaskStage.PENDING,
+  TaskStage.STARTED
 ];
 
 type StatsTaskDetails = {
@@ -169,7 +169,7 @@ export class StatsService {
       throw new TaskNotStartedException();
     }
 
-    const loggedAt = input.loggedAt ?? task.done_at ?? new Date();
+    const loggedAt = input.loggedAt ?? task.done_at ?? DateTime.now().toJSDate();
     this.assertValidDate(loggedAt, "loggedAt");
 
     const endAt = task.done_at ?? loggedAt;
@@ -455,7 +455,7 @@ export class StatsService {
         code: task.code,
         name: task.name,
         stage: task.stage,
-        delayed: this.isTaskDelayed(task, periodEnd),
+        delayed: this.isTaskDelayed(task),
         spentMinutes: loggedMinutes > 0
           ? loggedMinutes
           : lifecycleMinutes,
@@ -481,11 +481,10 @@ export class StatsService {
     }>();
 
     for (const month of this.listMonths(period.start, period.end)) {
-      const monthEnd = new Date(Date.UTC(
-        month.getUTCFullYear(),
-        month.getUTCMonth() + 1,
-        1
-      ));
+      const monthEnd = DateTime.fromJSDate(month, { zone: 'utc' })
+        .plus({ months: 1 })
+        .startOf('month')
+        .toJSDate();
       months.set(this.monthKey(month), {
         minutes: 0,
         weeks: Math.max(
@@ -515,12 +514,11 @@ export class StatsService {
       month,
       averageHours: this.round(value.minutes / 60 / value.weeks),
       weeks: this.listWeeks(
-        new Date(`${month}-01T00:00:00.000Z`),
-        new Date(Date.UTC(
-          Number(month.slice(0, 4)),
-          Number(month.slice(5, 7)),
-          1
-        ))
+        DateTime.fromFormat(`${month}-01`, 'yyyy-MM-dd', { zone: 'utc' }).toJSDate(),
+        DateTime.fromFormat(month, 'yyyy-MM', { zone: 'utc' })
+          .plus({ months: 1 })
+          .startOf('month')
+          .toJSDate()
       ).map((week) => {
         const weekKey = this.weekKey(week);
         return {
@@ -575,15 +573,17 @@ export class StatsService {
     }
 
     const openTasks = data.totalTasks - data.doneTasks;
-    const overdue = data.deadline.getTime() < referenceAt.getTime()
+    const deadline = DateTime.fromJSDate(data.deadline);
+    const reference = DateTime.fromJSDate(referenceAt);
+    const started = DateTime.fromJSDate(data.startedAt ?? referenceAt);
+    const overdue = deadline.toMillis() < reference.toMillis()
       && openTasks > 0;
-    const startedAt = data.startedAt ?? referenceAt;
     const totalDuration = Math.max(
-      data.deadline.getTime() - startedAt.getTime(),
+      deadline.diff(started).toMillis(),
       DAY_IN_MS
     );
     const elapsed = Math.max(
-      referenceAt.getTime() - startedAt.getTime(),
+      reference.diff(started).toMillis(),
       0
     );
     const expectedProgress = Math.min(
@@ -605,13 +605,10 @@ export class StatsService {
     const elapsedDays = Math.max(elapsed / DAY_IN_MS, 1);
     const completedPerDay = data.doneTasks / elapsedDays;
     const projectedDeliveryAt = completedPerDay > 0
-      ? new Date(
-        referenceAt.getTime()
-        + (openTasks / completedPerDay) * DAY_IN_MS
-      )
+      ? reference.plus({ milliseconds: (openTasks / completedPerDay) * DAY_IN_MS }).toJSDate()
       : null;
     const projectedLate = projectedDeliveryAt
-      ? projectedDeliveryAt.getTime() > data.deadline.getTime()
+      ? DateTime.fromJSDate(projectedDeliveryAt).toMillis() > deadline.toMillis()
       : openTasks > 0 && elapsed > 0;
 
     if (overdue || score < 40) {
@@ -643,25 +640,27 @@ export class StatsService {
   }
 
   private resolveMonth(month?: string | Date): StatsPeriod {
-    const now = new Date();
-    const currentMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+    const currentMonth = DateTime.now().toUTC().startOf('month');
+
     const value = month instanceof Date
       ? this.monthKey(month)
-      : month ?? this.monthKey(currentMonth);
+      : month ?? currentMonth.toFormat('yyyy-MM');
 
     if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(value)) {
       throw new ValidationException('month deve estar no formato YYYY-MM.');
     }
 
     const [year, monthNumber] = value.split('-').map(Number);
-    const start = new Date(Date.UTC(year, monthNumber - 1, 1));
-    if (start.getTime() > currentMonth.getTime()) {
+
+    const start = DateTime.utc(year, monthNumber, 1).startOf('month');
+
+    if (start.toMillis() > currentMonth.toMillis()) {
       throw new InvalidPeriodTime();
     }
 
     return {
-      start,
-      end: new Date(Date.UTC(year, monthNumber, 1))
+      start: start.toJSDate(),
+      end: start.plus({ months: 1 }).toJSDate()
     };
   }
 
@@ -669,7 +668,7 @@ export class StatsService {
     period: StatsPeriod,
     projectCreatedAt: Date
   ): void {
-    if (period.end.getTime() <= projectCreatedAt.getTime()) {
+    if (DateTime.fromJSDate(period.end).toMillis() <= DateTime.fromJSDate(projectCreatedAt).toMillis()) {
       throw new InvalidPeriodTime();
     }
   }
@@ -683,13 +682,13 @@ export class StatsService {
       return 0;
     }
 
-    const end = task.done_at && task.done_at.getTime() < periodEnd.getTime()
+    const end = task.done_at && DateTime.fromJSDate(task.done_at).toMillis() < DateTime.fromJSDate(periodEnd).toMillis()
       ? task.done_at
       : periodEnd;
-    const start = period && task.started_at.getTime() < period.start.getTime()
+    const start = period && DateTime.fromJSDate(task.started_at).toMillis() < DateTime.fromJSDate(period.start).toMillis()
       ? period.start
       : task.started_at;
-    const limitedEnd = period && end.getTime() > period.end.getTime()
+    const limitedEnd = period && DateTime.fromJSDate(end).toMillis() > DateTime.fromJSDate(period.end).toMillis()
       ? period.end
       : end;
 
@@ -698,22 +697,13 @@ export class StatsService {
 
   private elapsedMinutes(start: Date, end: Date): number {
     return Math.max(
-      Math.floor((end.getTime() - start.getTime()) / MINUTE_IN_MS),
+      Math.floor(DateTime.fromJSDate(end).diff(DateTime.fromJSDate(start)).as('minutes')),
       0
     );
   }
 
-  private isTaskDelayed(task: StatsTaskRecord, referenceAt: Date): boolean {
-    return task.delayed
-      || (
-        task.stage !== TaskStage.DONE
-        && task.deadline.getTime() < referenceAt.getTime()
-      )
-      || (
-        task.stage === TaskStage.DONE
-        && task.done_at !== null
-        && task.done_at.getTime() > task.deadline.getTime()
-      );
+  private isTaskDelayed(task: StatsTaskRecord): boolean {
+    return task.delayed;
   }
 
   private sumLogsBy(
@@ -753,9 +743,14 @@ export class StatsService {
         logged_at: "asc"
       }
     );
+
     const tasks = project.tasks as StatsTaskRecord[];
+
+    console.log(tasks);
+    
+
     const delayedTasks = tasks.filter((task) =>
-      this.isTaskDelayed(task, period.end)
+      this.isTaskDelayed(task)
     );
     const doneTasks = tasks.filter((task) =>
       task.stage === TaskStage.DONE
@@ -817,7 +812,7 @@ export class StatsService {
 
     return {
       stats: {
-        generatedAt: new Date(),
+        generatedAt: DateTime.now().toJSDate(),
         month: this.monthKey(period.start),
         period,
         project: {
@@ -833,10 +828,10 @@ export class StatsService {
             project.delayed
           ) || (
             project.done_at === null
-            && project.deadline.getTime() < period.end.getTime()
+            && DateTime.fromJSDate(project.deadline).toMillis() < DateTime.fromJSDate(period.end).toMillis()
           ) || (
             project.done_at !== null
-            && project.done_at.getTime() > project.deadline.getTime()
+            && DateTime.fromJSDate(project.done_at).toMillis() > DateTime.fromJSDate(project.deadline).toMillis()
           )
         },
         summary: {
@@ -850,7 +845,7 @@ export class StatsService {
         },
         deadline: {
           dueDate: project.deadline,
-          daysLeft: this.daysBetween(period.end, project.deadline)
+          daysLeft: this.daysBetween(DateTime.now().toJSDate(), project.deadline)
         },
         health,
         performancePerMember: memberStats.map((member) =>
@@ -880,19 +875,11 @@ export class StatsService {
 
   private listMonths(start: Date, end: Date): Date[] {
     const months: Date[] = [];
-    let cursor = new Date(Date.UTC(
-      start.getUTCFullYear(),
-      start.getUTCMonth(),
-      1
-    ));
+    let cursor = DateTime.fromJSDate(start, { zone: 'utc' }).startOf('month');
 
-    while (cursor.getTime() < end.getTime()) {
-      months.push(cursor);
-      cursor = new Date(Date.UTC(
-        cursor.getUTCFullYear(),
-        cursor.getUTCMonth() + 1,
-        1
-      ));
+    while (cursor.toMillis() < DateTime.fromJSDate(end).toMillis()) {
+      months.push(cursor.toJSDate());
+      cursor = cursor.plus({ months: 1 });
     }
 
     return months;
@@ -900,34 +887,29 @@ export class StatsService {
 
   private listWeeks(start: Date, end: Date): Date[] {
     const weeks: Date[] = [];
-    let cursor = this.startOfIsoWeek(start);
+    let cursor = DateTime.fromJSDate(this.startOfIsoWeek(start), { zone: 'utc' });
 
-    while (cursor.getTime() < end.getTime()) {
-      weeks.push(cursor);
-      cursor = new Date(cursor.getTime() + 7 * DAY_IN_MS);
+    while (cursor.toMillis() < DateTime.fromJSDate(end).toMillis()) {
+      weeks.push(cursor.toJSDate());
+      cursor = cursor.plus({ weeks: 1 });
     }
 
     return weeks;
   }
 
   private startOfIsoWeek(date: Date): Date {
-    const day = date.getUTCDay();
-    const daysSinceMonday = (day + 6) % 7;
-    return new Date(Date.UTC(
-      date.getUTCFullYear(),
-      date.getUTCMonth(),
-      date.getUTCDate() - daysSinceMonday
-    ));
+    return DateTime.fromJSDate(date, { zone: 'utc' })
+      .startOf('day')
+      .startOf('week')
+      .toJSDate();
   }
 
   private monthKey(date: Date): string {
-    return `${date.getUTCFullYear()}-${String(
-      date.getUTCMonth() + 1
-    ).padStart(2, "0")}`;
+    return DateTime.fromJSDate(date, { zone: 'utc' }).toFormat('yyyy-MM');
   }
 
   private weekKey(date: Date): string {
-    return date.toISOString().slice(0, 10);
+    return DateTime.fromJSDate(date, { zone: 'utc' }).toFormat('yyyy-MM-dd');
   }
 
   private isInsidePeriod(value: Date | null, period: StatsPeriod): boolean {
@@ -935,12 +917,13 @@ export class StatsService {
       return false;
     }
 
-    return value.getTime() >= period.start.getTime()
-      && value.getTime() < period.end.getTime();
+    const timestamp = DateTime.fromJSDate(value).toMillis();
+    return timestamp >= DateTime.fromJSDate(period.start).toMillis()
+      && timestamp < DateTime.fromJSDate(period.end).toMillis();
   }
 
   private assertValidDate(value: Date, field: string): void {
-    if (!(value instanceof Date) || Number.isNaN(value.getTime())) {
+    if (!(value instanceof Date) || !DateTime.fromJSDate(value).isValid) {
       throw new ValidationException(`${field} deve ser uma data válida.`);
     }
   }
@@ -954,7 +937,7 @@ export class StatsService {
   }
 
   private daysBetween(start: Date, end: Date): number {
-    const difference = (end.getTime() - start.getTime()) / DAY_IN_MS;
+    const difference = DateTime.fromJSDate(end).diff(DateTime.fromJSDate(start), 'days').days;
     return difference >= 0
       ? Math.ceil(difference)
       : Math.floor(difference);
@@ -972,7 +955,7 @@ export class StatsService {
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-|-$/g, "")
       .slice(0, 60) || "projeto";
-    const date = monthStart.toISOString().slice(0, 7);
+    const date = DateTime.fromJSDate(monthStart, { zone: 'utc' }).toFormat('yyyy-MM');
 
     return `relatorio-desempenho-${slug}-${date}.pdf`;
   }

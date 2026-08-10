@@ -13,6 +13,7 @@ import { PrismaService } from 'src/database/prisma.service';
 import { ValidationException } from 'src/common/errors/validation.exception';
 import { AuditContext } from 'src/common/interfaces/AuditContext';
 import { FindAuditLogsQuery } from './dto/find-audit-logs.query';
+import { DateTime } from 'luxon';
 
 type AuditedRecord = Record<string, unknown>;
 
@@ -57,8 +58,8 @@ export class AuditLogService {
       resourcekey,
       created_at: startDate || endDate
         ? {
-            gte: startDate ? new Date(startDate) : undefined,
-            lte: endDate ? new Date(endDate) : undefined,
+            gte: startDate ? DateTime.fromISO(startDate).toJSDate() : undefined,
+            lte: endDate ? DateTime.fromISO(endDate).toJSDate() : undefined,
           }
         : undefined,
     };
@@ -200,7 +201,7 @@ export class AuditLogService {
     if (value === null || ['string', 'number', 'boolean'].includes(typeof value)) {
       return value as string | number | boolean | null;
     }
-    if (value instanceof Date) return value.toISOString();
+    if (value instanceof Date) return DateTime.fromJSDate(value).toUTC().toISO();
     if (Array.isArray(value)) {
       return value.map((item) => this.toJsonValue(item));
     }

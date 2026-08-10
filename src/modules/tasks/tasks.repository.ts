@@ -8,6 +8,7 @@ import { InternalException } from 'src/common/errors/internal.exception';
 import { TaskNotFoundException } from 'src/common/errors/resource-not-found.exceptions';
 import { TaskCodeGenerationConflictException } from 'src/common/errors/task-business.exceptions';
 import { EditTaskDTO } from './dto/edit.dto';
+import { DateTime } from 'luxon';
 
 @Injectable()
 export class TasksRepository {
@@ -45,16 +46,30 @@ export class TasksRepository {
   async create(data: TaskCreateDTO): Promise<TaskDTO> {
     for (let attempt = 0; attempt < this.maxCodeGenerationAttempts; attempt += 1) {
       try {
-        const task = await this.prisma.task.create({
-          data: {
-            code: await this.generateCode(data.project),
-            name: data.name,
-            description: data.description,
-            projectkey: data.project,
-            ownerkey: data.owner,
-            priority: data.priority,
-            deadline: data.deadline
-          }
+        const task = await this.prisma.$transaction(async (transaction) => {
+          const task = await transaction.task.create({
+            data: {
+              code: await this.generateCode(data.project),
+              name: data.name,
+              description: data.description,
+              projectkey: data.project,
+              ownerkey: data.owner,
+              priority: data.priority,
+              deadline: data.deadline
+            }
+          });
+
+          await transaction.project.updateMany({
+            where: {
+              id: data.project,
+              started_at: null
+            },
+            data: {
+              started_at: task.created_at
+            }
+          });
+
+          return task;
         });
 
         return task;
@@ -161,7 +176,7 @@ export class TasksRepository {
     }
 
     const deadline = update.deadline
-      ? new Date(update.deadline)
+      ? DateTime.fromJSDate(update.deadline).toJSDate()
       : current.deadline;
     const stage = update.stage ?? current.stage;
     const stageChanged = update.stage !== undefined
@@ -170,15 +185,15 @@ export class TasksRepository {
       && current.stage === TaskStage.PENDING
       && update.stage === TaskStage.STARTED;
     const becameDone = stageChanged && update.stage === TaskStage.DONE;
-    const stageChangedAt = new Date();
+    const stageChangedAt = DateTime.now().toJSDate();
 
-    const becameDelayed = deadline.getTime() < Date.now()
+    const becameDelayed = DateTime.fromJSDate(deadline).toMillis() < DateTime.now().toMillis()
       && (
         stage !== TaskStage.DONE
         || current.stage !== TaskStage.DONE
         || (
           current.done_at !== null
-          && current.done_at.getTime() > deadline.getTime()
+          && DateTime.fromJSDate(current.done_at).toMillis() > DateTime.fromJSDate(deadline).toMillis()
         )
       );
 
@@ -193,7 +208,7 @@ export class TasksRepository {
         delayed: current.delayed || becameDelayed,
         started_at: becameStarted
           ? stageChangedAt
-          : becameDone && (!current.started_at || current.started_at.getTime() === 0)
+          : becameDone && (!current.started_at || DateTime.fromJSDate(current.started_at).toMillis() === 0)
             ? stageChangedAt
             : undefined,
         done_at: becameDone ? stageChangedAt : undefined,

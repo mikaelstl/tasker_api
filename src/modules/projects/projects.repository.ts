@@ -5,6 +5,7 @@ import { EditProjectDTO } from "@modules/projects/dto/edit.dto";
 import { CreateProjectDTO } from "@modules/projects/dto/project.create.dto";
 import { ProjectDTO, ProjectStage } from "@modules/projects/dto/project.dto";
 import { ProjectQueryDTO } from "@modules/projects/dto/project.query.dto";
+import { DateTime } from "luxon";
 
 @Injectable()
 export class ProjectRepository {
@@ -150,13 +151,13 @@ export class ProjectRepository {
 
     const deadline = update.deadline ?? current.deadline;
     const stage = update.stage ?? current.stage;
-    const becameDelayed = new Date(deadline).getTime() < Date.now()
+    const becameDelayed = DateTime.fromJSDate(deadline).toMillis() < DateTime.now().toMillis()
       && (
         stage !== ProjectStage.COMPLETED
         || current.stage !== ProjectStage.COMPLETED
         || (
           current.done_at !== null
-          && current.done_at.getTime() > deadline.getTime()
+          && DateTime.fromJSDate(current.done_at).toMillis() > DateTime.fromJSDate(deadline).toMillis()
         )
       );
 

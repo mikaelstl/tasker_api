@@ -3,6 +3,7 @@ import PDFDocument = require("pdfkit");
 import { join } from "node:path";
 import { ProjectHealthStatus, TaskStage } from "generated/prisma";
 import { ProjectStats, StatsPeriod } from "./stats.types";
+import { DateTime } from 'luxon';
 
 type ReportSource = {
   reportId: string;
@@ -563,7 +564,7 @@ export class ProjectStatsReportDocument {
       .fontSize(6.5)
       .fillColor(COLORS.muted)
       .text(
-        `Rastreabilidade: month=${stats.month} • generatedAt=${stats.generatedAt.toISOString()} • reportId=${source.reportId}`,
+        `Rastreabilidade: month=${stats.month} • generatedAt=${DateTime.fromJSDate(stats.generatedAt).toUTC().toISO()} • reportId=${source.reportId}`,
         MARGIN,
         750,
         { width: CONTENT_WIDTH }
@@ -923,8 +924,8 @@ export class ProjectStatsReportDocument {
   }
 
   private periodLabel(snapshot: any): string {
-    const start = new Date(snapshot.period_start);
-    const end = new Date(snapshot.period_end);
+    const start = DateTime.fromISO(snapshot.period_start).toJSDate();
+    const end = DateTime.fromISO(snapshot.period_end).toJSDate();
     return `${this.date(start)} a ${this.date(end)}`;
   }
 
@@ -938,18 +939,14 @@ export class ProjectStatsReportDocument {
       return "Não informado";
     }
 
-    const date = value instanceof Date ? value : new Date(value);
-    return new Intl.DateTimeFormat("pt-BR", {
-      timeZone: "UTC"
-    }).format(date);
+    const date = value instanceof Date
+      ? DateTime.fromJSDate(value, { zone: 'utc' })
+      : DateTime.fromISO(value, { zone: 'utc' });
+    return date.toFormat('dd/LL/yyyy');
   }
 
   private dateTime(value: Date): string {
-    return new Intl.DateTimeFormat("pt-BR", {
-      dateStyle: "short",
-      timeStyle: "short",
-      timeZone: "UTC"
-    }).format(value);
+    return DateTime.fromJSDate(value, { zone: 'utc' }).toFormat('dd/LL/yy HH:mm');
   }
 
   private duration(minutes: number): string {
@@ -958,11 +955,7 @@ export class ProjectStatsReportDocument {
   }
 
   private weekLabel(value: string): string {
-    return new Intl.DateTimeFormat("pt-BR", {
-      day: "2-digit",
-      month: "2-digit",
-      timeZone: "UTC"
-    }).format(new Date(`${value}T00:00:00.000Z`));
+    return DateTime.fromISO(value, { zone: 'utc' }).toFormat('dd/LL');
   }
 
   private healthLabel(status: ProjectHealthStatus): string {
