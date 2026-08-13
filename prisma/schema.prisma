@@ -127,7 +127,7 @@ model Project {
   id          String    @id @default(cuid())
   title       String
   description String
-  deadline    DateTime  @map("due_date")
+  deadline    DateTime
   started_at  DateTime?
   done_at     DateTime?
   delayed     Boolean   @default(false)
@@ -182,7 +182,7 @@ model Task {
 
   name        String
   description String
-  deadline    DateTime  @map("due_date")
+  deadline    DateTime
   started_at  DateTime?
   done_at     DateTime?
   delayed     Boolean   @default(false)

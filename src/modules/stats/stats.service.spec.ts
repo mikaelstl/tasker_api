@@ -198,22 +198,25 @@ describe("StatsService member performance", () => {
     });
     expect(performance.members[0]).toMatchObject({
       memberId: "member-1",
-      totalTasks: 2,
-      completedTasks: 1,
-      completionRate: 50,
-      delayedTasks: 0,
-      delayRate: 0,
+      pendingTasks: 0,
       startedTasks: 1,
-      reviewTasks: 0,
-      spentMinutes: 180,
-      spentHours: 3,
-      averageHoursPerTask: 1.5,
-      weeks: [
-        { week: "2026-06-29", averageHours: 2 },
-        { week: "2026-07-06", averageHours: 0 },
-        { week: "2026-07-13", averageHours: 1 },
-        { week: "2026-07-20", averageHours: 0 },
-        { week: "2026-07-27", averageHours: 0 }
+      completedTasks: 1,
+      delayedTasks: 0,
+      tasks: [
+        {
+          code: "TSK-001",
+          name: "Concluída",
+          stage: TaskStage.DONE,
+          delayed: false,
+          deadline: new Date("2026-07-10T00:00:00.000Z")
+        },
+        {
+          code: "TSK-002",
+          name: "Atrasada",
+          stage: TaskStage.STARTED,
+          delayed: false,
+          deadline: new Date("2026-07-10T00:00:00.000Z")
+        }
       ]
     });
   });

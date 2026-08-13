@@ -36,15 +36,6 @@ const COLORS = {
   red: "#d64545",
   white: "#ffffff"
 };
-const SERIES_COLORS = [
-  "#3166e8",
-  "#27b4c4",
-  "#8b5cf6",
-  "#e8793e",
-  "#22a06b",
-  "#d64545"
-];
-
 @Injectable()
 export class ProjectStatsReportDocument {
   async generate(source: ReportSource): Promise<Buffer> {
@@ -291,46 +282,30 @@ export class ProjectStatsReportDocument {
     this.sectionPage(
       document,
       "3. Desempenho dos membros",
-      "Média de horas, produtividade e situação das tarefas atribuídas."
+      "Relação entre membros e tarefas: pendentes, iniciadas, concluídas e atrasadas."
     );
-    this.label(
-      document,
-      "PERFORMANCE POR MEMBRO — MÉDIA DE HORAS POR SEMANA",
-      MARGIN,
-      126
-    );
-    this.lineChart(document, 155, stats);
     this.label(
       document,
       "PRODUTIVIDADE — TAREFAS CONCLUÍDAS X ATRASADAS",
       MARGIN,
-      405
+      126
     );
-    this.productivityChart(document, 434, stats);
-    this.label(document, "RESUMO POR MEMBRO", MARGIN, 590);
+    this.productivityChart(document, 156, stats);
+    this.label(document, "RESUMO POR MEMBRO", MARGIN, 330);
 
-    const productivity = new Map(
-      stats.productivity.map((item) => [item.memberId, item])
-    );
     const rows = stats.members.slice(0, 5).map((member) => [
       member.user.name,
-      String(member.completedTasks),
+      String(member.tasks.filter((task) => task.stage === TaskStage.PENDING).length),
       String(member.startedTasks),
-      String(member.reviewTasks),
-      String(member.delayedTasks),
-      `${stats.performancePerMember.find(
-        (item) => item.memberId === member.memberId
-      )?.averageHoursPerMonth ?? 0} h`,
-      String(productivity.get(member.memberId)?.ratio ?? 0)
+      String(member.completedTasks),
+      String(member.delayedTasks)
     ]);
-    this.table(document, 616, [
-      { label: "Membro", width: 139 },
-      { label: "Concl.", width: 54, align: "center" },
-      { label: "Inic.", width: 49, align: "center" },
-      { label: "Rev.", width: 45, align: "center" },
-      { label: "Atras.", width: 53, align: "center" },
-      { label: "Média/mês", width: 86, align: "right" },
-      { label: "Índice", width: 85, align: "right" }
+    this.table(document, 358, [
+      { label: "Membro", width: 191 },
+      { label: "Pendentes", width: 80, align: "center" },
+      { label: "Iniciadas", width: 80, align: "center" },
+      { label: "Concluídas", width: 80, align: "center" },
+      { label: "Atrasadas", width: 80.28, align: "center" }
     ], rows, 24, 7);
   }
 
@@ -342,7 +317,7 @@ export class ProjectStatsReportDocument {
     this.sectionPage(
       document,
       "4. Relação de tarefas por membro",
-      "Detalhamento das tarefas, estágio atual, tempo gasto e prazo."
+      "Detalhamento das tarefas, estágio atual e prazo."
     );
     let y = 128;
 
@@ -376,16 +351,14 @@ export class ProjectStatsReportDocument {
           task.code,
           task.name,
           this.taskStatus(task.stage, task.delayed),
-          this.duration(task.spentMinutes),
           this.date(task.deadline)
         ])
-        : [["—", "Nenhuma tarefa atribuída", "—", "0h 00min", "—"]];
+        : [["—", "Nenhuma tarefa atribuída", "—", "—"]];
       this.table(document, y, [
         { label: "Código", width: 70 },
-        { label: "Tarefa", width: 224 },
+        { label: "Tarefa", width: 298 },
         { label: "Status", width: 86 },
-        { label: "Tempo", width: 74, align: "right" },
-        { label: "Prazo", width: 57, align: "right" }
+        { label: "Prazo", width: 57.28, align: "right" }
       ], rows, 26, 7);
       y += 26 + (rows.length * 26) + 6;
 
@@ -404,19 +377,6 @@ export class ProjectStatsReportDocument {
       }
 
       y += 9;
-    }
-
-    if (y < 730) {
-      document
-        .font("Poppins")
-        .fontSize(7)
-        .fillColor(COLORS.muted)
-        .text(
-          "O tempo gasto prioriza apontamentos persistidos. Na ausência de logs, utiliza-se o ciclo entre início e conclusão/corte.",
-          MARGIN,
-          y + 4,
-          { width: CONTENT_WIDTH }
-        );
     }
   }
 
@@ -654,97 +614,6 @@ export class ProjectStatsReportDocument {
     });
   }
 
-  private lineChart(
-    document: PDFKit.PDFDocument,
-    y: number,
-    stats: ProjectStats
-  ): void {
-    const chart = { x: MARGIN + 34, y, width: CONTENT_WIDTH - 45, height: 185 };
-    const weeks = Array.from(new Set(
-      stats.performancePerMember.flatMap((member) =>
-        member.months.flatMap((month) =>
-          (month.weeks ?? []).map((week) => week.week)
-        )
-      )
-    )).sort();
-    const allValues = stats.performancePerMember.flatMap((member) =>
-      member.months.flatMap((month) =>
-        (month.weeks ?? []).map((week) => week.averageHours)
-      )
-    );
-    const max = Math.max(5, ...allValues);
-
-    for (let index = 0; index <= 4; index += 1) {
-      const rowY = chart.y + ((chart.height / 4) * index);
-      const value = this.round(max - ((max / 4) * index));
-      document
-        .moveTo(chart.x, rowY)
-        .lineTo(chart.x + chart.width, rowY)
-        .strokeColor(COLORS.line)
-        .stroke();
-      document
-        .font("Poppins")
-        .fontSize(6)
-        .fillColor(COLORS.muted)
-        .text(`${value}h`, MARGIN, rowY - 3, { width: 28, align: "right" });
-    }
-
-    const step = weeks.length > 1 ? chart.width / (weeks.length - 1) : 0;
-    weeks.forEach((week, index) => {
-      const x = chart.x + (weeks.length === 1 ? chart.width / 2 : step * index);
-      document
-        .font("Poppins")
-        .fontSize(6)
-        .fillColor(COLORS.muted)
-        .text(this.weekLabel(week), x - 30, chart.y + chart.height + 8, {
-          width: 60,
-          align: "center"
-        });
-    });
-
-    stats.performancePerMember.slice(0, 6).forEach((member, memberIndex) => {
-      const color = SERIES_COLORS[memberIndex];
-      const weeklyValues = new Map<string, number>();
-      member.months.forEach((month) => {
-        (month.weeks ?? []).forEach((week) => {
-          weeklyValues.set(
-            week.week,
-            (weeklyValues.get(week.week) ?? 0) + week.averageHours
-          );
-        });
-      });
-      const points = weeks.map((week, index) => ({
-        x: chart.x + (
-          weeks.length === 1
-            ? chart.width / 2
-            : step * index
-        ),
-        y: chart.y + chart.height - (
-          ((weeklyValues.get(week) ?? 0) / max) * chart.height
-        )
-      }));
-
-      points.forEach((point, index) => {
-        if (index === 0) {
-          document.moveTo(point.x, point.y);
-        } else {
-          document.lineTo(point.x, point.y);
-        }
-      });
-      document.lineWidth(1.6).strokeColor(color).stroke();
-      points.forEach((point) => document.circle(point.x, point.y, 2.5).fill(color));
-
-      const legendX = MARGIN + (memberIndex % 3) * 170;
-      const legendY = chart.y + chart.height + 29 + Math.floor(memberIndex / 3) * 13;
-      document.rect(legendX, legendY + 2, 7, 3).fill(color);
-      document
-        .font("Poppins")
-        .fontSize(6.5)
-        .fillColor(COLORS.ink)
-        .text(member.user.name, legendX + 12, legendY, { width: 150 });
-    });
-  }
-
   private productivityChart(
     document: PDFKit.PDFDocument,
     y: number,
@@ -924,9 +793,7 @@ export class ProjectStatsReportDocument {
   }
 
   private periodLabel(snapshot: any): string {
-    const start = DateTime.fromISO(snapshot.period_start).toJSDate();
-    const end = DateTime.fromISO(snapshot.period_end).toJSDate();
-    return `${this.date(start)} a ${this.date(end)}`;
+    return `${this.date(snapshot.period_start)} a ${this.date(snapshot.period_end)}`;
   }
 
   private jsonNumber(value: any, key: string): number {
@@ -947,15 +814,6 @@ export class ProjectStatsReportDocument {
 
   private dateTime(value: Date): string {
     return DateTime.fromJSDate(value, { zone: 'utc' }).toFormat('dd/LL/yy HH:mm');
-  }
-
-  private duration(minutes: number): string {
-    const hours = Math.floor(minutes / 60);
-    return `${hours}h ${String(minutes % 60).padStart(2, "0")}min`;
-  }
-
-  private weekLabel(value: string): string {
-    return DateTime.fromISO(value, { zone: 'utc' }).toFormat('dd/LL');
   }
 
   private healthLabel(status: ProjectHealthStatus): string {

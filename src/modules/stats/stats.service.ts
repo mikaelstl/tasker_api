@@ -47,7 +47,8 @@ import { DateTime } from 'luxon';
 const DAY_IN_MS = 24 * 60 * 60 * 1000;
 const MINUTE_IN_MS = 60 * 1000;
 const STARTED_STAGES: TaskStage[] = [
-  TaskStage.STARTED
+  TaskStage.STARTED,
+  TaskStage.REVIEW
 ];
 
 type StatsTaskDetails = {
@@ -96,12 +97,6 @@ export class StatsService {
     month?: string | Date
   ): Promise<ProjectMemberPerformance> {
     const stats = await this.getProjectStats(projectkey, month);
-    const performanceByMember = new Map(
-      stats.performancePerMember.map((performance) => [
-        performance.memberId,
-        performance
-      ])
-    );
 
     return {
       generatedAt: stats.generatedAt,
@@ -110,36 +105,17 @@ export class StatsService {
         id: stats.project.id,
         title: stats.project.title
       },
-      members: stats.members.map((member) => {
-        const performance = performanceByMember.get(member.memberId);
-        const totalTasks = member.tasks.length;
-        const spentMinutes = member.tasks.reduce(
-          (total, task) => total + task.spentMinutes,
-          0
-        );
-
-        return {
-          memberId: member.memberId,
-          user: member.user,
-          totalTasks,
-          completedTasks: member.completedTasks,
-          completionRate: totalTasks === 0
-            ? 0
-            : this.round((member.completedTasks / totalTasks) * 100),
-          delayedTasks: member.delayedTasks,
-          delayRate: totalTasks === 0
-            ? 0
-            : this.round((member.delayedTasks / totalTasks) * 100),
-          startedTasks: member.startedTasks,
-          reviewTasks: member.reviewTasks,
-          spentMinutes,
-          spentHours: this.round(spentMinutes / 60),
-          averageHoursPerMonth: performance?.averageHoursPerMonth ?? 0,
-          averageHoursPerTask: performance?.averageHoursPerTask ?? 0,
-          months: performance?.months ?? [],
-          weeks: performance?.months[0]?.weeks ?? []
-        };
-      })
+      members: stats.members.map((member) => ({
+        memberId: member.memberId,
+        user: member.user,
+        pendingTasks: member.tasks.filter((task) =>
+          task.stage === TaskStage.PENDING
+        ).length,
+        startedTasks: member.startedTasks,
+        completedTasks: member.completedTasks,
+        delayedTasks: member.delayedTasks,
+        tasks: member.tasks.map(({ spentMinutes, ...task }) => task)
+      }))
     };
   }
 

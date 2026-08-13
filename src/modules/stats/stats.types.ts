@@ -43,6 +43,8 @@ export type MemberProductivity = {
   ratio: number;
 };
 
+export type MemberPerformanceTask = Omit<StatsTask, "spentMinutes">;
+
 export type ProjectMemberPerformance = {
   generatedAt: Date;
   month: string;
@@ -53,19 +55,11 @@ export type ProjectMemberPerformance = {
   members: Array<{
     memberId: string;
     user: StatsUser;
-    totalTasks: number;
-    completedTasks: number;
-    completionRate: number;
-    delayedTasks: number;
-    delayRate: number;
+    pendingTasks: number;
     startedTasks: number;
-    reviewTasks: number;
-    spentMinutes: number;
-    spentHours: number;
-    averageHoursPerMonth: number;
-    averageHoursPerTask: number;
-    months: MemberPerformance["months"];
-    weeks: NonNullable<MemberPerformance["months"][number]["weeks"]>;
+    completedTasks: number;
+    delayedTasks: number;
+    tasks: MemberPerformanceTask[];
   }>;
 };
 

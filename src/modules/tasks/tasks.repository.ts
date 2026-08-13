@@ -187,7 +187,9 @@ export class TasksRepository {
     const becameDone = stageChanged && update.stage === TaskStage.DONE;
     const stageChangedAt = DateTime.now().toJSDate();
 
-    const becameDelayed = DateTime.fromJSDate(deadline).toMillis() < DateTime.now().toMillis()
+    const deadlineIsFuture = DateTime.fromJSDate(deadline).toMillis() > DateTime.now().toMillis();
+
+    const becameDelayed = !deadlineIsFuture
       && (
         stage !== TaskStage.DONE
         || current.stage !== TaskStage.DONE
@@ -205,7 +207,7 @@ export class TasksRepository {
         stage: update.stage,
         deadline: update.deadline,
         ownerkey: update.ownerkey,
-        delayed: current.delayed || becameDelayed,
+        delayed: deadlineIsFuture ? false : (current.delayed || becameDelayed),
         started_at: becameStarted
           ? stageChangedAt
           : becameDone && (!current.started_at || DateTime.fromJSDate(current.started_at).toMillis() === 0)

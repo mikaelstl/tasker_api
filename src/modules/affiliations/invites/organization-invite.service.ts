@@ -23,9 +23,10 @@ export class OrganizationInviteService {
 
   async create(orgkey: string, username: string) {
     void username;
-    const expiresAtDateTime = DateTime.now().plus({ seconds: INVITE_LIFETIME_SECONDS });
-    const exp = Math.floor(expiresAtDateTime.toSeconds());
-    const expiresAt = expiresAtDateTime.toJSDate();
+    const exp = Math.floor(
+      DateTime.now().plus({ seconds: INVITE_LIFETIME_SECONDS }).toSeconds(),
+    );
+    const expiresAt = DateTime.fromSeconds(exp).toJSDate();
     const secret = this.getSecret();
     let token: string;
 

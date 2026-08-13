@@ -268,52 +268,63 @@ const commentCatalog = [
   'Ponto de atenção registrado para capacidade e prazo de integração.',
 ] as const;
 
+// Os offsets abaixo são relativos a SEED_TODAY ("hoje" no momento do seed) e
+// foram calibrados para que `StatsService.calculateHealth` — que compara as
+// datas com o fim do mês corrente (`period.end`, de 1 a 31 dias à frente de
+// hoje, dependendo do dia em que o seed for executado) — sempre produza o
+// status configurado em `healthStatus`, não importa em que dia do mês o seed
+// rode:
+// - SAFE e WARNING usam `deadlineOffset` > 31 dias para nunca ficarem
+//   "overdue" (deadline no passado em relação a `period.end`).
+// - CRITICAL usa `deadlineOffset` negativo para estar sempre vencido.
+// - A proporção de tarefas com `delayed = true` controla o score de forma
+//   estável (independe da hora exata da consulta).
 const projectScenarios = [
   {
     healthStatus: ProjectHealthStatus.SAFE,
-    healthScore: 86,
+    healthScore: 97,
     stage: ProjectStage.IN_PROGRESS,
     priority: ProjectPriority.HIGH,
-    deadlineOffset: 45,
-    startedOffset: -60,
-    taskStages: [
-      TaskStage.DONE,
-      TaskStage.DONE,
-      TaskStage.DONE,
-      TaskStage.DONE,
-      TaskStage.STARTED,
-      TaskStage.PENDING,
-    ],
-    taskDeadlineOffsets: [-20, -18, -16, -14, 35, 40],
-  },
-  {
-    healthStatus: ProjectHealthStatus.WARNING,
-    healthScore: 62,
-    stage: ProjectStage.IN_PROGRESS,
-    priority: ProjectPriority.MEDIUM,
-    deadlineOffset: 42,
-    startedOffset: -5,
-    taskStages: [
-      TaskStage.DONE,
-      TaskStage.DONE,
-      TaskStage.DONE,
-      TaskStage.STARTED,
-      TaskStage.STARTED,
-      TaskStage.PENDING,
-      TaskStage.PENDING,
-      TaskStage.PENDING,
-    ],
-    taskDeadlineOffsets: [-25, -20, -15, 32, 35, 38, 40, 42],
-  },
-  {
-    healthStatus: ProjectHealthStatus.CRITICAL,
-    healthScore: 25,
-    stage: ProjectStage.PAUSED,
-    priority: ProjectPriority.EXTREME,
-    deadlineOffset: 8,
+    deadlineOffset: 50,
     startedOffset: -30,
     taskStages: [
       TaskStage.DONE,
+      TaskStage.DONE,
+      TaskStage.DONE,
+      TaskStage.DONE,
+      TaskStage.DONE,
+      TaskStage.STARTED,
+    ],
+    taskDeadlineOffsets: [-20, -18, -16, -14, -10, 40],
+  },
+  {
+    healthStatus: ProjectHealthStatus.WARNING,
+    healthScore: 54,
+    stage: ProjectStage.IN_PROGRESS,
+    priority: ProjectPriority.MEDIUM,
+    deadlineOffset: 90,
+    startedOffset: -20,
+    taskStages: [
+      TaskStage.DONE,
+      TaskStage.DONE,
+      TaskStage.DONE,
+      TaskStage.STARTED,
+      TaskStage.STARTED,
+      TaskStage.PENDING,
+      TaskStage.PENDING,
+      TaskStage.PENDING,
+    ],
+    taskDeadlineOffsets: [-25, -20, -15, -5, 55, -3, -1, 58],
+  },
+  {
+    healthStatus: ProjectHealthStatus.CRITICAL,
+    healthScore: 18,
+    stage: ProjectStage.PAUSED,
+    priority: ProjectPriority.EXTREME,
+    deadlineOffset: -10,
+    startedOffset: -50,
+    taskStages: [
+      TaskStage.DONE,
       TaskStage.STARTED,
       TaskStage.STARTED,
       TaskStage.PENDING,
@@ -324,7 +335,7 @@ const projectScenarios = [
       TaskStage.PENDING,
       TaskStage.PENDING,
     ],
-    taskDeadlineOffsets: [-25, -20, -15, -10, -5, 0, 3, 5, 7, 8],
+    taskDeadlineOffsets: [-43, -38, -33, -28, -23, -18, -15, -13, -11, -10],
   },
 ] as const;
 
@@ -332,7 +343,9 @@ function projectScenario(projectIndex: number) {
   const scenario = projectScenarios[projectIndex];
 
   if (!scenario) {
-    throw new Error(`Cenário de projeto não configurado para o índice ${projectIndex}.`);
+    throw new Error(
+      `Cenário de projeto não configurado para o índice ${projectIndex}.`,
+    );
   }
 
   return scenario;
@@ -358,10 +371,34 @@ function taskId(projectKey: string, taskIndex: number) {
   return `seed-task-${projectKey}-${String(taskIndex + 1).padStart(2, '0')}`;
 }
 
+// Âncora dinâmica: "hoje" no momento em que o seed é executado. As datas de
+// projetos e tarefas são todas relativas a este ponto para que os cenários de
+// saúde (SAFE/WARNING/CRITICAL) calculados ao vivo por `StatsService` continuem
+// corretos independentemente de quando o seed for rodado.
+const SEED_TODAY = (() => {
+  const date = new Date();
+  date.setUTCHours(0, 0, 0, 0);
+  return date;
+})();
+
 function utcDate(dayOffset: number, hour = 12) {
-  const date = new Date('2026-07-01T00:00:00.000Z');
+  const date = new Date(SEED_TODAY);
   date.setUTCDate(date.getUTCDate() + dayOffset);
   date.setUTCHours(hour);
+  return date;
+}
+
+// Retorna uma data dentro do mês "monthsAgo" meses atrás de SEED_TODAY (0 =
+// mês corrente). Usado para distribuir tarefas/apontamentos em meses-calendário
+// reais (em vez de offsets em dias), já que `StatsService.resolveMonth` filtra
+// por mês-calendário UTC. `setUTCDate(1)` antes de mexer no mês evita estouro
+// de dia (ex.: dia 31 "vazando" para o mês seguinte ao subtrair meses).
+function monthDate(monthsAgo: number, day: number, hour = 12) {
+  const date = new Date(SEED_TODAY);
+  date.setUTCDate(1);
+  date.setUTCMonth(date.getUTCMonth() - monthsAgo);
+  date.setUTCDate(day);
+  date.setUTCHours(hour, 0, 0, 0);
   return date;
 }
 
@@ -383,6 +420,224 @@ function taskCreatedAt(
 
 function organizationUserIndexes(organization: (typeof organizations)[number]) {
   return [0, ...organization.managers, ...organization.members];
+}
+
+type TaskPlan = {
+  index: number;
+  code: string;
+  name: string;
+  description: string;
+  stage: TaskStage;
+  priority: TaskPriority;
+  ownerUsername: string;
+  createdAt: Date;
+  startedAt: Date | null;
+  doneAt: Date | null;
+  deadline: Date;
+  delayed: boolean;
+};
+
+// Reconstrói, como dados puros (sem tocar o banco), as tarefas "originais" de
+// cada cenário de projeto — mesma matemática de datas já calibrada para os
+// status de saúde SAFE/WARNING/CRITICAL (ver comentário de `projectScenarios`).
+function buildScenarioTaskPlans(
+  scenario: (typeof projectScenarios)[number],
+  organizationUsers: readonly number[],
+  orgIndex: number,
+  projectIndex: number,
+): TaskPlan[] {
+  return taskCatalog
+    .slice(0, scenario.taskStages.length)
+    .map((taskTemplate, taskIndex) => {
+      const stage = scenario.taskStages[taskIndex];
+      const priority =
+        taskPriorities[
+          (taskIndex + projectIndex * 2 + orgIndex) % taskPriorities.length
+        ];
+      const ownerUser =
+        users[
+          organizationUsers[
+            (taskIndex + projectIndex) % organizationUsers.length
+          ]
+        ];
+      const startedAt =
+        stage === TaskStage.PENDING
+          ? null
+          : utcDate(-35 + projectIndex * 3 + taskIndex, 9);
+      const doneAt =
+        stage === TaskStage.DONE
+          ? utcDate(-12 + projectIndex * 2 + taskIndex, 18)
+          : null;
+      const deadline = utcDate(scenario.taskDeadlineOffsets[taskIndex], 23);
+      const createdAt = taskCreatedAt(orgIndex, projectIndex, taskIndex);
+      const delayed =
+        stage !== TaskStage.DONE && deadline.getTime() < utcDate(0).getTime();
+
+      return {
+        index: taskIndex,
+        code: `TSK-${String(taskIndex + 1).padStart(3, '0')}`,
+        name: taskTemplate.name,
+        description: taskTemplate.description,
+        stage,
+        priority,
+        ownerUsername: ownerUser.username,
+        createdAt,
+        startedAt,
+        doneAt,
+        deadline,
+        delayed,
+      };
+    });
+}
+
+type ExtraTaskStageSlot = {
+  stage: TaskStage;
+  monthsAgo: number;
+  delayed: boolean;
+};
+
+// Define, por status de saúde, a distribuição de estágio das 16 tarefas extras
+// (2 por membro, considerando os 8 participantes da organização Tasker) de
+// forma a preservar aproximadamente a mesma proporção concluída/atrasada das
+// tarefas originais do cenário — assim a saúde recalculada ao vivo por
+// `StatsService.calculateHealth` continua batendo com `scenario.healthStatus`
+// mesmo depois de adicionar bastante tarefa nova. Ver seção "3.2 Extra tasks
+// e cálculo de saúde" no PR/discussão original para os números.
+function extraTaskStagePlan(
+  healthStatus: (typeof projectScenarios)[number]['healthStatus'],
+): ExtraTaskStageSlot[] {
+  const openStages = [
+    TaskStage.STARTED,
+    TaskStage.PENDING,
+    TaskStage.REVIEW,
+  ] as const;
+
+  if (healthStatus === ProjectHealthStatus.SAFE) {
+    // Mantém a proporção concluída alta (~83%) e nenhuma tarefa atrasada.
+    return [
+      ...Array.from({ length: 13 }, (_, i) => ({
+        stage: TaskStage.DONE,
+        monthsAgo: i % 3,
+        delayed: false,
+      })),
+      ...Array.from({ length: 3 }, () => ({
+        stage: TaskStage.STARTED,
+        monthsAgo: 0,
+        delayed: false,
+      })),
+    ];
+  }
+
+  if (healthStatus === ProjectHealthStatus.WARNING) {
+    // Mantém doneTasks/total e delayedTasks/total em ~37.5%, igual ao cenário
+    // original (3 de 8), então o score de saúde recalculado não muda.
+    return [
+      ...Array.from({ length: 6 }, (_, i) => ({
+        stage: TaskStage.DONE,
+        monthsAgo: i % 3,
+        delayed: false,
+      })),
+      ...Array.from({ length: 6 }, (_, i) => ({
+        stage: openStages[i % openStages.length],
+        monthsAgo: 0,
+        delayed: true,
+      })),
+      ...Array.from({ length: 4 }, (_, i) => ({
+        stage: openStages[i % 2],
+        monthsAgo: 0,
+        delayed: false,
+      })),
+    ];
+  }
+
+  // CRITICAL: mantém a maioria das tarefas abertas e atrasadas; o status
+  // permanece CRITICAL de qualquer forma porque o prazo do projeto já está
+  // vencido (`overdue`), mas preservar a proporção mantém o score condizente.
+  return [
+    ...Array.from({ length: 2 }, (_, i) => ({
+      stage: TaskStage.DONE,
+      monthsAgo: i,
+      delayed: false,
+    })),
+    ...Array.from({ length: 13 }, (_, i) => ({
+      stage: openStages[i % openStages.length],
+      monthsAgo: 0,
+      delayed: true,
+    })),
+    {
+      stage: TaskStage.PENDING,
+      monthsAgo: 0,
+      delayed: false,
+    },
+  ];
+}
+
+// Gera 16 tarefas extras por projeto (2 por membro da organização Tasker),
+// com estágios variados e concluídas/iniciadas em meses-calendário diferentes
+// (mês corrente, mês anterior e retrasado) para que os endpoints de stats por
+// mês (`/stats`, `/stats/members`, `/stats/members/performance`) tragam dados
+// diferentes conforme o mês selecionado no frontend.
+function buildExtraTaskPlans(
+  scenario: (typeof projectScenarios)[number],
+  organizationUsers: readonly number[],
+  startIndex: number,
+  orgIndex: number,
+  projectIndex: number,
+): TaskPlan[] {
+  const stagePlan = extraTaskStagePlan(scenario.healthStatus);
+
+  return stagePlan.map((entry, offset) => {
+    const index = startIndex + offset;
+    const catalogEntry = taskCatalog[index % taskCatalog.length];
+    const ownerUser =
+      users[organizationUsers[offset % organizationUsers.length]];
+    const priority =
+      taskPriorities[
+        (index + projectIndex * 2 + orgIndex) % taskPriorities.length
+      ];
+
+    let createdAt: Date;
+    let startedAt: Date | null = null;
+    let doneAt: Date | null = null;
+    let deadline: Date;
+
+    if (entry.stage === TaskStage.DONE) {
+      createdAt = monthDate(entry.monthsAgo, 3, 9);
+      startedAt = monthDate(entry.monthsAgo, 8, 9);
+      doneAt = monthDate(entry.monthsAgo, 20, 18);
+      deadline = monthDate(Math.max(entry.monthsAgo - 1, 0), 25, 23);
+    } else if (entry.stage === TaskStage.PENDING) {
+      createdAt = monthDate(entry.monthsAgo, 2, 9);
+      deadline = entry.delayed
+        ? utcDate(-5 - (offset % 15), 23)
+        : utcDate(20 + (offset % 30), 23);
+    } else {
+      createdAt = monthDate(entry.monthsAgo, 2, 9);
+      startedAt = monthDate(entry.monthsAgo, 6, 9);
+      deadline = entry.delayed
+        ? utcDate(-3 - (offset % 15), 23)
+        : utcDate(25 + (offset % 30), 23);
+    }
+
+    const delayed =
+      entry.stage !== TaskStage.DONE &&
+      deadline.getTime() < utcDate(0).getTime();
+
+    return {
+      index,
+      code: `TSK-${String(index + 1).padStart(3, '0')}`,
+      name: catalogEntry.name,
+      description: catalogEntry.description,
+      stage: entry.stage,
+      priority,
+      ownerUsername: ownerUser.username,
+      createdAt,
+      startedAt,
+      doneAt,
+      deadline,
+      delayed,
+    };
+  });
 }
 
 function validateSeedConfiguration() {
@@ -439,7 +694,9 @@ function validateSeedConfiguration() {
   }
 
   if (projectScenarios.length !== totalProjects) {
-    throw new Error('Cada projeto deve possuir um cenário de saúde configurado.');
+    throw new Error(
+      'Cada projeto deve possuir um cenário de saúde configurado.',
+    );
   }
 }
 
@@ -452,8 +709,12 @@ async function clearSeedProjects() {
   await prisma.event.deleteMany({ where: { projectkey: projectFilter } });
   await prisma.task.deleteMany({ where: { projectkey: projectFilter } });
   await prisma.member.deleteMany({ where: { projectkey: projectFilter } });
-  await prisma.projectStatsReport.deleteMany({ where: { projectkey: projectFilter } });
-  await prisma.projectStatsPeriodSnapshot.deleteMany({ where: { projectkey: projectFilter } });
+  await prisma.projectStatsReport.deleteMany({
+    where: { projectkey: projectFilter },
+  });
+  await prisma.projectStatsPeriodSnapshot.deleteMany({
+    where: { projectkey: projectFilter },
+  });
   await prisma.project.deleteMany({ where: { id: projectFilter } });
 }
 
@@ -543,7 +804,7 @@ async function seedProjectsAndMembers() {
       const doneAt = null;
       const deadline = utcDate(scenario.deadlineOffset, 23);
       const createdAt = projectCreatedAt(orgIndex, projectIndex);
-      const delayed = deadline.getTime() < utcDate(22).getTime();
+      const delayed = deadline.getTime() < utcDate(0).getTime();
 
       await prisma.project.upsert({
         where: { id },
@@ -599,78 +860,60 @@ async function seedProjectsAndMembers() {
   }
 }
 
-async function seedTasks() {
+async function seedTasks(): Promise<Map<string, TaskPlan[]>> {
+  const taskPlansByProject = new Map<string, TaskPlan[]>();
+
   for (const [orgIndex, organization] of organizations.entries()) {
     const organizationUsers = organizationUserIndexes(organization);
 
     for (const [projectIndex] of organization.projects.entries()) {
       const scenario = projectScenario(projectIndex);
       const projectKey = projectId(organization.code, projectIndex);
+      const plans = [
+        ...buildScenarioTaskPlans(
+          scenario,
+          organizationUsers,
+          orgIndex,
+          projectIndex,
+        ),
+        ...buildExtraTaskPlans(
+          scenario,
+          organizationUsers,
+          scenario.taskStages.length,
+          orgIndex,
+          projectIndex,
+        ),
+      ];
 
-      for (const [taskIndex, taskTemplate] of taskCatalog
-        .slice(0, scenario.taskStages.length)
-        .entries()) {
-        const id = taskId(projectKey, taskIndex);
-        const stage = scenario.taskStages[taskIndex];
-        const priority =
-          taskPriorities[
-            (taskIndex + projectIndex * 2 + orgIndex) % taskPriorities.length
-          ];
-        const ownerUser =
-          users[
-            organizationUsers[
-              (taskIndex + projectIndex) % organizationUsers.length
-            ]
-          ];
-        const startedAt =
-          stage === TaskStage.PENDING
-            ? null
-            : utcDate(-35 + projectIndex * 3 + taskIndex, 9);
-        const doneAt =
-          stage === TaskStage.DONE
-            ? utcDate(-12 + projectIndex * 2 + taskIndex, 18)
-            : null;
-        const deadline = utcDate(scenario.taskDeadlineOffsets[taskIndex], 23);
-        const createdAt = taskCreatedAt(orgIndex, projectIndex, taskIndex);
-        const delayed =
-          stage !== TaskStage.DONE &&
-          deadline.getTime() < utcDate(22).getTime();
+      taskPlansByProject.set(projectKey, plans);
+
+      for (const plan of plans) {
+        const id = taskId(projectKey, plan.index);
+        const data = {
+          code: plan.code,
+          name: plan.name,
+          description: plan.description,
+          deadline: plan.deadline,
+          started_at: plan.startedAt,
+          done_at: plan.doneAt,
+          delayed: plan.delayed,
+          stage: plan.stage,
+          priority: plan.priority,
+          projectkey: projectKey,
+          ownerkey: memberId(projectKey, plan.ownerUsername),
+          created_at: plan.createdAt,
+        };
 
         await prisma.task.upsert({
           where: { id },
-          update: {
-            code: `TSK-${String(taskIndex + 1).padStart(3, '0')}`,
-            name: taskTemplate.name,
-            description: taskTemplate.description,
-            deadline,
-            started_at: startedAt,
-            done_at: doneAt,
-            delayed,
-            stage,
-            priority,
-            projectkey: projectKey,
-            ownerkey: memberId(projectKey, ownerUser.username),
-            created_at: createdAt,
-          },
-          create: {
-            id,
-            code: `TSK-${String(taskIndex + 1).padStart(3, '0')}`,
-            name: taskTemplate.name,
-            description: taskTemplate.description,
-            deadline,
-            started_at: startedAt,
-            done_at: doneAt,
-            delayed,
-            stage,
-            priority,
-            projectkey: projectKey,
-            ownerkey: memberId(projectKey, ownerUser.username),
-            created_at: createdAt,
-          },
+          update: data,
+          create: { id, ...data },
         });
       }
     }
   }
+
+  return taskPlansByProject;
 }
 
 async function seedCommentsAndEvents() {
@@ -735,33 +978,36 @@ async function seedCommentsAndEvents() {
   }
 }
 
-async function seedWorkLogs() {
+// Gera um apontamento de trabalho por tarefa iniciada (STARTED/REVIEW/DONE).
+// Tarefas concluídas registram o apontamento na data de conclusão (mês em que
+// a tarefa foi de fato feita); tarefas em andamento registram nos últimos
+// dias (mês corrente). Isso espalha `TaskWorkLog.logged_at` pelos mesmos
+// meses-calendário usados em `buildExtraTaskPlans`, para que
+// `ProjectStats.performancePerMember` (horas/semana) varie de fato conforme o
+// mês selecionado no frontend.
+async function seedWorkLogs(taskPlansByProject: Map<string, TaskPlan[]>) {
   for (const [orgIndex, organization] of organizations.entries()) {
-    const organizationUsers = organizationUserIndexes(organization);
-
     for (const [projectIndex] of organization.projects.entries()) {
       const projectKey = projectId(organization.code, projectIndex);
+      const plans = taskPlansByProject.get(projectKey) ?? [];
+      let logIndex = 0;
 
-      for (let taskIndex = 0; taskIndex < 6; taskIndex += 1) {
-        const memberUser =
-          users[
-            organizationUsers[
-              (taskIndex + projectIndex) % organizationUsers.length
-            ]
-          ];
-        const id = `seed-worklog-${projectKey}-${taskIndex + 1}`;
+      for (const plan of plans) {
+        if (!plan.startedAt) {
+          continue;
+        }
+
+        const loggedAt = plan.doneAt ?? utcDate(-1 - (logIndex % 5), 17);
+        const id = `seed-worklog-${projectKey}-${String(logIndex + 1).padStart(2, '0')}`;
         const data = {
           projectkey: projectKey,
-          taskkey: taskId(projectKey, taskIndex),
-          memberkey: memberId(projectKey, memberUser.username),
-          minutes: 90 + ((taskIndex + projectIndex + orgIndex) % 7) * 45,
-          logged_at: utcDate(-15 + orgIndex + projectIndex + taskIndex, 17),
-          note: `Atividades executadas em ${taskCatalog[taskIndex].name.toLowerCase()}.`,
+          taskkey: taskId(projectKey, plan.index),
+          memberkey: memberId(projectKey, plan.ownerUsername),
+          minutes: 90 + ((plan.index + projectIndex + orgIndex) % 7) * 45,
+          logged_at: loggedAt,
+          note: `Atividades executadas em ${plan.name.toLowerCase()}.`,
           source: 'ENTERPRISE_SEED',
-          created_at: new Date(
-            utcDate(-15 + orgIndex + projectIndex + taskIndex, 17).getTime()
-            - 60 * 60 * 1000,
-          ),
+          created_at: new Date(loggedAt.getTime() - 60 * 60 * 1000),
         };
 
         await prisma.taskWorkLog.upsert({
@@ -769,6 +1015,8 @@ async function seedWorkLogs() {
           update: data,
           create: { id, ...data },
         });
+
+        logIndex += 1;
       }
     }
   }
@@ -813,11 +1061,12 @@ async function seedProjectStats() {
           completion_percentage: Math.round(
             (doneTasks / scenario.taskStages.length) * 100,
           ),
-          open_risks: healthStatus === ProjectHealthStatus.SAFE
-            ? 0
-            : healthStatus === ProjectHealthStatus.WARNING
-              ? 2
-              : 5,
+          open_risks:
+            healthStatus === ProjectHealthStatus.SAFE
+              ? 0
+              : healthStatus === ProjectHealthStatus.WARNING
+                ? 2
+                : 5,
         },
         health_status: healthStatus,
         health_score: healthScore,
@@ -885,14 +1134,16 @@ async function main() {
   await seedOrganizationsAndAffiliations();
   await clearSeedProjects();
   await seedProjectsAndMembers();
-  await seedTasks();
+  const taskPlansByProject = await seedTasks();
   await seedCommentsAndEvents();
-  await seedWorkLogs();
+  await seedWorkLogs(taskPlansByProject);
   await seedProjectStats();
   await seedAuditLogs();
 
   console.info('Seed empresarial concluído com sucesso.');
-  console.info('24 usuários, 5 organizações, 3 projetos e 24 tarefas.');
+  console.info(
+    '24 usuários, 5 organizações e 3 projetos, com tarefas distribuídas por todos os membros em múltiplos meses.',
+  );
   console.info('Owner de todas as organizações: mikaelstl / Demo@01');
   console.info('Demais senhas seguem a sequência Demo@02 até Demo@24.');
 }
